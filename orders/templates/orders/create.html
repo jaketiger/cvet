@@ -1,0 +1,43 @@
+<!-- orders/templates/orders/create.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Оформление заказа - MegaCvet</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; }
+        .order-info { background: #f4f4f4; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        ul { list-style: none; padding: 0; }
+        li { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .total { font-weight: bold; border-top: 1px solid #ddd; padding-top: 10px; }
+        form p { margin-bottom: 15px; }
+        form label { display: block; margin-bottom: 5px; }
+        form input { width: 100%; padding: 8px; box-sizing: border-box; }
+        .submit-btn {
+            background-color: #4CAF50; color: white; padding: 15px 30px;
+            border: none; border-radius: 8px; cursor: pointer; font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Оформление заказа</h1>
+    <div class="order-info">
+        <h3>Ваш заказ</h3>
+        <ul>
+            {% for item in cart %}
+            <li>
+                {{ item.quantity }}x {{ item.product.name }}
+                <span>{{ item.total_price }} руб.</span>
+            </li>
+            {% endfor %}
+        </ul>
+        <p class="total">Итого: {{ cart.get_total_price }} руб.</p>
+    </div>
+
+    <form method="post">
+        {{ form.as_p }}
+        {% csrf_token %}
+        <p><input type="submit" value="Подтвердить заказ" class="submit-btn"></p>
+    </form>
+</body>
+</html>

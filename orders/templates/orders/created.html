@@ -1,0 +1,15 @@
+<!-- orders/templates/orders/created.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Спасибо за заказ - MegaCvet</title>
+     <style> body { font-family: sans-serif; text-align: center; padding: 40px; } </style>
+</head>
+<body>
+    <h1>Спасибо!</h1>
+    <p>Ваш заказ успешно оформлен. Номер вашего заказа: <strong>#{{ order.id }}</strong>.</p>
+    <p>Мы свяжемся с вами в ближайшее время.</p>
+    <p><a href="{% url 'shop:product_list' %}">Вернуться в каталог</a></p>
+</body>
+</html>

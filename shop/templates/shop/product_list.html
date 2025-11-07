@@ -1,0 +1,46 @@
+<!-- shop/templates/shop/product_list.html -->
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Каталог товаров - MegaCvet</title>
+    <style>
+        body { font-family: sans-serif; max-width: 1200px; margin: auto; padding: 20px; }
+        h1 { text-align: center; color: #333; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .product-card { border: 1px solid #ddd; border-radius: 8px; padding: 15px; text-align: center; }
+        .product-card img { max-width: 100%; height: 200px; object-fit: cover; border-radius: 4px; }
+        .product-card h2 { font-size: 1.2em; margin: 10px 0; }
+        .product-card .price { font-size: 1.1em; font-weight: bold; color: #e53935; }
+    </style>
+</head>
+<body>
+
+    <h1>Наш каталог цветов</h1>
+
+    <div class="product-grid">
+    {% for product in products %}
+        <!-- Оборачиваем карточку в ссылку -->
+        <a href="{% url 'shop:product_detail' product.slug %}" class="product-link">
+            <div class="product-card">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                {% endif %}
+                <h2>{{ product.name }}</h2>
+                <p class="price">{{ product.price }} руб.</p>
+            </div>
+        </a>
+    {% empty %}
+        <p>В данный момент в каталоге нет товаров.</p>
+    {% endfor %}
+</div>
+
+<!-- Добавьте немного стилей для ссылки в тег <style> -->
+<style>
+    /* ... ваши старые стили ... */
+    .product-link { text-decoration: none; color: inherit; }
+</style>
+
+</body>
+</html>```
