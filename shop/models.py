@@ -5,6 +5,8 @@ from django.db import models
 # shop/models.py
 
 from django.db import models
+from imagekit.models import ImageSpecField
+from imagekit.processors import ResizeToFill
 
 class Category(models.Model):
     name = models.CharField(max_length=200, verbose_name="Название категории")
@@ -27,6 +29,13 @@ class Product(models.Model):
     name = models.CharField(max_length=200, verbose_name="Название товара")
     slug = models.SlugField(max_length=200, verbose_name="URL")
     image = models.ImageField(upload_to='products/%Y/%m/%d', blank=True, verbose_name="Изображение")
+    image_thumbnail = ImageSpecField(source='image',
+                                     processors=[ResizeToFill(300, 250)],
+                                     format='JPEG',
+                                     options={'quality': 80})
+
+    description = models.TextField(...)
+    price = models.DecimalField(...)
     description = models.TextField(blank=True, verbose_name="Описание")
     # Используем DecimalField для точного хранения цен
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена")

@@ -26,7 +26,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # --- Секретный ключ ---
 # Забираем ключ из переменных окружения
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'your-default-secret-key-for-development')
-# SECRET_KEY = 'django-insecure-8$n0drft1v!r0ox=rqgcc&2x00&yzt@#y%(t87p21my2aaqdry'
+# SECRET_KEY = os.environ.get('django-insecure-8$n0drft1v!r0ox=rqgcc&2x00&yzt@#y%(t87p21my2aaqdry')
+#SECRET_KEY = 'django-insecure-8$n0drft1v!r0ox=rqgcc&2x00&yzt@#y%(t87p21my2aaqdry'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # --- Режим отладки ---
@@ -36,8 +37,8 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
 # --- Разрешенные хосты ---
 # Укажите IP-адрес вашего сервера и доменное имя
-ALLOWED_HOSTS = ['your_server_ip', 'www.yourdomain.com', 'yourdomain.com']
-# ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = ['your_server_ip', 'www.yourdomain.com', 'yourdomain.com']
+ALLOWED_HOSTS = ['109.120.142.26', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -46,6 +47,7 @@ INSTALLED_APPS = [
     'shop',  # Наше новое приложение
     'cart', # Наше новое приложение
     'orders', # Наше новое приложение
+    'imagekit', # <-- ДОБАВЬТЕ ЭТУ СТРОКУ
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -69,7 +71,7 @@ ROOT_URLCONF = 'megacvet_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
