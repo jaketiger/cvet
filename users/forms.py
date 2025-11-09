@@ -6,12 +6,8 @@ from django.contrib.auth.models import User
 import random
 
 
-# --- ФОРМА РЕГИСТРАЦИИ ---
+# --- НАЧАЛО КЛАССА ФОРМЫ РЕГИСТРАЦИИ ---
 class RegistrationForm(UserCreationForm):
-    """
-    Кастомная форма регистрации, которая скрывает ненужное поле 'username'
-    и запрашивает email, имя и фамилию.
-    """
     first_name = forms.CharField(label="Имя", max_length=150, required=True)
     last_name = forms.CharField(label="Фамилия", max_length=150, required=True)
     email = forms.EmailField(label="Email", required=True)
@@ -19,6 +15,15 @@ class RegistrationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = User
         fields = ('first_name', 'last_name', 'email',)
+
+    # --- ПРАВИЛЬНОЕ МЕСТО ДЛЯ МЕТОДА ---
+    # Этот метод находится на том же уровне, что и __init__ и save.
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError(
+                "Этот email уже зарегистрирован. Пожалуйста, войдите или используйте другой email.")
+        return email
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -60,20 +65,19 @@ class RegistrationForm(UserCreationForm):
         return user
 
 
-# --- ФОРМА ВХОДА ПО EMAIL ---
+# --- КОНЕЦ КЛАССА ФОРМЫ РЕГИСТРАЦИИ ---
+
+
+# --- НАЧАЛО КЛАССА ФОРМЫ ВХОДА ---
 class LoginForm(AuthenticationForm):
-    """
-    Кастомная форма входа, которая использует Email вместо Username.
-    """
-    # Переопределяем поле 'username', чтобы оно вело себя как поле для email.
     username = forms.EmailField(
         label="Email",
         widget=forms.EmailInput(attrs={'autofocus': True, 'class': 'form-control'})
     )
 
-    # Переопределяем поле 'password', чтобы добавить CSS-класс.
     password = forms.CharField(
         label="Пароль",
         strip=False,
         widget=forms.PasswordInput(attrs={'autocomplete': 'current-password', 'class': 'form-control'}),
     )
+# --- КОНЕЦ КЛАССА ФОРМЫ ВХОДА ---
