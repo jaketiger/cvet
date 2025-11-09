@@ -1,22 +1,24 @@
 # orders/views.py
 
-from django.shortcuts import render
-from .models import OrderItem
+from django.shortcuts import render, redirect  # <-- Добавлен redirect
+from .models import Order, OrderItem  # <-- Добавлен Order
 from .forms import OrderCreateForm
 from cart.cart import Cart
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.conf import settings
-from shop.models import Profile  # <-- Убедитесь, что Profile импортирован из shop.models
+from shop.models import Profile
 
 
 @login_required
 def order_create(request):
     cart = Cart(request)
 
-    # --- САМЫЙ НАДЕЖНЫЙ СПОСОБ РАБОТЫ С ПРОФИЛЕМ ---
-    # Получаем профиль пользователя или создаем его, если он по какой-то причине отсутствует.
-    # Это работает и для старых, и для новых пользователей и никогда не вызовет ошибку.
+    # --- НОВАЯ ЗАЩИТА ОТ ПУСТЫХ ЗАКАЗОВ ---
+    # Если в корзине нет товаров, просто перенаправляем пользователя в каталог.
+    if len(cart) == 0:
+        return redirect('shop:product_list')
+
     profile, created = Profile.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
@@ -26,7 +28,6 @@ def order_create(request):
             order.user = request.user
             order.save()
 
-            # Обновляем данные профиля из валидной формы
             profile.phone = form.cleaned_data['phone']
             profile.address = form.cleaned_data['address']
             profile.postal_code = form.cleaned_data['postal_code']
@@ -38,7 +39,6 @@ def order_create(request):
                                          price=item['price'], quantity=item['quantity'])
             cart.clear()
 
-            # Отправка Email
             subject = f'Заказ #{order.id} - MegaCvet'
             message = (f'Здравствуйте, {order.first_name}!\n\n'
                        f'Вы успешно оформили заказ #{order.id}.\n'
@@ -49,9 +49,13 @@ def order_create(request):
                 [order.email], fail_silently=False,
             )
 
-            return render(request, 'orders/created.html', {'order': order})
+            # --- ГЛАВНОЕ ИЗМЕНЕНИЕ (Post/Redirect/Get) ---
+            # Сохраняем ID заказа в сессии, чтобы передать его на следующую страницу.
+            request.session['order_id'] = order.id
+            # Перенаправляем пользователя на новую страницу "Спасибо".
+            return redirect('orders:order_created')
     else:
-        # Предзаполняем форму данными из User и Profile
+        # Предзаполнение формы (остается без изменений)
         initial_data = {
             'first_name': request.user.first_name,
             'last_name': request.user.last_name,
@@ -64,3 +68,26 @@ def order_create(request):
         form = OrderCreateForm(initial=initial_data)
 
     return render(request, 'orders/create.html', {'cart': cart, 'form': form})
+
+
+# --- НОВАЯ VIEW ДЛЯ СТРАНИЦЫ "СПАСИБО ЗА ЗАКАЗ" ---
+def order_created(request):
+    """
+    Эта view безопасно отображает страницу подтверждения,
+    получая ID заказа из сессии.
+    """
+    order_id = request.session.get('order_id')
+
+    # Если кто-то зашел на эту страницу напрямую, без заказа, отправляем его в каталог
+    if not order_id:
+        return redirect('shop:product_list')
+
+    try:
+        order = Order.objects.get(id=order_id)
+        # Очищаем сессию от ID заказа после того, как мы его получили.
+        # Это предотвратит повторный показ этой страницы.
+        del request.session['order_id']
+        return render(request, 'orders/created.html', {'order': order})
+    except Order.DoesNotExist:
+        # Если заказа с таким ID нет, тоже отправляем в каталог
+        return redirect('shop:product_list')
