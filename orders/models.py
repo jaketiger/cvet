@@ -1,16 +1,22 @@
-from django.db import models
-
-# Create your models here.
-
 # orders/models.py
 
 from django.db import models
 from shop.models import Product
+from django.contrib.auth.models import User  # <-- ДОБАВЛЕНО
+
 
 class Order(models.Model):
+    # НОВОЕ ПОЛЕ ДЛЯ СВЯЗИ С ПОЛЬЗОВАТЕЛЕМ
+    user = models.ForeignKey(User,
+                             on_delete=models.SET_NULL,
+                             null=True, blank=True,
+                             related_name='orders',
+                             verbose_name="Пользователь")
+
     first_name = models.CharField(max_length=50, verbose_name="Имя")
     last_name = models.CharField(max_length=50, verbose_name="Фамилия")
     email = models.EmailField(verbose_name="Email")
+    phone = models.CharField(max_length=20, verbose_name="Телефон")
     address = models.CharField(max_length=250, verbose_name="Адрес доставки")
     postal_code = models.CharField(max_length=20, verbose_name="Почтовый индекс")
     city = models.CharField(max_length=100, verbose_name="Город")

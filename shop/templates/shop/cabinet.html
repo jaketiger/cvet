@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Личный кабинет
+{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+    <div class="row">
+        <div class="col-md-12">
+            <h1>Личный кабинет</h1>
+            <p class="lead">Добро пожаловать, {{ user.first_name|default:user.username }}!</p>
+            <p>Здесь вы можете просмотреть историю ваших заказов.</p>
+            <hr>
+
+            <h3>Ваши заказы</h3>
+            {% if orders %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col"># Заказа</th>
+                                <th scope="col">Дата</th>
+                                <th scope="col">Сумма</th>
+                                <th scope="col">Статус оплаты</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                                <tr>
+                                    <td>{{ order.id }}</td>
+                                    <td>{{ order.created|date:"d.m.Y, H:i" }}</td>
+                                    <td>{{ order.get_total_cost }} руб.</td>
+                                    <td>
+                                        {% if order.paid %}
+                                            <span style="color: green;">Оплачен</span>
+                                        {% else %}
+                                            <span style="color: red;">Ожидает оплаты</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>У вас еще нет ни одного заказа.</p>
+                <a href="{% url "shop:product_list" %}" class="btn btn-primary">Перейти к покупкам</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

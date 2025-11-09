@@ -15,6 +15,9 @@ import dj_database_url # Добавьте этот импорт
 
 from pathlib import Path
 
+from dotenv import load_dotenv  # <-- ДОБАВЬТЕ ЭТУ СТРОКУ
+load_dotenv()                   # <-- И ЭТУ СТРОКУ
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -32,8 +35,8 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'your-default-secret-key-for-de
 # SECURITY WARNING: don't run with debug turned on in production!
 # --- Режим отладки ---
 # DEBUG будет True только если переменная окружения DJANGO_DEBUG установлена в 'True'
-DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
-# DEBUG = True
+# DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
+DEBUG = True
 
 # --- Разрешенные хосты ---
 # Укажите IP-адрес вашего сервера и доменное имя
@@ -47,6 +50,7 @@ INSTALLED_APPS = [
     'shop',  # Наше новое приложение
     'cart', # Наше новое приложение
     'orders', # Наше новое приложение
+    'users', # <-- ДОБАВЬТЕ ЭТУ СТРОКУ
     'imagekit', # <-- ДОБАВЬТЕ ЭТУ СТРОКУ
     'django.contrib.admin',
     'django.contrib.auth',
@@ -122,9 +126,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -139,6 +143,10 @@ STATIC_URL = 'static/'
 # Новая настройка: куда собирать все статические файлы
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# Указываем Django, где еще искать статические файлы
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -152,3 +160,17 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 CART_SESSION_ID = 'cart'
 
+# URL-адрес, на который Django будет перенаправлять после успешного входа
+LOGIN_REDIRECT_URL = '/'
+
+# URL-адрес, на который Django будет перенаправлять после выхода из системы
+LOGOUT_REDIRECT_URL = '/'
+
+AUTHENTICATION_BACKENDS = [
+    # 1. Сначала пытаемся войти по email (наш новый бэкенд)
+    'users.backends.EmailBackend',  # <-- Замените 'accounts' на 'users', если у вас папка называется users
+
+    # 2. Если не получилось, пытаемся войти по username (стандартный бэкенд)
+    # Это нужно, чтобы суперпользователь мог по-прежнему входить в админку.
+    'django.contrib.auth.backends.ModelBackend',
+]

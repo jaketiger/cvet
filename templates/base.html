@@ -1,3 +1,4 @@
+<!-- templates/base.html -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="ru">
@@ -5,31 +6,71 @@
     <meta charset="UTF-8">
     <title>{% block title %}MegaCvet - Магазин цветов{% endblock %}</title>
     <style>
-        body { 
+        body {
             font-family: sans-serif;
-            /* --- НАШ ФОН! --- */
             background-image: url("{% static 'shop/img/background.jpg' %}");
             background-size: cover;
             background-attachment: fixed;
             background-repeat: no-repeat;
+            margin: 0;
+            padding: 20px;
         }
         .container {
             max-width: 1200px;
             margin: auto;
-     /*     padding: 20px;   */
-            padding: 0;
-     /*     background-color: rgba(255, 255, 255, 0.9); /* Полупрозрачный белый фон для контента */ */
-            background-color: transparent; /* или можно просто удалить эту строку */
+            background-color: rgba(255, 255, 255, 0.95);
             border-radius: 8px;
+            padding: 20px;
         }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+        .logo a { text-decoration: none; color: #333; font-size: 1.8em; font-weight: bold; }
+        .user-navigation { font-size: 0.9em; display: flex; align-items: center; }
+        .cart { margin-left: 20px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        {% block content %}
-        <!-- Сюда будет вставляться уникальный контент каждой страницы -->
-        {% endblock %}
+        <header class="header">
+            <div class="logo">
+                <a href="{% url 'shop:product_list' %}">MegaCvet</a>
+            </div>
+            <div class="user-navigation">
+
+                <!-- ВОТ ПОЛНЫЙ И ПРАВИЛЬНЫЙ БЛОК -->
+                {% if user.is_authenticated %}
+                    <span>Привет, {{ user.first_name|default:user.username }}!</span>&nbsp;|&nbsp;
+                    <a href="{% url 'shop:cabinet' %}">Личный кабинет</a>&nbsp;|&nbsp;
+                    <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" style="background:none; border:none; padding:0; color:#007bff; text-decoration:underline; cursor:pointer;">
+                            Выйти
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}">Войти</a>&nbsp;|&nbsp;
+                    <a href="{% url 'register' %}">Регистрация</a>
+                {% endif %}
+
+                <span class="cart">
+                    {% with total_items=cart|length %}
+                        {% if total_items > 0 %}
+                            <a href="{% url 'cart:cart_detail' %}">
+                                Корзина: {{ total_items }} товар(а/ов), {{ cart.get_total_price }} руб.
+                            </a>
+                        {% else %}
+                            Корзина пуста
+                        {% endif %}
+                    {% endwith %}
+                </span>
+            </div>
+        </header>
+
+        <main>
+            {% block content %}
+            <!-- Сюда будет вставляться уникальный контент каждой страницы -->
+            {% endblock %}
+        </main>
     </div>
 
 </body>

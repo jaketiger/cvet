@@ -1,38 +1,10 @@
 <!-- shop/templates/shop/product_detail.html -->
+{% extends "base.html" %}
+{% load static %}
 
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <!-- Название страницы теперь зависит от товара -->
-    <title>{{ product.name }} - MegaCvet</title>
-    <style>
-        body { font-family: sans-serif; max-width: 900px; margin: auto; padding: 20px; }
-        .product-container { display: flex; gap: 40px; }
-        .product-image { flex: 1; }
-        .product-image img { max-width: 100%; border-radius: 8px; }
-        .product-info { flex: 1; }
-        .product-info h1 { font-size: 2em; margin-top: 0; }
-        .product-info .price { font-size: 1.5em; font-weight: bold; color: #e53935; margin: 20px 0; }
-        .product-info .description { line-height: 1.6; }
-        .add-to-cart-btn {
-            display: inline-block;
-            background-color: #4CAF50; /* Зеленый */
-            color: white;
-            padding: 15px 30px;
-            text-align: center;
-            text-decoration: none;
-            font-size: 16px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        .back-link { display: block; margin-top: 30px; }
-    </style>
-</head>
-<body>
+{% block title %}{{ product.name }} - MegaCvet{% endblock %}
 
+{% block content %}
     <div class="product-container">
         <div class="product-image">
             {% if product.image %}
@@ -44,19 +16,28 @@
             <p class="price">{{ product.price }} руб.</p>
             <div class="description">
                 <h3>Описание:</h3>
-                <!-- safe фильтр нужен, если в описании будет HTML, nl2br - для переносов строк -->
                 <p>{{ product.description|linebreaksbr }}</p>
             </div>
 
-            <!-- Пока эта кнопка ничего не делает, но мы это исправим уже -->
             <form action="{% url 'cart:cart_add' product.id %}" method="post">
-            {% csrf_token %}
-            <button type="submit" class="add-to-cart-btn">Добавить в корзину</button>
+                {% csrf_token %}
+                {{ cart_product_form }}
+                <button type="submit" class="add-to-cart-btn">Добавить в корзину</button>
             </form>
         </div>
     </div>
 
     <a href="{% url 'shop:product_list' %}" class="back-link">← Вернуться в каталог</a>
 
-</body>
-</html>
+    <style>
+        .product-container { display: flex; gap: 40px; background-color: white; padding: 20px; border-radius: 8px; }
+        .product-image { flex: 1; }
+        .product-image img { max-width: 100%; border-radius: 8px; }
+        .product-info { flex: 1; }
+        .product-info h1 { font-size: 2em; margin-top: 0; }
+        .product-info .price { font-size: 1.5em; font-weight: bold; color: #e53935; margin: 20px 0; }
+        .product-info .description { line-height: 1.6; }
+        .add-to-cart-btn { display: inline-block; background-color: #4CAF50; color: white; padding: 15px 30px; text-align: center; text-decoration: none; font-size: 16px; border-radius: 8px; border: none; cursor: pointer; margin-top: 20px; }
+        .back-link { display: block; margin-top: 30px; }
+    </style>
+{% endblock %}

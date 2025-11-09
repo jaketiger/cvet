@@ -1,12 +1,15 @@
-from django.db import models
-
-# Create your models here.
-
 # shop/models.py
 
 from django.db import models
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFill
+from django.urls import reverse
+
+# --- НОВЫЕ ИМПОРТЫ ДЛЯ ПРОФИЛЯ ПОЛЬЗОВАТЕЛЯ ---
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 
 class Category(models.Model):
     name = models.CharField(max_length=200, verbose_name="Название категории")
@@ -23,6 +26,9 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        return reverse('shop:product_list_by_category', args=[self.slug])
+
 
 class Product(models.Model):
     category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE, verbose_name="Категория")
@@ -34,11 +40,10 @@ class Product(models.Model):
                                      format='JPEG',
                                      options={'quality': 80})
 
-    description = models.TextField(...)
-    price = models.DecimalField(...)
+    # --- ИСПРАВЛЕННЫЕ ПОЛЯ (ОСТАВЛЕНЫ ПО ОДНОМУ РАЗУ) ---
     description = models.TextField(blank=True, verbose_name="Описание")
-    # Используем DecimalField для точного хранения цен
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена")
+
     stock = models.PositiveIntegerField(verbose_name="Остаток на складе")
     available = models.BooleanField(default=True, verbose_name="Доступен для заказа")
     created = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
@@ -46,7 +51,6 @@ class Product(models.Model):
 
     class Meta:
         ordering = ['name']
-        # Индексы для ускорения поиска
         indexes = [
             models.Index(fields=['id', 'slug']),
             models.Index(fields=['name']),
@@ -57,3 +61,35 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse('shop:product_detail', args=[self.id, self.slug])
+
+
+# --- НОВАЯ МОДЕЛЬ ПРОФИЛЯ ПОЛЬЗОВАТЕЛЯ ---
+# Мы добавляем ее именно в этот файл, так как у вас нет отдельного приложения users/accounts
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    phone = models.CharField("Телефон", max_length=20, blank=True)
+    address = models.CharField("Адрес", max_length=250, blank=True)
+    postal_code = models.CharField("Индекс", max_length=20, blank=True)
+    city = models.CharField("Город", max_length=100, blank=True)
+
+    def __str__(self):
+        return f'Профиль пользователя {self.user.username}'
+
+
+# --- Сигналы для автоматического создания/обновления профиля ---
+# Этот код гарантирует, что у каждого нового пользователя будет свой профиль
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    if hasattr(instance, 'profile'):
+        instance.profile.save()
