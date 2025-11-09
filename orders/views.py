@@ -1,7 +1,7 @@
 # orders/views.py
 
-from django.shortcuts import render, redirect  # <-- Добавлен redirect
-from .models import Order, OrderItem  # <-- Добавлен Order
+from django.shortcuts import render, redirect
+from .models import Order, OrderItem
 from .forms import OrderCreateForm
 from cart.cart import Cart
 from django.contrib.auth.decorators import login_required
@@ -14,8 +14,6 @@ from shop.models import Profile
 def order_create(request):
     cart = Cart(request)
 
-    # --- НОВАЯ ЗАЩИТА ОТ ПУСТЫХ ЗАКАЗОВ ---
-    # Если в корзине нет товаров, просто перенаправляем пользователя в каталог.
     if len(cart) == 0:
         return redirect('shop:product_list')
 
@@ -37,25 +35,48 @@ def order_create(request):
             for item in cart:
                 OrderItem.objects.create(order=order, product=item['product'],
                                          price=item['price'], quantity=item['quantity'])
+
             cart.clear()
 
-            subject = f'Заказ #{order.id} - MegaCvet'
-            message = (f'Здравствуйте, {order.first_name}!\n\n'
-                       f'Вы успешно оформили заказ #{order.id}.\n'
-                       f'Сумма к оплате: {order.get_total_cost()} руб.\n\n'
-                       f'Спасибо за покупку!')
-            send_mail(
-                subject, message, settings.EMAIL_HOST_USER,
-                [order.email], fail_silently=False,
-            )
+            # --- ОБНОВЛЕННЫЙ БЛОК ОТПРАВКИ EMAIL ---
+            subject = f'Подтверждение заказа #{order.id} - MegaCvet'
 
-            # --- ГЛАВНОЕ ИЗМЕНЕНИЕ (Post/Redirect/Get) ---
-            # Сохраняем ID заказа в сессии, чтобы передать его на следующую страницу.
+            message_body = []
+            message_body.append(f'Здравствуйте, {order.first_name}!')
+            message_body.append(f'Вы успешно оформили заказ #{order.id} в нашем магазине.\n')
+
+            # Добавляем состав заказа
+            message_body.append('Состав вашего заказа:')
+            for item in order.items.all():
+                message_body.append(
+                    f'- {item.product.name} ({item.quantity} шт.) - {item.get_cost()} руб.'
+                )
+
+            message_body.append(f'\nИтого к оплате: {order.get_total_cost()} руб.\n')
+
+            # --- НОВАЯ ЧАСТЬ: АДРЕС ДОСТАВКИ ---
+            message_body.append('Адрес доставки:')
+            message_body.append(f'{order.postal_code}, {order.city}')
+            message_body.append(f'{order.address}')
+            message_body.append(f'Телефон для связи: {order.phone}\n')
+            # ------------------------------------
+
+            message_body.append('Спасибо за покупку!')
+
+            message = '\n'.join(message_body)
+
+            send_mail(
+                subject,
+                message,
+                settings.EMAIL_HOST_USER,
+                [order.email],
+                fail_silently=False,
+            )
+            # ------------------------------------
+
             request.session['order_id'] = order.id
-            # Перенаправляем пользователя на новую страницу "Спасибо".
             return redirect('orders:order_created')
     else:
-        # Предзаполнение формы (остается без изменений)
         initial_data = {
             'first_name': request.user.first_name,
             'last_name': request.user.last_name,
@@ -70,24 +91,16 @@ def order_create(request):
     return render(request, 'orders/create.html', {'cart': cart, 'form': form})
 
 
-# --- НОВАЯ VIEW ДЛЯ СТРАНИЦЫ "СПАСИБО ЗА ЗАКАЗ" ---
 def order_created(request):
-    """
-    Эта view безопасно отображает страницу подтверждения,
-    получая ID заказа из сессии.
-    """
     order_id = request.session.get('order_id')
 
-    # Если кто-то зашел на эту страницу напрямую, без заказа, отправляем его в каталог
     if not order_id:
         return redirect('shop:product_list')
 
     try:
         order = Order.objects.get(id=order_id)
-        # Очищаем сессию от ID заказа после того, как мы его получили.
-        # Это предотвратит повторный показ этой страницы.
-        del request.session['order_id']
+        if 'order_id' in request.session:
+            del request.session['order_id']
         return render(request, 'orders/created.html', {'order': order})
     except Order.DoesNotExist:
-        # Если заказа с таким ID нет, тоже отправляем в каталог
         return redirect('shop:product_list')
