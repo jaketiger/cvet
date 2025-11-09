@@ -5,7 +5,6 @@ from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFill
 from django.urls import reverse
 
-# --- НОВЫЕ ИМПОРТЫ ДЛЯ ПРОФИЛЯ ПОЛЬЗОВАТЕЛЯ ---
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -17,9 +16,7 @@ class Category(models.Model):
 
     class Meta:
         ordering = ['name']
-        indexes = [
-            models.Index(fields=['name']),
-        ]
+        indexes = [models.Index(fields=['name']),]
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
@@ -40,7 +37,6 @@ class Product(models.Model):
                                      format='JPEG',
                                      options={'quality': 80})
 
-    # --- ИСПРАВЛЕННЫЕ ПОЛЯ (ОСТАВЛЕНЫ ПО ОДНОМУ РАЗУ) ---
     description = models.TextField(blank=True, verbose_name="Описание")
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена")
 
@@ -62,12 +58,10 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+    # --- ВОТ ВАЖНОЕ ИЗМЕНЕНИЕ ---
     def get_absolute_url(self):
         return reverse('shop:product_detail', args=[self.id, self.slug])
 
-
-# --- НОВАЯ МОДЕЛЬ ПРОФИЛЯ ПОЛЬЗОВАТЕЛЯ ---
-# Мы добавляем ее именно в этот файл, так как у вас нет отдельного приложения users/accounts
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
@@ -79,15 +73,10 @@ class Profile(models.Model):
     def __str__(self):
         return f'Профиль пользователя {self.user.username}'
 
-
-# --- Сигналы для автоматического создания/обновления профиля ---
-# Этот код гарантирует, что у каждого нового пользователя будет свой профиль
-
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
-
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):

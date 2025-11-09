@@ -9,29 +9,33 @@
 
     <div class="product-grid">
     {% for product in products %}
-        <!-- Ссылка теперь не на всю карточку, а только на картинку и название для удобства -->
         <div class="product-card">
-            <a href="{{ product.product_detail_url }}">
+            <a href="{{ product.get_absolute_url }}">
                 {% if product.image %}
                     <img src="{{ product.image_thumbnail.url }}" alt="{{ product.name }}">
                 {% endif %}
             </a>
             <h2>
-                <a href="{{ product.product_detail_url }}">{{ product.name }}</a>
+                <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
             </h2>
             <p class="price">{{ product.price }} руб.</p>
-            <!-- Добавим кнопку "Добавить в корзину" прямо в каталог -->
+
             <form action="{% url 'cart:cart_add' product.id %}" method="post">
                 {% csrf_token %}
+
+                <!-- --- ИСПРАВЛЕНИЕ ЗДЕСЬ (type="hidden" вместо type.hidden) --- -->
+                <input type="hidden" name="quantity" value="1">
+                <input type="hidden" name="update" value="False">
+
                 <input type="submit" value="В корзину" class="add-to-cart-btn-small">
             </form>
+
         </div>
     {% empty %}
         <p>В данный момент в каталоге нет товаров.</p>
     {% endfor %}
     </div>
 
-    <!-- Стили переехали в <style> тег для простоты -->
     <style>
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
         .product-card { border: 1px solid #ddd; border-radius: 8px; padding: 15px; text-align: center; background-color: white; }

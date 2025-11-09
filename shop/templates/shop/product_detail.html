@@ -19,11 +19,16 @@
                 <p>{{ product.description|linebreaksbr }}</p>
             </div>
 
+            <!-- --- ИЗМЕНЕНИЕ ЗДЕСЬ --- -->
             <form action="{% url 'cart:cart_add' product.id %}" method="post">
                 {% csrf_token %}
-                {{ cart_product_form }}
+                <!-- Отображаем поле для выбора количества из формы -->
+                {{ cart_product_form.quantity.label_tag }}
+                {{ cart_product_form.quantity }}
+                <br>
                 <button type="submit" class="add-to-cart-btn">Добавить в корзину</button>
             </form>
+
         </div>
     </div>
 

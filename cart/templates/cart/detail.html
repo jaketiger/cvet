@@ -1,66 +1,87 @@
 <!-- cart/templates/cart/detail.html -->
+{% extends "base.html" %}
+{% load static %}
 
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Ваша корзина - MegaCvet</title>
-    <style>
-        body { font-family: sans-serif; max-width: 1000px; margin: auto; padding: 20px; }
-        h1 { color: #333; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        td.image { width: 100px; }
-        td.image img { max-width: 100%; }
-        .total { text-align: right; font-size: 1.2em; font-weight: bold; }
-        .actions a { text-decoration: none; color: #e53935; }
-        .checkout-btn {
-            display: inline-block; background-color: #4CAF50; color: white;
-            padding: 15px 30px; text-align: center; text-decoration: none;
-            font-size: 16px; border-radius: 8px; border: none; cursor: pointer; float: right;
-        }
-    </style>
-</head>
-<body>
+{% block title %}Ваша корзина{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2rem;">
     <h1>Ваша корзина</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>Изображение</th>
-                <th>Товар</th>
-                <th>Количество</th>
-                <th>Удалить</th>
-                <th>Цена за шт.</th>
-                <th>Общая стоимость</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in cart %}
+    {% if cart %}
+        <table class="cart-table">
+            <thead>
                 <tr>
-                    <td class="image">
-                        <a href="{{ item.product.get_absolute_url }}">
-                            <img src="{% if item.product.image %}{{ item.product.image.url }}{% endif %}">
-                        </a>
-                    </td>
-                    <td>{{ item.product.name }}</td>
-                    <td>{{ item.quantity }}</td>
-                    <td class="actions">
-                        <a href="{% url 'cart:cart_remove' item.product.id %}">Удалить</a>
-                    </td>
-                    <td>{{ item.price }} руб.</td>
-                    <td>{{ item.total_price }} руб.</td>
+                    <th>Изображение</th>
+                    <th>Товар</th>
+                    <th>Количество</th>
+                    <th>Цена за шт.</th>
+                    <th>Сумма</th>
                 </tr>
+            </thead>
+            <tbody>
+                {% for item in cart %}
+                    {% with product=item.product %}
+                        <tr>
+                            <td>
+                                <a href="{{ product.get_absolute_url }}">
+                                    {% if product.image_thumbnail %}
+                                        <img src="{{ product.image_thumbnail.url }}" alt="{{ product.name }}" style="width: 100px; border-radius: 5px;">
+                                    {% endif %}
+                                </a>
+                            </td>
+                            <td>{{ product.name }}</td>
+                            <td>
+                                <!-- --- ФОРМА ДЛЯ ОБНОВЛЕНИЯ КОЛИЧЕСТВА --- -->
+                                <form action="{% url 'cart:cart_add' product.id %}" method="post" class="quantity-form">
+                                    {{ item.update_quantity_form.quantity }}
+                                    {{ item.update_quantity_form.update }}
+                                    <button type="submit">Обновить</button>
+                                    {% csrf_token %}
+                                </form>
+                            </td>
+                            <td>{{ item.price }} руб.</td>
+                            <td>{{ item.total_price }} руб.</td>
+                        </tr>
+                    {% endwith %}
+                {% endfor %}
+                <tr class="total">
+                    <td colspan="4">Итого:</td>
+                    <td colspan="1">{{ cart.get_total_price }} руб.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="remove-actions">
+            <h4>Удалить товар из корзины:</h4>
+            {% for item in cart %}
+                <form action="{% url 'cart:cart_remove' item.product.id %}" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="remove-btn">Удалить "{{ item.product.name }}"</button>
+                </form>
             {% endfor %}
-            <tr class="total">
-                <td colspan="5">Итого:</td>
-                <td>{{ cart.get_total_price }} руб.</td>
-            </tr>
-        </tbody>
-    </table>
-    <p style="text-align: right;">
-        <a href="{% url 'shop:product_list' %}" class="button light">Продолжить покупки</a>
-        <a href="{% url 'orders:order_create' %}" class="checkout-btn">Оформить заказ</a>
-    </p>
-</body>
-</html>
+        </div>
+
+        <p style="text-align: right; margin-top: 20px;">
+            <a href="{% url 'shop:product_list' %}" class="btn-secondary">Продолжить покупки</a>
+            <a href="{% url 'orders:order_create' %}" class="btn-primary">Оформить заказ</a>
+        </p>
+
+    {% else %}
+        <p>Ваша корзина пуста.</p>
+        <a href="{% url 'shop:product_list' %}">Начать покупки</a>
+    {% endif %}
+</div>
+
+<style>
+    .cart-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: center; vertical-align: middle; }
+    th { background-color: #f2f2f2; }
+    .quantity-form { display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .total { font-weight: bold; font-size: 1.2em; }
+    .remove-actions { margin-top: 20px; padding: 15px; background-color: #f8f8f8; border-radius: 5px; }
+    .remove-btn { background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+    .btn-secondary, .btn-primary { padding: 10px 15px; text-decoration: none; border-radius: 5px; }
+    .btn-secondary { background-color: #6c757d; color: white; }
+    .btn-primary { background-color: #007bff; color: white; }
+</style>
+{% endblock %}

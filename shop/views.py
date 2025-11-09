@@ -2,11 +2,11 @@
 
 from django.shortcuts import render, get_object_or_404
 from .models import Category, Product
-# Добавляем импорт для защиты страницы
 from django.contrib.auth.decorators import login_required
+from cart.forms import CartAddProductForm  # <-- ДОБАВЛЕН НЕОБХОДИМЫЙ ИМПОРТ
 
 
-# Ваша view для списка товаров (она у вас уже есть)
+# View для списка товаров (остается без изменений)
 def product_list(request, category_slug=None):
     category = None
     categories = Category.objects.all()
@@ -21,16 +21,20 @@ def product_list(request, category_slug=None):
                    'products': products})
 
 
-# Ваша view для детальной страницы (она у вас уже есть)
+# View для детальной страницы (ИЗМЕНЕНА)
 def product_detail(request, id, slug):
     product = get_object_or_404(Product, id=id, slug=slug, available=True)
-    # ... (здесь может быть логика для формы добавления в корзину) ...
+
+    # Создаем экземпляр формы для добавления в корзину, чтобы передать его в шаблон
+    cart_product_form = CartAddProductForm()
+
     return render(request,
                   'shop/product_detail.html',
-                  {'product': product})
+                  {'product': product,
+                   'cart_product_form': cart_product_form})  # <-- Передаем форму в контекст
 
 
-# УБЕДИТЕСЬ, ЧТО ЭТОТ КОД ДОБАВЛЕН В КОНЕЦ ФАЙЛА
+# View для личного кабинета (остается без изменений)
 @login_required
 def cabinet(request):
     # Получаем все заказы текущего пользователя
