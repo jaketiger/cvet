@@ -4,6 +4,7 @@ from django.db import models
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFill
 from django.urls import reverse
+from solo.models import SingletonModel
 
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
@@ -63,6 +64,24 @@ class Product(models.Model):
         return reverse('shop:product_detail', args=[self.id, self.slug])
 
 
+# --- НОВАЯ МОДЕЛЬ ДЛЯ НАСТРОЕК САЙТА ---
+class SiteSettings(SingletonModel):
+    delivery_cost = models.DecimalField(
+        "Стоимость доставки по городу",
+        max_digits=10, decimal_places=2, default=500.00
+    )
+    pickup_address = models.TextField("Адрес для самовывоза", blank=True)
+    working_hours = models.CharField("График работы", max_length=200, blank=True)
+    contact_phone = models.CharField("Контактный телефон", max_length=50, blank=True)
+
+    class Meta:
+        verbose_name = "Настройки сайта"
+
+    def __str__(self):
+        return "Настройки сайта"
+
+
+
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     phone = models.CharField("Телефон", max_length=20, blank=True)
@@ -82,3 +101,4 @@ def create_user_profile(sender, instance, created, **kwargs):
 def save_user_profile(sender, instance, **kwargs):
     if hasattr(instance, 'profile'):
         instance.profile.save()
+

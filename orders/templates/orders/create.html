@@ -17,36 +17,103 @@
                 </li>
             {% endfor %}
         </ul>
-        <p><strong>Итого: {{ cart.get_total_price }} руб.</strong></p>
+        <p><strong>Стоимость товаров: {{ cart.get_total_price }} руб.</strong></p>
     </div>
 
     <form method="post" class="order-form">
         {% csrf_token %}
 
-        <!-- Отрисовываем поля вручную для лучшего вида -->
+        <!-- Блок 1: Выбор способа получения -->
+        <div id="delivery-options" class="form-group">
+            <label>{{ form.delivery_option.label }}</label>
+            <div class="radio-option">
+                <input type="radio" name="delivery_option" value="delivery" id="id_delivery_option_0" {% if form.delivery_option.value == 'delivery' or not form.delivery_option.value %}checked{% endif %}>
+                <label for="id_delivery_option_0">Доставка по городу (+{{ delivery_cost_js }} руб.)</label>
+            </div>
+            <div class="radio-option">
+                <input type="radio" name="delivery_option" value="pickup" id="id_delivery_option_1" {% if form.delivery_option.value == 'pickup' %}checked{% endif %}>
+                <label for="id_delivery_option_1">Самовывоз (бесплатно)</label>
+            </div>
+        </div>
+        <hr>
+
+        <!-- Блок 2: Контактная информация (видна всегда) -->
+        <h3>Контактные данные</h3>
         <div class="form-row">
             <div class="form-group">{{ form.first_name.label_tag }} {{ form.first_name }}</div>
             <div class="form-group">{{ form.last_name.label_tag }} {{ form.last_name }}</div>
         </div>
         <div class="form-group">{{ form.email.label_tag }} {{ form.email }}</div>
         <div class="form-group">{{ form.phone.label_tag }} {{ form.phone }}</div>
-        <div class="form-group">{{ form.address.label_tag }} {{ form.address }}</div>
-        <div class="form-row">
-            <div class="form-group">{{ form.postal_code.label_tag }} {{ form.postal_code }}</div>
-            <div class="form-group">{{ form.city.label_tag }} {{ form.city }}</div>
+
+        <!-- Блок 3: Адрес доставки (будет скрываться) -->
+        <div id="delivery-address-fields">
+            <hr>
+            <h3>Адрес доставки</h3>
+            <div class="form-group">{{ form.address.label_tag }} {{ form.address }}</div>
+            <div class="form-row">
+                <div class="form-group">{{ form.postal_code.label_tag }} {{ form.postal_code }}</div>
+                <div class="form-group">{{ form.city.label_tag }} {{ form.city }}</div>
+            </div>
         </div>
 
-        <button type="submit" class="btn-submit">Оформить заказ</button>
+        <!-- Блок 4: Информация о самовывозе (будет показываться) -->
+        <div id="pickup-info" style="display: none; background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin-top: 15px;">
+            <h3>Самовывоз</h3>
+            <p>Вы сможете забрать ваш заказ после подтверждения. Оплата производится при получении.</p>
+            <p>Наш адрес и график работы можно посмотреть в разделе <a href="{% url 'shop:contacts' %}" target="_blank">Контакты</a>.</p>
+        </div>
+
+        <!-- Блок 5: Итоговая стоимость и кнопка -->
+        <div id="delivery-cost-summary" style="text-align: right; margin-top: 20px;">
+            Стоимость доставки: <span id="delivery-cost-display"></span> руб.
+        </div>
+        <h3 style="text-align: right; margin-top: 10px;">Итого к оплате: <span id="total-cost-display"></span> руб.</h3>
+        <div style="text-align: right; margin-top: 20px;">
+            <button type="submit" class="btn-submit">Оформить заказ</button>
+        </div>
     </form>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // --- ИЗМЕНЕНИЙ В ЭТИХ ПЕРЕМЕННЫХ НЕТ ---
+    const deliveryCost = parseFloat("{{ delivery_cost_js|stringformat:'f' }}".replace(',', '.'));
+    const cartTotal = parseFloat("{{ cart_total_js|stringformat:'f' }}".replace(',', '.'));
+    const deliveryOptionRadios = document.querySelectorAll('input[name="delivery_option"]');
+
+    // --- ИЗМЕНЕНИЕ: ТЕПЕРЬ МЫ НАХОДИМ НОВЫЙ БЛОК ---
+    const deliveryAddressFields = document.getElementById('delivery-address-fields');
+
+    const pickupInfo = document.getElementById('pickup-info');
+    const totalCostDisplay = document.getElementById('total-cost-display');
+    const deliveryCostDisplay = document.getElementById('delivery-cost-display');
+    const deliveryCostSummary = document.getElementById('delivery-cost-summary');
+
+    function updateOrderForm() {
+        const selectedOption = document.querySelector('input[name="delivery_option"]:checked').value;
+
+        // --- ИЗМЕНЕНИЕ В ЛОГИКЕ ---
+        if (selectedOption === 'delivery') {
+            deliveryAddressFields.style.display = 'block'; // Показываем адрес
+            pickupInfo.style.display = 'none';
+            deliveryCostSummary.style.display = 'block';
+            deliveryCostDisplay.textContent = deliveryCost.toFixed(2);
+            totalCostDisplay.textContent = (cartTotal + deliveryCost).toFixed(2);
+        } else { // pickup
+            deliveryAddressFields.style.display = 'none'; // Скрываем ТОЛЬКО адрес
+            pickupInfo.style.display = 'block';
+            deliveryCostSummary.style.display = 'none';
+            totalCostDisplay.textContent = cartTotal.toFixed(2);
+        }
+    }
+
+    deliveryOptionRadios.forEach(radio => radio.addEventListener('change', updateOrderForm));
+    updateOrderForm();
+});
+</script>
+
 <style>
-    .order-info { background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
-    .order-form .form-group { margin-bottom: 15px; }
-    .order-form label { display: block; margin-bottom: 5px; font-weight: bold; }
-    .form-control { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-    .form-row { display: flex; gap: 20px; }
-    .form-row .form-group { flex: 1; }
-    .btn-submit { background-color: #28a745; color: white; padding: 15px 25px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+    /* ... ваши стили для формы ... */
 </style>
 {% endblock %}

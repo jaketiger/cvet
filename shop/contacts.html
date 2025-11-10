@@ -1,0 +1,19 @@
+<!-- orders/templates/orders/created.html -->
+{% extends "base.html" %}
+
+{% block title %}Контакты - MegaCvet{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2rem;">
+    <h1>Контактная информация</h1>
+    <hr>
+    <h3>Адрес для самовывоза:</h3>
+    <p>{{ settings.pickup_address|linebreaksbr }}</p>
+
+    <h3>График работы:</h3>
+    <p>{{ settings.working_hours }}</p>
+
+    <h3>Телефон для связи:</h3>
+    <p>{{ settings.contact_phone }}</p>
+</div>
+{% endblock %}

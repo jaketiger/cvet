@@ -1,25 +1,29 @@
 <!-- orders/templates/orders/created.html -->
 {% extends "base.html" %}
 
-{% block title %}Спасибо!{% endblock %}
+{% block title %}Спасибо за ваш заказ!{% endblock %}
 
 {% block content %}
 <div class="container" style="max-width: 800px; margin: 2rem auto; text-align: center;">
-    <h1>Спасибо за ваш заказ!</h1>
-    <p>Ваш заказ <strong>#{{ order.id }}</strong> был успешно оформлен.</p>
-    <p>Мы отправим подтверждение на ваш email-адрес: <strong>{{ order.email }}</strong>.</p>
+    <!-- ... (код заголовка и подтверждения) ... -->
 
-    <div style="text-align: left; margin-top: 30px; background-color: #f9f9f9; padding: 20px; border-radius: 5px;">
-        <h3>Состав заказа:</h3>
-        <ul style="list-style: none; padding: 0;">
-            {% for item in order.items.all %}
-                <li style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee;">
-                    <span>{{ item.product.name }} ({{ item.quantity }} шт.)</span>
-                    <span>{{ item.get_cost }} руб.</span>
-                </li>
-            {% endfor %}
-        </ul>
-        <h4 style="text-align: right; margin-top: 15px;">Итого к оплате: {{ order.get_total_cost }} руб.</h4>
+    <div style="text-align: left; margin-top: 30px; ...">
+        <h3>Детали заказа:</h3>
+
+        <!-- ... (таблица с товарами) ... -->
+
+        <!-- --- ИСПРАВЛЕННЫЙ БЛОК ДЛЯ ИТОГОВЫХ СУММ --- -->
+        <div style="text-align: right;">
+            <!-- Убираем сложный 'with', используем новый метод напрямую -->
+            <p>Стоимость товаров: {{ order.get_items_cost }} руб.</p>
+            <p>Стоимость доставки: {{ order.delivery_cost }} руб.</p>
+            <h4 style="margin-top: 10px;">Итого к оплате: {{ order.get_total_cost }} руб.</h4>
+        </div>
+        <!-- ----------------------------------- -->
+
+        <hr>
+
+        <!-- ... (блок с адресом доставки) ... -->
     </div>
 
     <a href="{% url 'shop:product_list' %}" style="display: inline-block; margin-top: 30px;">Вернуться в каталог</a>

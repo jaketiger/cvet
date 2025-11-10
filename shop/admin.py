@@ -3,6 +3,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
+from .models import SiteSettings
+from solo.admin import SingletonModelAdmin
 
 # Импортируем все наши модели из shop/models.py
 from .models import Category, Product, Profile
@@ -51,3 +53,5 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter = ['available', 'created', 'updated', 'category']
     list_editable = ['price', 'stock', 'available']
     prepopulated_fields = {'slug': ('name',)}
+
+admin.site.register(SiteSettings, SingletonModelAdmin)

@@ -38,6 +38,7 @@ ALLOWED_HOSTS = ['109.120.142.26', '127.0.0.1', 'localhost']
 # Application definition
 
 INSTALLED_APPS = [
+    'solo',
     'shop',  # Наше новое приложение
     'cart', # Наше новое приложение
     'orders', # Наше новое приложение

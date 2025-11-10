@@ -1,12 +1,10 @@
 # shop/views.py
 
 from django.shortcuts import render, get_object_or_404
-from .models import Category, Product
+from .models import Category, Product, SiteSettings # <-- Добавлен импорт SiteSettings
 from django.contrib.auth.decorators import login_required
-from cart.forms import CartAddProductForm  # <-- ДОБАВЛЕН НЕОБХОДИМЫЙ ИМПОРТ
+from cart.forms import CartAddProductForm
 
-
-# View для списка товаров (остается без изменений)
 def product_list(request, category_slug=None):
     category = None
     categories = Category.objects.all()
@@ -21,24 +19,23 @@ def product_list(request, category_slug=None):
                    'products': products})
 
 
-# View для детальной страницы (ИЗМЕНЕНА)
 def product_detail(request, id, slug):
     product = get_object_or_404(Product, id=id, slug=slug, available=True)
-
-    # Создаем экземпляр формы для добавления в корзину, чтобы передать его в шаблон
     cart_product_form = CartAddProductForm()
-
     return render(request,
                   'shop/product_detail.html',
                   {'product': product,
-                   'cart_product_form': cart_product_form})  # <-- Передаем форму в контекст
+                   'cart_product_form': cart_product_form})
 
 
-# View для личного кабинета (остается без изменений)
 @login_required
 def cabinet(request):
-    # Получаем все заказы текущего пользователя
     orders = request.user.orders.all().order_by('-created')
-
-    # Передаем заказы в шаблон для отображения
     return render(request, 'shop/cabinet.html', {'orders': orders})
+
+
+# --- НОВАЯ VIEW ДЛЯ СТРАНИЦЫ КОНТАКТОВ ---
+def contact_page(request):
+    # .get_solo() - это специальный метод django-solo для получения единственного объекта настроек
+    site_settings = SiteSettings.get_solo()
+    return render(request, 'shop/contacts.html', {'settings': site_settings})

@@ -4,16 +4,24 @@ from django import forms
 from .models import Order
 
 class OrderCreateForm(forms.ModelForm):
+    # Добавляем поле для выбора способа получения заказа
+    delivery_option = forms.ChoiceField(
+        label="Способ получения",
+        choices=Order.DELIVERY_CHOICES,
+        widget=forms.RadioSelect, # Используем радио-кнопки для наглядности
+        initial='delivery' # Значение по умолчанию
+    )
+
     class Meta:
         model = Order
-        fields = ['first_name', 'last_name', 'email', 'phone', 'address', 'postal_code', 'city']
+        # Добавляем delivery_option в список полей
+        fields = ['delivery_option', 'first_name', 'last_name', 'email', 'phone', 'address', 'postal_code', 'city']
 
-    # ДОБАВЬТЕ ЭТОТ МЕТОД
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Этот цикл пройдет по всем полям формы...
+        # Добавляем CSS-класс ко всем полям для стилизации
         for field in self.fields:
-            # ... и добавит к каждому полю ввода CSS-класс 'form-control'
-            self.fields[field].widget.attrs.update({
-                'class': 'form-control'
-            })
+            if field != 'delivery_option': # Кроме радио-кнопок
+                self.fields[field].widget.attrs.update({
+                    'class': 'form-control'
+                })
