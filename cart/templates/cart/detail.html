@@ -7,6 +7,8 @@
 {% block content %}
 <div class="container" style="padding-top: 2rem;">
     <h1>Ваша корзина</h1>
+
+    <!-- Проверяем, есть ли что-то в корзине -->
     {% if cart %}
         <table class="cart-table">
             <thead>
@@ -31,7 +33,6 @@
                             </td>
                             <td>{{ product.name }}</td>
                             <td>
-                                <!-- --- ФОРМА ДЛЯ ОБНОВЛЕНИЯ КОЛИЧЕСТВА --- -->
                                 <form action="{% url 'cart:cart_add' product.id %}" method="post" class="quantity-form">
                                     {{ item.update_quantity_form.quantity }}
                                     {{ item.update_quantity_form.update }}
@@ -62,14 +63,16 @@
         </div>
 
         <p style="text-align: right; margin-top: 20px;">
-            <a href="{% url 'shop:product_list' %}" class="btn-secondary">Продолжить покупки</a>
+            <!-- ИСПРАВЛЕННАЯ ССЫЛКА -->
+            <a href="{% url 'shop:product_list_all' %}" class="btn-secondary">Продолжить покупки</a>
             <a href="{% url 'orders:order_create' %}" class="btn-primary">Оформить заказ</a>
         </p>
 
     {% else %}
+        <!-- Этот блок показывается, если корзина пуста -->
         <p>Ваша корзина пуста.</p>
-        <a href="{% url 'shop:product_list' %}">Начать покупки</a>
-    {% endif %}
+        <a href="{% url 'shop:product_list_all' %}">Начать покупки</a>
+    {% endif %} <!-- <-- ВОТ НЕДОСТАЮЩИЙ ТЕГ -->
 </div>
 
 <style>

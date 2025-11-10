@@ -3,55 +3,65 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
-from .models import SiteSettings
+from .models import Category, Product, Profile, SiteSettings
 from solo.admin import SingletonModelAdmin
 
-# Импортируем все наши модели из shop/models.py
-from .models import Category, Product, Profile
 
-
-# --- 1. Встраиваем редактирование профиля в страницу пользователя ---
-
+# 1. Профиль в Пользователе
 class ProfileInline(admin.StackedInline):
-    """
-    Определяет встраиваемую модель Profile для отображения
-    внутри модели User.
-    """
     model = Profile
-    can_delete = False  # Нельзя удалить профиль со страницы пользователя
+    can_delete = False
     verbose_name_plural = 'Дополнительные поля профиля'
 
 
 class UserAdmin(BaseUserAdmin):
-    """
-
-    Расширяет стандартный UserAdmin, добавляя в него
-    редактирование профиля.
-    """
     inlines = (ProfileInline,)
 
 
-# --- 2. Перерегистрируем стандартную модель User ---
-
-# Сначала "открепляем" стандартную регистрацию User
 admin.site.unregister(User)
-# Затем "прикрепляем" нашу расширенную версию
 admin.site.register(User, UserAdmin)
 
 
-# --- 3. Ваш существующий код для Category и Product (он остается без изменений) ---
+# --- 2. Улучшенный inline для Товаров в Категории ---
+class ProductInline(admin.TabularInline):
+    model = Product.category.through  # <-- Используем "промежуточную" таблицу для ManyToMany
+    verbose_name = "Товар"
+    verbose_name_plural = "Товары в этой категории"
+
+    # --- ЭТА СТРОКА ЗАПРЕЩАЕТ СОЗДАНИЕ НОВЫХ ОБЪЕКТОВ ---
+    # extra=0 убирает пустые слоты, can_delete=False убирает возможность удалить связь
+    extra = 0
+    can_delete = True
+
+    # --- ВКЛЮЧАЕМ ПОИСК ДЛЯ ВЫБОРА СУЩЕСТВУЮЩИХ ТОВАРОВ ---
+    autocomplete_fields = ['product']
+
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ['name', 'slug']
     prepopulated_fields = {'slug': ('name',)}
+    search_fields = ['name', 'slug']
+
+    # --- ВОЗВРАЩАЕМ INLINE, НО В УЛУЧШЕННОМ ВИДЕ ---
+    inlines = [ProductInline]
+
+    # Мы не можем использовать filter_horizontal здесь, поэтому исключаем поле
+    exclude = ('products',)
 
 
+# 3. Улучшенная админка для Товаров
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['name', 'slug', 'price', 'stock', 'available', 'created']
-    list_filter = ['available', 'created', 'updated', 'category']
-    list_editable = ['price', 'stock', 'available']
+    list_display = ['name', 'slug', 'price', 'stock', 'available', 'is_featured']
+    list_filter = ['available', 'is_featured', 'created', 'updated']
+    list_editable = ['price', 'stock', 'available', 'is_featured']
     prepopulated_fields = {'slug': ('name',)}
+    search_fields = ['name', 'slug']
 
+    # Этот виджет позволяет удобно выбирать несколько категорий для товара.
+    filter_horizontal = ('category',)
+
+
+# 4. Настройки сайта
 admin.site.register(SiteSettings, SingletonModelAdmin)

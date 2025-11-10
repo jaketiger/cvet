@@ -1,0 +1,8 @@
+<!-- shop/templates/shop/payment.html -->
+
+{% extends "base.html" %}
+{% block title %}Оплата{% endblock %}
+{% block content %}
+    <h1>Информация об оплате</h1>
+    <p>{{ settings.payment_text|linebreaksbr }}</p>
+{% endblock %}

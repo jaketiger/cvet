@@ -1,0 +1,8 @@
+<!-- shop/templates/shop/terms.html -->
+
+{% extends "base.html" %}
+{% block title %}Договор оферты{% endblock %}
+{% block content %}
+    <h1>Договор оферты</h1>
+    <p>{{ settings.terms_text|linebreaksbr }}</p>
+{% endblock %}

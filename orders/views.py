@@ -28,7 +28,6 @@ def order_create(request):
 
             if form.cleaned_data['delivery_option'] == 'delivery':
                 order.delivery_cost = site_settings.delivery_cost
-                # Обновляем профиль только если была доставка
                 profile.phone = form.cleaned_data['phone']
                 profile.address = form.cleaned_data['address']
                 profile.postal_code = form.cleaned_data['postal_code']
@@ -44,19 +43,19 @@ def order_create(request):
                                          price=item['price'], quantity=item['quantity'])
             cart.clear()
 
-            # --- Блок отправки email ---
-            subject = f'Подтверждение заказа #{order.id} - MegaCvet'
+            # --- ИЗМЕНЕНИЕ: Название магазина из админки ---
+            subject = f'Подтверждение заказа #{order.id} - {site_settings.shop_name}'
+
             message_body = []
             message_body.append(f'Здравствуйте, {order.first_name}!')
-            message_body.append(f'Вы успешно оформили заказ #{order.id}.\n')
+            message_body.append(f'Вы успешно оформили заказ #{order.id} в магазине {site_settings.shop_name}.\n')
             message_body.append('Состав вашего заказа:')
             for item in order.items.all():
                 message_body.append(f'- {item.product.name} ({item.quantity} шт.) - {item.get_cost()} руб.')
-
-            message_body.append(f'\nСтоимость товаров: {order.get_items_cost()} руб.')
+            total_items_cost = order.get_total_cost() - order.delivery_cost
+            message_body.append(f'\nСтоимость товаров: {total_items_cost} руб.')
             message_body.append(f'Стоимость доставки: {order.delivery_cost} руб.')
             message_body.append(f'Итого к оплате: {order.get_total_cost()} руб.\n')
-
             if order.delivery_option == 'delivery':
                 message_body.append('Адрес доставки:')
                 message_body.append(f'{order.postal_code}, {order.city}, {order.address}')
@@ -66,13 +65,10 @@ def order_create(request):
             message_body.append('Спасибо за покупку!')
             message = '\n'.join(message_body)
             send_mail(subject, message, settings.EMAIL_HOST_USER, [order.email], fail_silently=False)
-            # ---------------------------
 
             request.session['order_id'] = order.id
             return redirect('orders:order_created')
     else:
-        # --- БЛОК ELSE С ПРАВИЛЬНЫМИ ОТСТУПАМИ ---
-        # Этот код выполняется, когда пользователь просто открывает страницу
         initial_data = {
             'first_name': request.user.first_name,
             'last_name': request.user.last_name,

@@ -1,10 +1,12 @@
 <!-- templates/base.html -->
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}MegaCvet - Магазин цветов{% endblock %}</title>
+    <!-- ИЗМЕНЕНИЕ: Название сайта из админки -->
+    <title>{% block title %}{{ site_settings.shop_name }} - Магазин цветов{% endblock %}</title>
     <style>
         body {
             font-family: sans-serif;
@@ -21,11 +23,20 @@
             background-color: rgba(255, 255, 255, 0.95);
             border-radius: 8px;
             padding: 20px;
+            min-height: 90vh;
         }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
         .logo a { text-decoration: none; color: #333; font-size: 1.8em; font-weight: bold; }
         .user-navigation { font-size: 0.9em; display: flex; align-items: center; }
         .cart { margin-left: 20px; font-weight: bold; }
+
+        .category-nav { text-align: center; padding: 10px 0; background-color: #f8f8f8; border-radius: 5px; margin-bottom: 30px; }
+        .category-nav a { margin: 0 15px; text-decoration: none; color: #333; font-weight: bold; }
+        .category-nav a:hover { color: #e53935; }
+
+        .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; font-size: 0.9em; }
+        .footer-links a { margin: 0 10px; color: #555; text-decoration: none; }
+        .footer-links a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -33,14 +44,16 @@
     <div class="container">
         <header class="header">
             <div class="logo">
-                <a href="{% url 'shop:product_list' %}">MegaCvet</a>
+                <a href="{% url 'shop:home' %}" style="display: inline-flex; align-items: center; gap: 10px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
+                        <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+                    </svg>
+                    <!-- ИЗМЕНЕНИЕ: Название сайта из админки -->
+                    {{ site_settings.shop_name }}
+                </a>
             </div>
-
             <div class="user-navigation">
-
-                <!-- --- ССЫЛКА НА КОНТАКТЫ ДОБАВЛЕНА ЗДЕСЬ --- -->
-                <a href="{% url 'shop:contacts' %}" style="margin-right: 20px; text-decoration: none; color: #333;"><b>Контакты</b></a>
-
+                <!-- Ссылка на контакты отсюда убрана -->
                 {% if user.is_authenticated %}
                     <span>Привет, {{ user.first_name|default:user.username }}!</span>&nbsp;|&nbsp;
                     <a href="{% url 'shop:cabinet' %}">Личный кабинет</a>&nbsp;|&nbsp;
@@ -54,31 +67,37 @@
                     <a href="{% url 'login' %}">Войти</a>&nbsp;|&nbsp;
                     <a href="{% url 'register' %}">Регистрация</a>
                 {% endif %}
-
                 <span class="cart">
                     <a href="{% url 'cart:cart_detail' %}" style="text-decoration: none; color: #333; display: inline-flex; align-items: center;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16" style="margin-right: 8px;">
-                            <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
-                        </svg>
-
-                        {% with total_items=cart|length %}
-                            {% if total_items > 0 %}
-                                {{ total_items }} товар(а) - {{ cart.get_total_price }} руб.
-                            {% else %}
-                                Корзина пуста
-                            {% endif %}
-                        {% endwith %}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16" style="margin-right: 8px;"><path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>
+                        {% with total_items=cart|length %}{% if total_items > 0 %}{{ total_items }} товар(а) - {{ cart.get_total_price }} руб.{% else %}Корзина пуста{% endif %}{% endwith %}
                     </a>
                 </span>
             </div>
         </header>
 
+        <nav class="category-nav">
+            <a href="{% url 'shop:product_list_all' %}">Все товары</a>
+            {% for c in categories %}
+                <a href="{{ c.get_absolute_url }}">{{ c.name }}</a>
+            {% endfor %}
+        </nav>
+
         <main>
-            {% block content %}
-            <!-- Сюда будет вставляться уникальный контент каждой страницы -->
-            {% endblock %}
+            {% block content %}{% endblock %}
         </main>
+
     </div>
+
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="{% url 'shop:contacts' %}">Контакты</a>
+            <a href="{% url 'shop:about' %}">О нас</a>
+            <a href="{% url 'shop:payment' %}">Оплата</a>
+            <a href="{% url 'shop:terms' %}">Договор оферты</a>
+        </div>
+        <p style="margin-top: 10px;">&copy; {% now "Y" %} {{ site_settings.shop_name }}. Все права защищены.</p>
+    </footer>
 
 </body>
 </html>

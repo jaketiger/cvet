@@ -5,27 +5,41 @@
 
 {% block content %}
 <div class="container" style="max-width: 800px; margin: 2rem auto; text-align: center;">
-    <!-- ... (код заголовка и подтверждения) ... -->
+    <h1>Спасибо, {{ order.first_name }}!</h1>
+    <p class="lead">Ваш заказ <strong>#{{ order.id }}</strong> был успешно оформлен.</p>
+    <p>Мы отправили подтверждение на ваш email-адрес: <strong>{{ order.email }}</strong>.</p>
 
-    <div style="text-align: left; margin-top: 30px; ...">
+    <div style="text-align: left; margin-top: 30px; background-color: #f9f9f9; padding: 20px; border-radius: 5px;">
         <h3>Детали заказа:</h3>
 
-        <!-- ... (таблица с товарами) ... -->
+        <table style="width: 100%; margin-bottom: 20px;">
+            <!-- ... (содержимое таблицы с товарами) ... -->
+        </table>
 
-        <!-- --- ИСПРАВЛЕННЫЙ БЛОК ДЛЯ ИТОГОВЫХ СУММ --- -->
         <div style="text-align: right;">
-            <!-- Убираем сложный 'with', используем новый метод напрямую -->
-            <p>Стоимость товаров: {{ order.get_items_cost }} руб.</p>
+            {% with total_items_cost=order.get_total_cost|add:"-"|add:order.delivery_cost %}
+                <p>Стоимость товаров: {{ total_items_cost }} руб.</p>
+            {% endwith %}
             <p>Стоимость доставки: {{ order.delivery_cost }} руб.</p>
             <h4 style="margin-top: 10px;">Итого к оплате: {{ order.get_total_cost }} руб.</h4>
         </div>
-        <!-- ----------------------------------- -->
 
         <hr>
 
-        <!-- ... (блок с адресом доставки) ... -->
+        {% if order.delivery_option == 'delivery' %}
+            <h4>Адрес доставки</h4>
+            <p>
+                {{ order.postal_code }}, {{ order.city }}<br>
+                {{ order.address }}<br>
+                Телефон: {{ order.phone }}
+            </p>
+        {% else %}
+            <h4>Способ получения</h4>
+            <p>Самовывоз. Мы свяжемся с вами, когда заказ будет готов к выдаче.</p>
+        {% endif %}
     </div>
 
-    <a href="{% url 'shop:product_list' %}" style="display: inline-block; margin-top: 30px;">Вернуться в каталог</a>
+    <!-- --- ИСПРАВЛЕНИЕ ЗДЕСЬ --- -->
+    <a href="{% url 'shop:product_list_all' %}" style="display: inline-block; margin-top: 30px;">Вернуться в каталог</a>
 </div>
 {% endblock %}

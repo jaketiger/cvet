@@ -1,4 +1,5 @@
 <!-- shop/templates/shop/product_detail.html -->
+
 {% extends "base.html" %}
 {% load static %}
 
@@ -19,20 +20,19 @@
                 <p>{{ product.description|linebreaksbr }}</p>
             </div>
 
-            <!-- --- ИЗМЕНЕНИЕ ЗДЕСЬ --- -->
             <form action="{% url 'cart:cart_add' product.id %}" method="post">
                 {% csrf_token %}
-                <!-- Отображаем поле для выбора количества из формы -->
                 {{ cart_product_form.quantity.label_tag }}
                 {{ cart_product_form.quantity }}
                 <br>
                 <button type="submit" class="add-to-cart-btn">Добавить в корзину</button>
             </form>
-
         </div>
     </div>
 
-    <a href="{% url 'shop:product_list' %}" class="back-link">← Вернуться в каталог</a>
+    <!-- --- ИСПРАВЛЕНИЕ ЗДЕСЬ --- -->
+    <!-- Ссылка теперь ведет на 'product_list_all' -->
+    <a href="{% url 'shop:product_list_all' %}" class="back-link">← Вернуться в каталог</a>
 
     <style>
         .product-container { display: flex; gap: 40px; background-color: white; padding: 20px; border-radius: 8px; }

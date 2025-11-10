@@ -5,7 +5,6 @@ from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFill
 from django.urls import reverse
 from solo.models import SingletonModel
-
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -17,7 +16,7 @@ class Category(models.Model):
 
     class Meta:
         ordering = ['name']
-        indexes = [models.Index(fields=['name']),]
+        indexes = [models.Index(fields=['name']), ]
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
@@ -29,7 +28,11 @@ class Category(models.Model):
 
 
 class Product(models.Model):
-    category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE, verbose_name="Категория")
+    # --- ГЛАВНОЕ ИЗМЕНЕНИЕ: ТИП СВЯЗИ ---
+    # Теперь товар может быть в нескольких категориях.
+    # blank=True делает это поле необязательным для заполнения в админке.
+    category = models.ManyToManyField(Category, related_name='products', blank=True, verbose_name="Категории")
+
     name = models.CharField(max_length=200, verbose_name="Название товара")
     slug = models.SlugField(max_length=200, verbose_name="URL")
     image = models.ImageField(upload_to='products/%Y/%m/%d', blank=True, verbose_name="Изображение")
@@ -43,6 +46,8 @@ class Product(models.Model):
 
     stock = models.PositiveIntegerField(verbose_name="Остаток на складе")
     available = models.BooleanField(default=True, verbose_name="Доступен для заказа")
+    is_featured = models.BooleanField(default=False, verbose_name="Показывать на главной")
+
     created = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
 
@@ -59,27 +64,8 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
-    # --- ВОТ ВАЖНОЕ ИЗМЕНЕНИЕ ---
     def get_absolute_url(self):
         return reverse('shop:product_detail', args=[self.id, self.slug])
-
-
-# --- НОВАЯ МОДЕЛЬ ДЛЯ НАСТРОЕК САЙТА ---
-class SiteSettings(SingletonModel):
-    delivery_cost = models.DecimalField(
-        "Стоимость доставки по городу",
-        max_digits=10, decimal_places=2, default=500.00
-    )
-    pickup_address = models.TextField("Адрес для самовывоза", blank=True)
-    working_hours = models.CharField("График работы", max_length=200, blank=True)
-    contact_phone = models.CharField("Контактный телефон", max_length=50, blank=True)
-
-    class Meta:
-        verbose_name = "Настройки сайта"
-
-    def __str__(self):
-        return "Настройки сайта"
-
 
 
 class Profile(models.Model):
@@ -92,13 +78,37 @@ class Profile(models.Model):
     def __str__(self):
         return f'Профиль пользователя {self.user.username}'
 
+
+class SiteSettings(SingletonModel):
+    shop_name = models.CharField("Название магазина", max_length=100, default="MegaCvet")
+    delivery_cost = models.DecimalField("Стоимость доставки по городу", max_digits=10, decimal_places=2, default=500.00)
+    pickup_address = models.TextField("Адрес для самовывоза", blank=True)
+    working_hours = models.CharField("График работы", max_length=200, blank=True)
+    contact_phone = models.CharField("Контактный телефон", max_length=50, blank=True)
+    banner_image = models.ImageField("Изображение для баннера", upload_to='banners/', blank=True, null=True)
+    banner_title = models.CharField("Заголовок на баннере", max_length=200, blank=True)
+    banner_subtitle = models.CharField("Подзаголовок на баннере", max_length=300, blank=True)
+    banner_link = models.URLField("Ссылка для кнопки на баннере (URL)", blank=True)
+
+    # --- НОВЫЕ ПОЛЯ ДЛЯ ТЕКСТА СТАТИЧНЫХ СТРАНИЦ ---
+    about_text = models.TextField("Текст для страницы 'О нас'", blank=True)
+    payment_text = models.TextField("Текст для страницы 'Оплата'", blank=True)
+    terms_text = models.TextField("Текст для страницы 'Договор оферты'", blank=True)
+
+    class Meta:
+        verbose_name = "Настройки сайта"
+
+    def __str__(self):
+        return "Настройки сайта"
+
+
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
 
+
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     if hasattr(instance, 'profile'):
         instance.profile.save()
-
