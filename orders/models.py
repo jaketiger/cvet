@@ -3,9 +3,19 @@
 from django.db import models
 from shop.models import Product
 from django.contrib.auth.models import User
+from decimal import Decimal # <-- Добавляем импорт
 
 class Order(models.Model):
-    # ... (все поля модели остаются без изменений) ...
+    STATUS_CHOICES = [
+        ('created', 'Оформлен'),
+        ('processing', 'В обработке'),
+        ('shipped', 'Отправлен'),
+        ('delivered', 'Доставлен'),
+        ('cancelled', 'Отменен'),
+    ]
+    status = models.CharField(
+        "Статус заказа", max_length=20, choices=STATUS_CHOICES, default='created'
+    )
     DELIVERY_CHOICES = [('delivery', 'Доставка'), ('pickup', 'Самовывоз')]
     delivery_option = models.CharField("Способ получения", max_length=10, choices=DELIVERY_CHOICES, default='delivery')
     delivery_cost = models.DecimalField("Стоимость доставки", max_digits=10, decimal_places=2, default=0.00)
@@ -56,4 +66,10 @@ class OrderItem(models.Model):
         return str(self.id)
 
     def get_cost(self):
+        """
+        Надежный метод расчета стоимости.
+        Если цена или количество отсутствуют, возвращает 0.
+        """
+        if self.price is None or self.quantity is None:
+            return Decimal('0.00')
         return self.price * self.quantity

@@ -1,5 +1,4 @@
 # shop/urls.py
-
 from django.urls import path
 from . import views
 from django.views.generic import TemplateView
@@ -7,28 +6,20 @@ from django.views.generic import TemplateView
 app_name = 'shop'
 
 urlpatterns = [
-    # Главная страница (с баннером)
+    # Маршруты для каталога
     path('', views.home_page, name='home'),
-
-    # Страница со всеми товарами
     path('catalog/', views.product_list_all, name='product_list_all'),
-
-    # Страница конкретной категории
     path('category/<slug:category_slug>/', views.product_list_by_category, name='product_list_by_category'),
-
-    # Детальная страница товара
     path('product/<int:id>/<slug:slug>/', views.product_detail, name='product_detail'),
 
-    # Кабинет и контакты
+    # --- Маршруты для личного кабинета ---
     path('cabinet/', views.cabinet, name='cabinet'),
+    path('cabinet/profile/', views.profile_edit, name='profile_edit'),  # <-- НОВЫЙ МАРШРУТ
+
+    # --- Статические страницы ---
     path('contacts/', views.contact_page, name='contacts'),
+    path('page/<slug:slug>/', views.footer_page_detail, name='footer_page_detail'),
 
-#    path('about/', TemplateView.as_view(template_name="shop/about.html"), name='about'),
-#    path('payment/', TemplateView.as_view(template_name="shop/payment.html"), name='payment'),
-#    path('terms/', TemplateView.as_view(template_name="shop/terms.html"), name='terms'),
-# --- ОБНОВЛЕННЫЕ МАРШРУТЫ ДЛЯ СТАТИЧЕСКИХ СТРАНИЦ ---
-    path('about/', views.about_page, name='about'),
-    path('payment/', views.payment_page, name='payment'),
-    path('terms/', views.terms_page, name='terms'),
-
+    # --- AJAX URL ---
+    path('get-product-price/', views.get_product_price, name='get_product_price'),
 ]

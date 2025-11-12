@@ -1,0 +1,43 @@
+<!-- orders/templates/orders/email/admin_notification.html -->
+<h1 style="color: #333;">Новый заказ #{{ order.id }}</h1>
+<p>На сайте был оформлен новый заказ на сумму <strong>{{ order.get_total_cost }} руб.</strong></p>
+
+<hr>
+
+<h3>Данные клиента:</h3>
+<ul>
+    <li><strong>Имя:</strong> {{ order.first_name }} {{ order.last_name }}</li>
+    <li><strong>Email:</strong> {{ order.email }}</li>
+    <li><strong>Телефон:</strong> {{ order.phone }}</li>
+</ul>
+
+<!-- --- НОВЫЙ БЛОК ДЛЯ ДЕТАЛЕЙ ДОСТАВКИ --- -->
+<h3>Способ получения:</h3>
+{% if order.delivery_option == 'delivery' %}
+    <p style="font-weight: bold; color: #dc3545;">ДОСТАВКА</p>
+    <h4>Адрес:</h4>
+    <p>
+        {{ order.postal_code }}, {{ order.city }}<br>
+        {{ order.address }}
+    </p>
+{% else %}
+    <p style="font-weight: bold; color: #007bff;">САМОВЫВОЗ</p>
+{% endif %}
+<!-- --------------------------------------- -->
+
+<hr>
+
+<h3>Состав заказа:</h3>
+<ul>
+    {% for item in order.items.all %}
+        <li>{{ item.product.name }} - {{ item.quantity }} шт. ({{ item.get_cost }} руб.)</li>
+    {% endfor %}
+</ul>
+
+<hr>
+
+<p style="text-align: center;">
+    <a href="{{ admin_order_url }}" style="background-color: #28a745; color: white; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-size: 16px;">
+        <strong>Перейти к заказу в админ-панели</strong>
+    </a>
+</p>

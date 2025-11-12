@@ -1,26 +1,23 @@
-<!-- templates/registration/login.html -->
+<!-- templates/base.html -->
+
 {% extends "base.html" %}
-
 {% block title %}Вход в аккаунт{% endblock %}
-
 {% block content %}
 <div class="container" style="max-width: 500px; margin: 2rem auto;">
     <h1>Вход в аккаунт</h1>
     <p>Пожалуйста, используйте следующую форму для входа.</p>
 
     {% if form.errors %}
-        <p style="color: red; font-weight: bold;">Ваше имя пользователя и пароль не совпали. Пожалуйста, попробуйте еще раз.</p>
+        <p style="color: red; font-weight: bold;">Ваш Email и пароль не совпали. Пожалуйста, попробуйте еще раз.</p>
     {% endif %}
 
     <form action="{% url 'login' %}" method="post">
         {% csrf_token %}
-
-        <!-- form.as_p отрисует поля "Имя пользователя" и "Пароль" с абзацами -->
         {{ form.as_p }}
-
         <button type="submit" style="background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer;">Войти</button>
     </form>
 
-    <p style="margin-top: 15px;">Нет аккаунта? <a href="{% url 'register' %}">Зарегистрируйтесь!</a></p>
+    <p style="margin-top: 15px;"><a href="{% url 'password_reset' %}">Забыли пароль?</a></p>
+    <p>Нет аккаунта? <a href="{% url 'register' %}">Зарегистрируйтесь!</a></p>
 </div>
 {% endblock %}

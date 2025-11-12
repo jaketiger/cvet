@@ -1,0 +1,9 @@
+<!-- templates/admin/shop/sitesettings/change_form.html -->
+
+{% extends "admin/change_form.html" %}
+{% block submit_buttons_bottom %}
+    {{ block.super }}
+    <div class="submit-row">
+        <a href="{% url 'admin:site_backup' %}" class="button">Создать и скачать резервную копию</a>
+    </div>
+{% endblock %}

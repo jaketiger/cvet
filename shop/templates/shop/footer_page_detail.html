@@ -1,0 +1,10 @@
+<!-- shop/templates/shop/footer_page_detail.html -->
+
+{% extends "base.html" %}
+
+{% block title %}{{ page.get_page_title }}{% endblock %}
+
+{% block content %}
+    <h1>{{ page.get_page_title }}</h1>
+    <p>{{ page.content|linebreaksbr }}</p>
+{% endblock %}

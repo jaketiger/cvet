@@ -2,10 +2,15 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+from dotenv import load_dotenv  # <-- ДОБАВЬТЕ ЭТОТ ИМПОРТ
 
 
 def main():
     """Run administrative tasks."""
+    # --- ДОБАВЬТЕ ЭТУ СТРОЧКУ ---
+    # Загружаем переменные из .env файла в самом начале
+    load_dotenv()
+
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'megacvet_project.settings')
     try:
         from django.core.management import execute_from_command_line

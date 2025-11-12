@@ -1,21 +1,22 @@
 # orders/views.py
 
 from django.shortcuts import render, redirect
+from django.urls import reverse
 from .models import Order, OrderItem
 from .forms import OrderCreateForm
 from cart.cart import Cart
 from django.contrib.auth.decorators import login_required
 from shop.models import Profile, SiteSettings
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMultiAlternatives
 from decimal import Decimal
-
+from django.template.loader import render_to_string
 
 @login_required
 def order_create(request):
     cart = Cart(request)
     if len(cart) == 0:
-        return redirect('shop:product_list')
+        return redirect('shop:product_list_all')
 
     site_settings = SiteSettings.get_solo()
     profile, created = Profile.objects.get_or_create(user=request.user)
@@ -43,28 +44,17 @@ def order_create(request):
                                          price=item['price'], quantity=item['quantity'])
             cart.clear()
 
-            # --- ИЗМЕНЕНИЕ: Название магазина из админки ---
-            subject = f'Подтверждение заказа #{order.id} - {site_settings.shop_name}'
+            # --- ВОЗВРАЩАЕМ ПРЯМУЮ ОТПРАВКУ EMAIL ---
+            # 1. Отправляем письмо клиенту
+            send_order_confirmation_email(order)
 
-            message_body = []
-            message_body.append(f'Здравствуйте, {order.first_name}!')
-            message_body.append(f'Вы успешно оформили заказ #{order.id} в магазине {site_settings.shop_name}.\n')
-            message_body.append('Состав вашего заказа:')
-            for item in order.items.all():
-                message_body.append(f'- {item.product.name} ({item.quantity} шт.) - {item.get_cost()} руб.')
-            total_items_cost = order.get_total_cost() - order.delivery_cost
-            message_body.append(f'\nСтоимость товаров: {total_items_cost} руб.')
-            message_body.append(f'Стоимость доставки: {order.delivery_cost} руб.')
-            message_body.append(f'Итого к оплате: {order.get_total_cost()} руб.\n')
-            if order.delivery_option == 'delivery':
-                message_body.append('Адрес доставки:')
-                message_body.append(f'{order.postal_code}, {order.city}, {order.address}')
-            else:
-                message_body.append('Способ получения: Самовывоз.')
-            message_body.append(f'Телефон для связи: {order.phone}\n')
-            message_body.append('Спасибо за покупку!')
-            message = '\n'.join(message_body)
-            send_mail(subject, message, settings.EMAIL_HOST_USER, [order.email], fail_silently=False)
+            # 2. Отправляем уведомление администраторам
+            try:
+                if site_settings.admin_notification_emails:
+                    send_new_order_admin_notification(request, order)
+            except Exception as e:
+                print(f"Ошибка отправки уведомления админу: {e}")
+            # ------------------------------------
 
             request.session['order_id'] = order.id
             return redirect('orders:order_created')
@@ -90,14 +80,45 @@ def order_create(request):
 
 def order_created(request):
     order_id = request.session.get('order_id')
-
     if not order_id:
-        return redirect('shop:product_list')
-
+        return redirect('shop:product_list_all')
     try:
         order = Order.objects.get(id=order_id)
         if 'order_id' in request.session:
             del request.session['order_id']
         return render(request, 'orders/created.html', {'order': order})
     except Order.DoesNotExist:
-        return redirect('shop:product_list')
+        return redirect('shop:product_list_all')
+
+
+# --- ЭТИ ФУНКЦИИ ОСТАЮТСЯ, НО ТЕПЕРЬ ОНИ ВЫЗЫВАЮТСЯ НАПРЯМУЮ ---
+def send_order_confirmation_email(order):
+    site_settings = SiteSettings.get_solo()
+    subject = f'Подтверждение заказа #{order.id} - {site_settings.shop_name}'
+    html_content = render_to_string('orders/email/customer_confirmation.html', {'order': order, 'site_settings': site_settings})
+    text_content = f'Ваш заказ #{order.id} принят.'
+    msg = EmailMultiAlternatives(subject, text_content, settings.EMAIL_HOST_USER, [order.email])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
+
+def send_new_order_admin_notification(request, order):
+    site_settings = SiteSettings.get_solo()
+    recipient_list = [email.strip() for email in site_settings.admin_notification_emails.split(',') if email.strip()]
+    if not recipient_list:
+        return
+    subject = f'Новый заказ #{order.id} на сайте {site_settings.shop_name}'
+    admin_order_url = request.build_absolute_uri(reverse('admin:orders_order_change', args=[order.id]))
+    html_message = render_to_string('orders/email/admin_notification.html', {'order': order, 'admin_order_url': admin_order_url, 'site_settings': site_settings})
+    text_content = f"Новый заказ #{order.id}. Ссылка: {admin_order_url}"
+    msg = EmailMultiAlternatives(subject, text_content, settings.EMAIL_HOST_USER, recipient_list)
+    msg.attach_alternative(html_message, "text/html")
+    msg.send()
+
+def send_status_update_email(order):
+    site_settings = SiteSettings.get_solo()
+    subject = f'Статус вашего заказа #{order.id} изменен - {site_settings.shop_name}'
+    html_content = render_to_string('orders/email/status_update.html', {'order': order, 'site_settings': site_settings})
+    text_content = f'Статус вашего заказа #{order.id} изменен на "{order.get_status_display()}".'
+    msg = EmailMultiAlternatives(subject, text_content, settings.EMAIL_HOST_USER, [order.email])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send(fail_silently=False)

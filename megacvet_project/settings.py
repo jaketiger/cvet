@@ -33,12 +33,13 @@ DEBUG = True
 # Укажите IP-адрес вашего сервера и доменное имя
 # ALLOWED_HOSTS = ['your_server_ip', 'www.yourdomain.com', 'yourdomain.com']
 ALLOWED_HOSTS = ['109.120.142.26', '127.0.0.1', 'localhost']
-
+# CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000']
 
 # Application definition
 
 INSTALLED_APPS = [
     'solo',
+    'adminsortable2',
     'shop',  # Наше новое приложение
     'cart', # Наше новое приложение
     'orders', # Наше новое приложение
@@ -77,6 +78,7 @@ TEMPLATES = [
                 'cart.context_processors.cart',
                 'shop.context_processors.categories',
                 'shop.context_processors.site_settings',
+                'shop.context_processors.footer_pages', # <-- Добавьте эту строку
             ],
         },
     },
@@ -181,4 +183,6 @@ EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS') == 'True'
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER') # Ваш email (example@gmail.com)
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD') # Ваш 16-значный пароль приложения
+
+
 

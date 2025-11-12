@@ -1,0 +1,17 @@
+<!-- templates/admin/orders/order/change_form.html -->
+
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+
+{% block object-tools-items %}
+    <!-- Добавляем нашу кастомную кнопку -->
+    <li>
+        <!-- ИСПРАВЛЕНИЕ: Используем правильное имя URL 'order_notify_customer_full' -->
+        <a href="{% url 'admin:order_notify_customer_full' object_id %}" class="historylink">
+            {% translate 'Отправить полное подтверждение клиенту' %}
+        </a>
+    </li>
+
+    <!-- Выводим стандартные кнопки (например, "История") -->
+    {{ block.super }}
+{% endblock %}
