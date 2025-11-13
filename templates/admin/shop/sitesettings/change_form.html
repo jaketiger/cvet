@@ -1,9 +1,54 @@
 <!-- templates/admin/shop/sitesettings/change_form.html -->
 
 {% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+
+{# Переопределяем блок 'submit_buttons_bottom', чтобы добавить нашу кнопку и информацию #}
 {% block submit_buttons_bottom %}
+    {# Сначала выводим стандартные кнопки "Сохранить", "Удалить" и т.д. #}
     {{ block.super }}
+
+    {# Добавляем горизонтальную черту для разделения #}
+    <hr style="margin: 20px 0;">
+
+    {# ---- НАЧАЛО БЛОКА РЕЗЕРВНОГО КОПИРОВАНИЯ ---- #}
     <div class="submit-row">
-        <a href="{% url 'admin:site_backup' %}" class="button">Создать и скачать резервную копию</a>
+        {# Кнопка теперь ссылается на наш новый URL для скачивания #}
+        <a href="{% url 'admin:site_backup_download' %}" class="button">Создать и скачать резервную копию</a>
     </div>
+
+    <div class="help" style="padding: 15px; margin: 20px 0; border: 1px solid #ddd; background-color: #f9f9f9; border-radius: 4px;">
+
+        <h3 style="margin-top: 0; color: #c41c1c;">⚠️ Важная информация о резервном копировании</h3>
+
+        <p>
+            При нажатии на кнопку выше создается полная резервная копия <strong>базы данных</strong> (товары, заказы, пользователи, настройки) с помощью утилиты <code>pg_dump</code>.
+        </p>
+        <p>
+            <strong>Изображения (фото товаров, баннеры) в этот файл НЕ ВКЛЮЧАЮТСЯ.</strong>
+        </p>
+        <p>
+            Для полного восстановления сайта вам необходимо вручную скопировать с сервера папку с медиафайлами.
+        </p>
+        <p>
+            <strong>Путь к папке на сервере:</strong> <code style="font-weight: bold; background-color: #eee; padding: 2px 5px; border-radius: 3px;">{{ media_root_path }}</code>
+        </p>
+
+        <details style="margin-top: 15px; cursor: pointer;">
+            <summary style="font-weight: bold; color: #333;">Показать/скрыть инструкцию по восстановлению</summary>
+            <div style="margin-top: 10px; padding: 10px 0 0 20px; border-left: 3px solid #ccc;">
+                <h4>Пошаговый план восстановления из бэкапа <code>.dump</code>:</h4>
+                <ol>
+                    <li>Разверните чистый проект из GitHub и настройте <code>.env</code>.</li>
+                    <li>Создайте пустую базу данных в PostgreSQL. <strong>Миграции (migrate) применять НЕ НУЖНО!</strong></li>
+                    <li><strong>Скопируйте вашу сохраненную папку <code>media</code> на сервер</strong> по пути, указанному выше.</li>
+                    <li>Положите файл бэкапа <code>.dump</code> на сервер.</li>
+                    <li>Выполните в терминале команду для восстановления из файла: <br><code>pg_restore --clean --no-acl --no-owner -U &lt;user&gt; -d &lt;dbname&gt; &lt;backup_file.dump&gt;</code><br>
+                    <small>(Подставьте имя пользователя, имя базы и имя файла бэкапа)</small></li>
+                    <li>Перезапустите сервер.</li>
+                </ol>
+            </div>
+        </details>
+    </div>
+    {# ---- КОНЕЦ БЛОКА РЕЗЕРВНОГО КОПИРОВАНИЯ ---- #}
 {% endblock %}

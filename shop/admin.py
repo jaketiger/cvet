@@ -88,20 +88,27 @@ class FooterPageAdmin(SortableAdminMixin, admin.ModelAdmin):
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(SingletonModelAdmin):
+    # Указываем путь к вашему существующему шаблону. Имя менять не нужно.
     change_form_template = "admin/shop/sitesettings/change_form.html"
-
-# admin.site.register(SiteSettings, SiteSettingsAdmin)
-
-
 
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
-            path('backup/', self.admin_site.admin_view(self.backup_view), name='site_backup')
+            # Мы изменили URL, чтобы он был более понятным и не конфликтовал.
+            path('backup/download/', self.admin_site.admin_view(self.download_backup_view), name='site_backup_download')
         ]
         return custom_urls + urls
 
-    def backup_view(self, request):
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        # Эта функция будет вызываться при отображении страницы настроек.
+        # Мы добавляем наш путь к media в контекст, который будет доступен в шаблоне.
+        extra_context = extra_context or {}
+        extra_context['media_root_path'] = settings.MEDIA_ROOT
+        return super().change_view(request, object_id, form_url, extra_context=extra_context)
+
+    def download_backup_view(self, request):
+        # Вся ваша логика создания бэкапа pg_dump остается здесь.
+        # Она будет вызываться только при нажатии на кнопку.
         backup_dir = os.path.join(settings.BASE_DIR, 'backups')
         os.makedirs(backup_dir, exist_ok=True)
         backup_path = os.path.join(backup_dir, 'backup.dump')
@@ -129,6 +136,8 @@ class SiteSettingsAdmin(SingletonModelAdmin):
             if isinstance(e, subprocess.CalledProcessError):
                 error_message += f" | {e.stderr}"
             self.message_user(request, error_message, level='error')
-            return redirect("..")
+            # Редиректим на страницу настроек
+            return redirect(reverse('admin:shop_sitesettings_change', args=[SiteSettings.singleton_instance_id]))
 
+        # Возвращаем файл для скачивания
         return FileResponse(open(backup_path, 'rb'), as_attachment=True, filename='megacvet_backup.dump')
