@@ -1,6 +1,8 @@
 # shop/views.py
 
 from django.shortcuts import render, get_object_or_404, redirect
+from django.views.decorators.http import require_POST
+
 from .models import Category, Product, SiteSettings, FooterPage
 from django.contrib.auth.decorators import login_required
 from cart.forms import CartAddProductForm
@@ -8,6 +10,9 @@ from django.http import JsonResponse
 from django.contrib.admin.views.decorators import staff_member_required
 from users.forms import UserEditForm, ProfileEditForm
 from django.contrib import messages
+from orders.models import Order # <-- НОВЫЙ ИМПОРТ
+from cart.cart import Cart # <-- НОВЫЙ ИМПОРТ
+
 
 
 def home_page(request):
@@ -83,6 +88,44 @@ def contact_page(request):
 def footer_page_detail(request, slug):
     page = get_object_or_404(FooterPage, slug=slug)
     return render(request, 'shop/footer_page_detail.html', {'page': page})
+
+
+# --- НОВЫЕ VIEWS ДЛЯ УПРАВЛЕНИЯ ЗАКАЗАМИ ---
+@login_required
+def order_detail(request, order_id):
+    # Убеждаемся, что пользователь может смотреть только свои заказы
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    return render(request, 'shop/order_detail.html', {'order': order})
+
+
+@login_required
+@require_POST  # Разрешаем доступ только через POST-запрос для безопасности
+def cancel_order(request, order_id):
+    cart = Cart(request)
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    # Проверяем, можно ли отменить заказ
+    if order.can_be_cancelled:
+        # 1. Возвращаем товары в корзину
+        for item in order.items.all():
+            product = item.product
+            # Мы не можем просто добавить item, нужно получить объект Product
+            if product:
+                cart.add(product=product, quantity=item.quantity, update_quantity=True)
+
+        # 2. Меняем статус заказа на "Отменен"
+        order.status = 'cancelled'
+        order.save()
+
+        # 3. Отправляем уведомление админу (нужно создать эту функцию и шаблон)
+        # send_order_cancellation_admin_notification(order)
+
+        messages.success(request,
+                         f'Заказ #{order.id} был отменен. Товары возвращены в вашу корзину для редактирования.')
+    else:
+        messages.error(request, f'Этот заказ уже нельзя отменить.')
+
+    return redirect('shop:cabinet')
 
 
 @staff_member_required

@@ -1,4 +1,5 @@
 <!-- orders/templates/orders/created.html -->
+
 {% extends "base.html" %}
 
 {% block title %}Спасибо за ваш заказ!{% endblock %}
@@ -12,13 +13,32 @@
     <div style="text-align: left; margin-top: 30px; background-color: #f9f9f9; padding: 20px; border-radius: 5px;">
         <h3>Детали заказа:</h3>
 
-        <table style="width: 100%; margin-bottom: 20px;">
-            <!-- ... (содержимое таблицы с товарами) ... -->
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Товар</th>
+                    <th style="border: 1px solid #ddd; padding: 8px;">Количество</th>
+                    <th style="border: 1px solid #ddd; padding: 8px;">Цена</th>
+                </tr>
+            </thead>
+                <tbody>
+                {% for item in order.items.all %}
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{{ item.product.name }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">{{ item.quantity }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">{{ item.get_cost }} руб.</td>
+                    </tr>
+                {% endfor %}
+                    <tr style="font-weight: bold;">
+                        <!--  <td colspan="2" style="border: 1px solid #ddd; padding: 8px; text-align: right;">Итого:</td>  -->
+                        <!-- <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">{{ order.get_total_cost }} руб.</td>  -->
+                    </tr>
+                </tbody>
         </table>
 
         <div style="text-align: right;">
             {% with total_items_cost=order.get_total_cost|add:"-"|add:order.delivery_cost %}
-                <p>Стоимость товаров: {{ total_items_cost }} руб.</p>
+                <!--  <p>Стоимость товаров: {{ total_items_cost }} руб.</p> -->
             {% endwith %}
             <p>Стоимость доставки: {{ order.delivery_cost }} руб.</p>
             <h4 style="margin-top: 10px;">Итого к оплате: {{ order.get_total_cost }} руб.</h4>

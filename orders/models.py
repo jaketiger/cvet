@@ -9,6 +9,7 @@ class Order(models.Model):
     STATUS_CHOICES = [
         ('created', 'Оформлен'),
         ('processing', 'В обработке'),
+       # ('client_changed', 'Изменен клиентом'),
         ('shipped', 'Отправлен'),
         ('delivered', 'Доставлен'),
         ('cancelled', 'Отменен'),
@@ -40,16 +41,18 @@ class Order(models.Model):
     def __str__(self):
         return f'Заказ #{self.id}'
 
-    # --- НОВЫЙ МЕТОД ---
+        # --- НОВЫЙ МЕТОД ДЛЯ ПРОВЕРКИ ---
+
+    @property
+    def can_be_cancelled(self):
+        """Проверяет, можно ли отменить заказ."""
+        return self.status in ['created', 'processing']
+
     def get_items_cost(self):
-        """Возвращает стоимость всех товаров в заказе (БЕЗ доставки)."""
         return sum(item.get_cost() for item in self.items.all())
 
-    # --- ОБНОВЛЕННЫЙ МЕТОД ---
     def get_total_cost(self):
-        """Возвращает полную стоимость заказа (товары + доставка)."""
         return self.get_items_cost() + self.delivery_cost
-
 
 class OrderItem(models.Model):
     # ... (этот класс остается без изменений) ...

@@ -1,3 +1,5 @@
+<!-- shop/templates/shop/cabinet.html -->
+
 {% extends "base.html" %}
 {% load static %}
 
@@ -17,8 +19,7 @@
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
         <h1>Личный кабинет, {{ user.first_name|default:user.username }}!</h1>
-        <!-- Ссылка на новую страницу редактирования -->
-        <a href="{% url 'shop:profile_edit' %}" class="btn-primary">Редактировать профиль</a>
+        <a href="{% url 'shop:profile_edit' %}" class="btn btn-primary">Редактировать профиль</a>
     </div>
 
     <hr>
@@ -34,20 +35,38 @@
                         <th scope="col">Сумма</th>
                         <th scope="col">Статус</th>
                         <th scope="col">Статус оплаты</th>
+                        <th scope="col">Действия</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for order in orders %}
                         <tr>
-                            <td>{{ order.id }}</td>
+                            <td><a href="{% url 'shop:order_detail' order.id %}">{{ order.id }}</a></td>
                             <td>{{ order.created|date:"d.m.Y, H:i" }}</td>
                             <td>{{ order.get_total_cost }} руб.</td>
-                            <td>{{ order.get_status_display }}</td>
+                            <td>
+                                <!-- *** ИЗМЕНЕНИЕ ЗДЕСЬ *** -->
+                                <!-- Добавляем класс 'status-cancelled' если статус заказа 'cancelled' -->
+                                <span class="{% if order.status == 'cancelled' %}status-cancelled{% endif %}">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </td>
                             <td>
                                 {% if order.paid %}
                                     <span style="color: green;">Оплачен</span>
                                 {% else %}
                                     <span style="color: red;">Ожидает оплаты</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'shop:order_detail' order.id %}" class="btn btn-secondary">Просмотреть</a>
+                                {% if order.can_be_cancelled %}
+                                    <form action="{% url 'shop:cancel_order' order.id %}" method="post" style="display: inline; margin: 0; padding: 0;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Вы уверены, что хотите отменить заказ #{{ order.id }}?')">
+                                            Отменить
+                                        </button>
+                                    </form>
                                 {% endif %}
                             </td>
                         </tr>
@@ -57,7 +76,7 @@
         </div>
     {% else %}
         <p>У вас еще нет ни одного заказа.</p>
-        <a href="{% url "shop:product_list_all" %}" class="btn-primary">Перейти к покупкам</a>
+        <a href="{% url "shop:product_list_all" %}" class="btn btn-primary">Перейти к покупкам</a>
     {% endif %}
 </div>
 
@@ -65,6 +84,20 @@
     .messages { padding-left: 0; list-style: none; }
     .messages .success { color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb; padding: .75rem 1.25rem; margin-bottom: 1rem; border-radius: .25rem; }
     .messages .error { color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: .75rem 1.25rem; margin-bottom: 1rem; border-radius: .25rem; }
-    .btn-primary { padding: 10px 15px; text-decoration: none; border-radius: 5px; background-color: #007bff; color: white; }
+
+    /* --- СТИЛИ ДЛЯ КНОПОК --- */
+    .btn { display: inline-block; padding: 10px 15px; border: none; border-radius: 5px; text-decoration: none; color: white; font-size: 14px; font-family: inherit; cursor: pointer; text-align: center; margin: 2px; vertical-align: middle; }
+    .btn-primary { background-color: #007bff; }
+    .btn-primary:hover { background-color: #0056b3; }
+    .btn-danger { background-color: #dc3545; }
+    .btn-danger:hover { background-color: #c82333; }
+    .btn-secondary { background-color: #6c757d; }
+    .btn-secondary:hover { background-color: #5a6268; }
+
+    /* --- *** НОВЫЙ СТИЛЬ ДЛЯ СТАТУСА *** --- */
+    .status-cancelled {
+        color: #dc3545; /* Тот же красный цвет, что и у кнопки "Отменить" */
+        font-weight: bold;
+    }
 </style>
 {% endblock %}
