@@ -12,7 +12,7 @@ from users.forms import UserEditForm, ProfileEditForm
 from django.contrib import messages
 from orders.models import Order # <-- НОВЫЙ ИМПОРТ
 from cart.cart import Cart # <-- НОВЫЙ ИМПОРТ
-
+from orders.utils import send_cancellation_notification_to_admin # <-- НОВЫЙ ИМПОРТ
 
 
 def home_page(request):
@@ -119,6 +119,7 @@ def cancel_order(request, order_id):
 
         # 3. Отправляем уведомление админу (нужно создать эту функцию и шаблон)
         # send_order_cancellation_admin_notification(order)
+        send_cancellation_notification_to_admin(request, order)
 
         messages.success(request,
                          f'Заказ #{order.id} был отменен. Товары возвращены в вашу корзину для редактирования.')
