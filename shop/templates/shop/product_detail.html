@@ -20,18 +20,30 @@
                 <p>{{ product.description|linebreaksbr }}</p>
             </div>
 
-            <form action="{% url 'cart:cart_add' product.id %}" method="post">
-                {% csrf_token %}
-                {{ cart_product_form.quantity.label_tag }}
-                {{ cart_product_form.quantity }}
-                <br>
-                <button type="submit" class="add-to-cart-btn">Добавить в корзину</button>
-            </form>
+            {% if product.stock > 0 %}
+                <!-- ==================================================== -->
+                <!-- ИЗМЕНЕНИЕ ЗДЕСЬ: Убрали точное количество со склада -->
+                <!-- ==================================================== -->
+                <p class="stock-status in-stock">
+                    <strong>Наличие:</strong> В наличии
+                </p>
+                <form action="{% url 'cart:cart_add' product.id %}" method="post">
+                    {% csrf_token %}
+                    {{ cart_product_form.quantity.label_tag }}
+                    {{ cart_product_form.quantity }}
+                    <br>
+                    <button type="submit" class="add-to-cart-btn">Добавить в корзину</button>
+                </form>
+            {% else %}
+                <p class="stock-status out-of-stock">
+                    <strong>Наличие:</strong> Нет в наличии
+                </p>
+                <button class="add-to-cart-btn" disabled>Нет в наличии</button>
+            {% endif %}
+
         </div>
     </div>
 
-    <!-- --- ИСПРАВЛЕНИЕ ЗДЕСЬ --- -->
-    <!-- Ссылка теперь ведет на 'product_list_all' -->
     <a href="{% url 'shop:product_list_all' %}" class="back-link">← Вернуться в каталог</a>
 
     <style>
@@ -44,5 +56,14 @@
         .product-info .description { line-height: 1.6; }
         .add-to-cart-btn { display: inline-block; background-color: #4CAF50; color: white; padding: 15px 30px; text-align: center; text-decoration: none; font-size: 16px; border-radius: 8px; border: none; cursor: pointer; margin-top: 20px; }
         .back-link { display: block; margin-top: 30px; }
+
+        .stock-status { font-size: 1.1em; margin-bottom: 20px; }
+        .in-stock { color: #4CAF50; }
+        .out-of-stock { color: #e53935; }
+
+        .add-to-cart-btn:disabled {
+            background-color: #9E9E9E;
+            cursor: not-allowed;
+        }
     </style>
 {% endblock %}

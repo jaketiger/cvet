@@ -1,17 +1,19 @@
 # cart/forms.py
-
 from django import forms
 
-# Создаем список с вариантами количества от 1 до 20
-PRODUCT_QUANTITY_CHOICES = [(i, str(i)) for i in range(1, 21)]
-
 class CartAddProductForm(forms.Form):
-    # coerce=int преобразует выбранное значение в целое число
-    quantity = forms.TypedChoiceField(
-        choices=PRODUCT_QUANTITY_CHOICES,
-        coerce=int,
-        label='Количество'
+    # ИЗМЕНЕНИЕ: Заменяем TypedChoiceField на IntegerField
+    quantity = forms.IntegerField(
+        min_value=1,
+        max_value=999, # Вы можете установить любой разумный максимум или убрать его
+        label='Количество',
+        # Указываем, что в HTML это должно быть <input type="number">
+        # Также можно добавить стили для красоты
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'style': 'width: 40px; text-align: center;'
+        })
     )
-    # Это скрытое поле, которое говорит, нужно ли перезаписать количество (True)
-    # или просто добавить к существующему (False).
-    update = forms.BooleanField(required=False, initial=False, widget=forms.HiddenInput)
+    update = forms.BooleanField(required=False,
+                                initial=False,
+                                widget=forms.HiddenInput)

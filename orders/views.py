@@ -1,14 +1,18 @@
 # orders/views.py
 
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from decimal import Decimal
+from django_q.tasks import async_task
+
 from .models import Order, OrderItem
 from .forms import OrderCreateForm
 from cart.cart import Cart
-from django.contrib.auth.decorators import login_required
-from shop.models import Profile, SiteSettings
-from decimal import Decimal
-from django_q.tasks import async_task # <-- ИМПОРТИРУЕМ ASYNC_TASK
+from shop.models import Profile, SiteSettings, Product
 
+
+@transaction.atomic
 @login_required
 def order_create(request):
     cart = Cart(request)
@@ -21,6 +25,22 @@ def order_create(request):
     if request.method == 'POST':
         form = OrderCreateForm(request.POST)
         if form.is_valid():
+
+            # Сначала проверяем наличие всех товаров на складе перед созданием заказа
+            for item in cart:
+                product = item['product']
+                if product.stock < item['quantity']:
+                    # Если какого-то товара не хватает, прерываем заказ и выводим ошибку
+                    error_message = f"Извините, товара '{product.name}' на складе осталось только {product.stock} шт. Пожалуйста, измените количество в корзине."
+                    form.add_error(None, error_message)
+                    return render(request, 'orders/create.html', {
+                        'cart': cart,
+                        'form': form,
+                        'delivery_cost_js': site_settings.delivery_cost,
+                        'cart_total_js': cart.get_total_price()
+                    })
+
+            # Если проверка прошла успешно, создаем заказ
             order = form.save(commit=False)
             order.user = request.user
 
@@ -36,19 +56,30 @@ def order_create(request):
 
             order.save()
 
+            # Создаем список товаров для массового обновления остатков
+            products_to_update = []
             for item in cart:
-                OrderItem.objects.create(order=order, product=item['product'],
-                                         price=item['price'], quantity=item['quantity'])
+                product = item['product']
+                # Уменьшаем количество товара
+                product.stock -= item['quantity']
+                products_to_update.append(product)
+
+                OrderItem.objects.create(order=order,
+                                         product=product,
+                                         price=item['price'],
+                                         quantity=item['quantity'])
+
+            # Массово обновляем остатки всех товаров одним запросом к БД
+            Product.objects.bulk_update(products_to_update, ['stock'])
+
             cart.clear()
 
-            # --- ИЗМЕНЕНИЕ: СТАВИМ ЗАДАЧУ В ОЧЕРЕДЬ ВМЕСТО ПРЯМОЙ ОТПРАВКИ ---
             base_url = f"{request.scheme}://{request.get_host()}"
             async_task(
-                'orders.utils.send_order_creation_emails_task', # Путь к нашей новой функции-задаче
+                'orders.utils.send_order_creation_emails_task',
                 order_id=order.id,
                 base_url=base_url
             )
-            # ---------------------------------------------------------------
 
             request.session['order_id'] = order.id
             return redirect('orders:order_created')
@@ -83,5 +114,3 @@ def order_created(request):
         return render(request, 'orders/created.html', {'order': order})
     except Order.DoesNotExist:
         return redirect('shop:product_list_all')
-
-# Все функции для отправки email были удалены отсюда и перенесены в utils.py

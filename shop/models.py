@@ -89,7 +89,6 @@ class SiteSettings(SingletonModel):
         "Email для уведомлений о заказах", blank=True,
         help_text="Введите email-адреса через запятую, на которые будут приходить уведомления о новых заказах."
     )
-    # --- НОВОЕ ПОЛЕ ДЛЯ ФОНА САЙТА ---
     background_image = models.ImageField(
         "Фоновое изображение сайта",
         upload_to='backgrounds/',
@@ -103,16 +102,11 @@ class SiteSettings(SingletonModel):
     def __str__(self):
         return "Настройки сайта"
 
-# --- НОВАЯ ЕДИНАЯ МОДЕЛЬ ДЛЯ СТРАНИЦ В ФУТЕРЕ ---
-class FooterPage(models.Model):
-    # Это поле будет для короткого названия в футере
-    title = models.CharField("Название ссылки", max_length=50)
 
-    # --- НОВОЕ ПОЛЕ ---
-    # Это поле для полного заголовка на самой странице
+class FooterPage(models.Model):
+    title = models.CharField("Название ссылки", max_length=50)
     page_title = models.CharField("Заголовок на странице", max_length=200, blank=True,
                                   help_text="Если оставить пустым, будет использовано название ссылки")
-
     slug = models.SlugField("URL-адрес", unique=True,
                             help_text="Только английские буквы, цифры и дефисы. Например, 'about-us'")
     content = models.TextField("Содержимое страницы", blank=True)
@@ -130,7 +124,6 @@ class FooterPage(models.Model):
         return reverse('shop:footer_page_detail', args=[self.slug])
 
     def get_page_title(self):
-        """Возвращает полный заголовок, или короткий, если полный не задан."""
         return self.page_title or self.title
 
 

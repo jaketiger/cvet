@@ -8,7 +8,6 @@
 <div class="container" style="padding-top: 2rem;">
     <h1>Ваша корзина</h1>
 
-    <!-- Проверяем, есть ли что-то в корзине -->
     {% if cart %}
         <table class="cart-table">
             <thead>
@@ -23,7 +22,8 @@
             <tbody>
                 {% for item in cart %}
                     {% with product=item.product %}
-                        <tr>
+                        <!-- ИЗМЕНЕНИЕ: Добавляем класс 'table-danger', если товара не хватает -->
+                        <tr {% if not item.is_stock_sufficient %}class="table-danger"{% endif %}>
                             <td>
                                 <a href="{{ product.get_absolute_url }}">
                                     {% if product.image_thumbnail %}
@@ -39,6 +39,13 @@
                                     <button type="submit">Обновить</button>
                                     {% csrf_token %}
                                 </form>
+
+                                <!-- ИЗМЕНЕНИЕ: Показываем сообщение об ошибке, если нужно -->
+                                {% if not item.is_stock_sufficient %}
+                                    <div class="stock-error">
+                                        Выбранное количество недоступно.<br>Пожалуйста, уменьшите его.
+                                    </div>
+                                {% endif %}
                             </td>
                             <td>{{ item.price }} руб.</td>
                             <td>{{ item.total_price }} руб.</td>
@@ -62,17 +69,24 @@
             {% endfor %}
         </div>
 
-        <p style="text-align: right; margin-top: 20px;">
-            <!-- ИСПРАВЛЕННАЯ ССЫЛКА -->
+        <div style="text-align: right; margin-top: 20px;">
             <a href="{% url 'shop:product_list_all' %}" class="btn-secondary">Продолжить покупки</a>
-            <a href="{% url 'orders:order_create' %}" class="btn-primary">Оформить заказ</a>
-        </p>
+
+            <!-- ИЗМЕНЕНИЕ: Делаем кнопку оформления заказа условной -->
+            {% if is_checkout_possible %}
+                <a href="{% url 'orders:order_create' %}" class="btn-primary">Оформить заказ</a>
+            {% else %}
+                <div class="checkout-error">
+                    Невозможно оформить заказ, пока не будет исправлено количество.
+                </div>
+                <button class="btn-primary" disabled>Оформить заказ</button>
+            {% endif %}
+        </div>
 
     {% else %}
-        <!-- Этот блок показывается, если корзина пуста -->
         <p>Ваша корзина пуста.</p>
         <a href="{% url 'shop:product_list_all' %}">Начать покупки</a>
-    {% endif %} <!-- <-- ВОТ НЕДОСТАЮЩИЙ ТЕГ -->
+    {% endif %}
 </div>
 
 <style>
@@ -83,8 +97,14 @@
     .total { font-weight: bold; font-size: 1.2em; }
     .remove-actions { margin-top: 20px; padding: 15px; background-color: #f8f8f8; border-radius: 5px; }
     .remove-btn { background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
-    .btn-secondary, .btn-primary { padding: 10px 15px; text-decoration: none; border-radius: 5px; }
+    .btn-secondary, .btn-primary { padding: 10px 15px; text-decoration: none; border-radius: 5px; display: inline-block; }
     .btn-secondary { background-color: #6c757d; color: white; }
-    .btn-primary { background-color: #007bff; color: white; }
+    .btn-primary { background-color: #007bff; color: white; border: none; font-size: inherit; }
+
+    /* НОВЫЕ СТИЛИ ДЛЯ ОТОБРАЖЕНИЯ ОШИБОК */
+    .table-danger { background-color: #f8d7da !important; }
+    .stock-error { color: #721c24; margin-top: 10px; font-size: 0.9em; }
+    .checkout-error { color: #721c24; margin-bottom: 5px; font-size: 0.9em; }
+    .btn-primary:disabled { background-color: #ccc; cursor: not-allowed; }
 </style>
 {% endblock %}
