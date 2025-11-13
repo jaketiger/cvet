@@ -3,11 +3,9 @@
 from django.contrib import admin, messages
 from django import forms
 from .models import Order, OrderItem
-from django.utils.safestring import mark_safe
 from django.urls import reverse, path
 from django.shortcuts import redirect
-# Импортируем обе функции для отправки писем из views
-from .views import send_order_confirmation_email, send_status_update_email
+from django_q.tasks import async_task  # <-- ИЗМЕНЕНИЕ: Импортируем async_task
 
 
 class OrderItemForm(forms.ModelForm):
@@ -77,23 +75,19 @@ class OrderAdmin(admin.ModelAdmin):
 
     @admin.action(description='Отправить уведомление о статусе выбранным клиентам')
     def send_notification_to_selected(self, request, queryset):
-        count = 0
+        # --- ИЗМЕНЕНИЕ: Ставим задачи в очередь вместо прямого вызова ---
         for order in queryset:
-            try:
-                # Действие отправляет короткое уведомление о статусе
-                send_status_update_email(order)
-                count += 1
-            except Exception as e:
-                self.message_user(request, f"Ошибка при отправке уведомления для заказа #{order.id}: {e}",
-                                  messages.ERROR)
-        if count > 0:
-            self.message_user(request, f"Уведомления о статусе были успешно отправлены для {count} заказов.")
+            async_task('orders.utils.send_status_update_email_task', order_id=order.id)
+
+        # Сообщаем пользователю, что задачи были поставлены в очередь
+        self.message_user(request,
+                          f"Задачи на отправку уведомлений для {queryset.count()} заказов были поставлены в очередь.")
+        # -----------------------------------------------------------------
 
     # 4. Кастомные URL'ы и методы для кнопки
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
-            # URL для кнопки "Отправить ПОЛНОЕ подтверждение"
             path('<path:object_id>/notify/', self.admin_site.admin_view(self.notify_customer_full),
                  name='order_notify_customer_full')
         ]
@@ -102,12 +96,11 @@ class OrderAdmin(admin.ModelAdmin):
     def notify_customer_full(self, request, object_id):
         order = self.get_object(request, object_id)
         if order:
-            try:
-                # Кнопка отправляет ПОЛНОЕ подтверждение заказа
-                send_order_confirmation_email(order)
-                self.message_user(request, "Полное подтверждение заказа успешно отправлено клиенту.", messages.SUCCESS)
-            except Exception as e:
-                self.message_user(request, f"Ошибка при отправке уведомления: {e}", messages.ERROR)
+            # --- ИЗМЕНЕНИЕ: Ставим задачу в очередь вместо прямого вызова ---
+            async_task('orders.utils.send_order_confirmation_email_task', order_id=object_id)
+            self.message_user(request, "Задача на отправку подтверждения заказа поставлена в очередь.",
+                              messages.SUCCESS)
+            # -----------------------------------------------------------------
         return redirect(reverse('admin:orders_order_change', args=[object_id]))
 
     # Метод для автозаполнения цены

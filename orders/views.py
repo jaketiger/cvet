@@ -1,16 +1,13 @@
 # orders/views.py
 
 from django.shortcuts import render, redirect
-from django.urls import reverse
 from .models import Order, OrderItem
 from .forms import OrderCreateForm
 from cart.cart import Cart
 from django.contrib.auth.decorators import login_required
 from shop.models import Profile, SiteSettings
-from django.conf import settings
-from django.core.mail import send_mail, EmailMultiAlternatives
 from decimal import Decimal
-from django.template.loader import render_to_string
+from django_q.tasks import async_task # <-- ИМПОРТИРУЕМ ASYNC_TASK
 
 @login_required
 def order_create(request):
@@ -44,17 +41,14 @@ def order_create(request):
                                          price=item['price'], quantity=item['quantity'])
             cart.clear()
 
-            # --- ВОЗВРАЩАЕМ ПРЯМУЮ ОТПРАВКУ EMAIL ---
-            # 1. Отправляем письмо клиенту
-            send_order_confirmation_email(order)
-
-            # 2. Отправляем уведомление администраторам
-            try:
-                if site_settings.admin_notification_emails:
-                    send_new_order_admin_notification(request, order)
-            except Exception as e:
-                print(f"Ошибка отправки уведомления админу: {e}")
-            # ------------------------------------
+            # --- ИЗМЕНЕНИЕ: СТАВИМ ЗАДАЧУ В ОЧЕРЕДЬ ВМЕСТО ПРЯМОЙ ОТПРАВКИ ---
+            base_url = f"{request.scheme}://{request.get_host()}"
+            async_task(
+                'orders.utils.send_order_creation_emails_task', # Путь к нашей новой функции-задаче
+                order_id=order.id,
+                base_url=base_url
+            )
+            # ---------------------------------------------------------------
 
             request.session['order_id'] = order.id
             return redirect('orders:order_created')
@@ -90,35 +84,4 @@ def order_created(request):
     except Order.DoesNotExist:
         return redirect('shop:product_list_all')
 
-
-# --- ЭТИ ФУНКЦИИ ОСТАЮТСЯ, НО ТЕПЕРЬ ОНИ ВЫЗЫВАЮТСЯ НАПРЯМУЮ ---
-def send_order_confirmation_email(order):
-    site_settings = SiteSettings.get_solo()
-    subject = f'Подтверждение заказа #{order.id} - {site_settings.shop_name}'
-    html_content = render_to_string('orders/email/customer_confirmation.html', {'order': order, 'site_settings': site_settings})
-    text_content = f'Ваш заказ #{order.id} принят.'
-    msg = EmailMultiAlternatives(subject, text_content, settings.EMAIL_HOST_USER, [order.email])
-    msg.attach_alternative(html_content, "text/html")
-    msg.send()
-
-def send_new_order_admin_notification(request, order):
-    site_settings = SiteSettings.get_solo()
-    recipient_list = [email.strip() for email in site_settings.admin_notification_emails.split(',') if email.strip()]
-    if not recipient_list:
-        return
-    subject = f'Новый заказ #{order.id} на сайте {site_settings.shop_name}'
-    admin_order_url = request.build_absolute_uri(reverse('admin:orders_order_change', args=[order.id]))
-    html_message = render_to_string('orders/email/admin_notification.html', {'order': order, 'admin_order_url': admin_order_url, 'site_settings': site_settings})
-    text_content = f"Новый заказ #{order.id}. Ссылка: {admin_order_url}"
-    msg = EmailMultiAlternatives(subject, text_content, settings.EMAIL_HOST_USER, recipient_list)
-    msg.attach_alternative(html_message, "text/html")
-    msg.send()
-
-def send_status_update_email(order):
-    site_settings = SiteSettings.get_solo()
-    subject = f'Статус вашего заказа #{order.id} изменен - {site_settings.shop_name}'
-    html_content = render_to_string('orders/email/status_update.html', {'order': order, 'site_settings': site_settings})
-    text_content = f'Статус вашего заказа #{order.id} изменен на "{order.get_status_display()}".'
-    msg = EmailMultiAlternatives(subject, text_content, settings.EMAIL_HOST_USER, [order.email])
-    msg.attach_alternative(html_content, "text/html")
-    msg.send(fail_silently=False)
+# Все функции для отправки email были удалены отсюда и перенесены в utils.py
