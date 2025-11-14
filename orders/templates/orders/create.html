@@ -4,87 +4,123 @@
 {% block title %}Оформление заказа{% endblock %}
 
 {% block content %}
-<div class="container" style="max-width: 800px; margin: 2rem auto;">
+<div class="checkout-container">
     <h1>Оформление заказа</h1>
 
+    <!-- Блок информации о заказе -->
     <div class="order-info">
         <h3>Ваш заказ</h3>
         <ul>
             {% for item in cart %}
                 <li>
-                    {{ item.quantity }}x {{ item.product.name }}
-                    <span>{{ item.total_price }} руб.</span>
+                    <span class="item-name">{{ item.quantity }}x {{ item.product.name }}</span>
+                    <span class="item-price">{{ item.total_price }} руб.</span>
                 </li>
             {% endfor %}
         </ul>
-        <p><strong>Стоимость товаров: {{ cart.get_total_price }} руб.</strong></p>
+        <div class="order-total">
+            Стоимость товаров: <span>{{ cart.get_total_price }} руб.</span>
+        </div>
     </div>
 
     <form method="post" class="order-form">
         {% csrf_token %}
 
-        <!-- Блок 1: Выбор способа получения -->
-        <div id="delivery-options" class="form-group">
-            <label>{{ form.delivery_option.label }}</label>
-            <div class="radio-option">
-                <input type="radio" name="delivery_option" value="delivery" id="id_delivery_option_0" {% if form.delivery_option.value == 'delivery' or not form.delivery_option.value %}checked{% endif %}>
-                <label for="id_delivery_option_0">Доставка по городу (+{{ delivery_cost_js }} руб.)</label>
-            </div>
-            <div class="radio-option">
-                <input type="radio" name="delivery_option" value="pickup" id="id_delivery_option_1" {% if form.delivery_option.value == 'pickup' %}checked{% endif %}>
-                <label for="id_delivery_option_1">Самовывоз (бесплатно)</label>
+        <!-- Блок 1: Способ получения -->
+        <div class="section-block">
+            <h3>Способ получения</h3>
+            <div class="delivery-options">
+                <label class="radio-card">
+                    <input type="radio" name="delivery_option" value="delivery" id="id_delivery_option_0" {% if form.delivery_option.value == 'delivery' or not form.delivery_option.value %}checked{% endif %}>
+                    <span class="radio-label">
+                        <span class="radio-title">Доставка по городу</span>
+                        <span class="radio-desc">+{{ delivery_cost_js }} руб.</span>
+                    </span>
+                </label>
+                <label class="radio-card">
+                    <input type="radio" name="delivery_option" value="pickup" id="id_delivery_option_1" {% if form.delivery_option.value == 'pickup' %}checked{% endif %}>
+                    <span class="radio-label">
+                        <span class="radio-title">Самовывоз</span>
+                        <span class="radio-desc">Бесплатно</span>
+                    </span>
+                </label>
             </div>
         </div>
-        <hr>
 
-        <!-- Блок 2: Контактная информация (видна всегда) -->
-        <h3>Контактные данные</h3>
-        <div class="form-row">
-            <div class="form-group">{{ form.first_name.label_tag }} {{ form.first_name }}</div>
-            <div class="form-group">{{ form.last_name.label_tag }} {{ form.last_name }}</div>
-        </div>
-        <div class="form-group">{{ form.email.label_tag }} {{ form.email }}</div>
-        <div class="form-group">{{ form.phone.label_tag }} {{ form.phone }}</div>
-
-        <!-- Блок 3: Адрес доставки (будет скрываться) -->
-        <div id="delivery-address-fields">
-            <hr>
-            <h3>Адрес доставки</h3>
-            <div class="form-group">{{ form.address.label_tag }} {{ form.address }}</div>
+        <!-- Блок 2: Контактные данные -->
+        <div class="section-block">
+            <h3>Контактные данные</h3>
             <div class="form-row">
-                <div class="form-group">{{ form.postal_code.label_tag }} {{ form.postal_code }}</div>
-                <div class="form-group">{{ form.city.label_tag }} {{ form.city }}</div>
+                <div class="form-group half-width">
+                    <label for="{{ form.first_name.id_for_label }}">Имя</label>
+                    {{ form.first_name }}
+                </div>
+                <div class="form-group half-width">
+                    <label for="{{ form.last_name.id_for_label }}">Фамилия</label>
+                    {{ form.last_name }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="{{ form.email.id_for_label }}">Email</label>
+                {{ form.email }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.phone.id_for_label }}">Телефон</label>
+                {{ form.phone }}
             </div>
         </div>
 
-        <!-- Блок 4: Информация о самовывозе (будет показываться) -->
-        <div id="pickup-info" style="display: none; background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin-top: 15px;">
-            <h3>Самовывоз</h3>
-            <p>Вы сможете забрать ваш заказ после подтверждения. Оплата производится при получении.</p>
-            <p>Наш адрес и график работы можно посмотреть в разделе <a href="{% url 'shop:contacts' %}" target="_blank">Контакты</a>.</p>
+        <!-- Блок 3: Адрес доставки (скрываемый) -->
+        <div id="delivery-address-fields" class="section-block">
+            <h3>Адрес доставки</h3>
+            <div class="form-group">
+                <label for="{{ form.address.id_for_label }}">Улица, дом, квартира</label>
+                {{ form.address }}
+            </div>
+            <div class="form-row">
+                <div class="form-group half-width">
+                    <label for="{{ form.postal_code.id_for_label }}">Индекс</label>
+                    {{ form.postal_code }}
+                </div>
+                <div class="form-group half-width">
+                    <label for="{{ form.city.id_for_label }}">Город</label>
+                    {{ form.city }}
+                </div>
+            </div>
         </div>
 
-        <!-- Блок 5: Итоговая стоимость и кнопка -->
-        <div id="delivery-cost-summary" style="text-align: right; margin-top: 20px;">
-            Стоимость доставки: <span id="delivery-cost-display"></span> руб.
+        <!-- Блок 4: Инфо о самовывозе (скрываемый) -->
+        <div id="pickup-info" class="info-box" style="display: none;">
+            <h4>📍 Самовывоз</h4>
+            <p>Вы сможете забрать заказ в нашем магазине после подтверждения менеджером.</p>
+            <p>Оплата производится на месте.</p>
+            <a href="{% url 'shop:contacts' %}" target="_blank" class="info-link">Посмотреть адрес и график работы →</a>
         </div>
-        <h3 style="text-align: right; margin-top: 10px;">Итого к оплате: <span id="total-cost-display"></span> руб.</h3>
-        <div style="text-align: right; margin-top: 20px;">
-            <button type="submit" class="btn-submit">Оформить заказ</button>
+
+        <!-- Итоговая сумма и кнопка -->
+        <div class="checkout-summary">
+            <div id="delivery-cost-summary" class="summary-row">
+                <span>Доставка:</span>
+                <span id="delivery-cost-display">0.00</span> руб.
+            </div>
+            <div class="summary-row total">
+                <span>Итого к оплате:</span>
+                <span><span id="total-cost-display"></span> руб.</span>
+            </div>
+
+            <button type="submit" class="btn-submit">Подтвердить заказ</button>
         </div>
     </form>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // --- ИЗМЕНЕНИЙ В ЭТИХ ПЕРЕМЕННЫХ НЕТ ---
+    // Получаем данные из шаблона, заменяя запятую на точку для JS
     const deliveryCost = parseFloat("{{ delivery_cost_js|stringformat:'f' }}".replace(',', '.'));
     const cartTotal = parseFloat("{{ cart_total_js|stringformat:'f' }}".replace(',', '.'));
+
     const deliveryOptionRadios = document.querySelectorAll('input[name="delivery_option"]');
-
-    // --- ИЗМЕНЕНИЕ: ТЕПЕРЬ МЫ НАХОДИМ НОВЫЙ БЛОК ---
     const deliveryAddressFields = document.getElementById('delivery-address-fields');
-
     const pickupInfo = document.getElementById('pickup-info');
     const totalCostDisplay = document.getElementById('total-cost-display');
     const deliveryCostDisplay = document.getElementById('delivery-cost-display');
@@ -93,27 +129,138 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateOrderForm() {
         const selectedOption = document.querySelector('input[name="delivery_option"]:checked').value;
 
-        // --- ИЗМЕНЕНИЕ В ЛОГИКЕ ---
         if (selectedOption === 'delivery') {
-            deliveryAddressFields.style.display = 'block'; // Показываем адрес
+            deliveryAddressFields.style.display = 'block';
             pickupInfo.style.display = 'none';
-            deliveryCostSummary.style.display = 'block';
+            deliveryCostSummary.style.display = 'flex'; // Flex для выравнивания
+
             deliveryCostDisplay.textContent = deliveryCost.toFixed(2);
             totalCostDisplay.textContent = (cartTotal + deliveryCost).toFixed(2);
-        } else { // pickup
-            deliveryAddressFields.style.display = 'none'; // Скрываем ТОЛЬКО адрес
+
+            // Делаем поля адреса обязательными
+            document.getElementById('{{ form.address.id_for_label }}').required = true;
+        } else {
+            deliveryAddressFields.style.display = 'none';
             pickupInfo.style.display = 'block';
             deliveryCostSummary.style.display = 'none';
+
             totalCostDisplay.textContent = cartTotal.toFixed(2);
+
+            // Убираем обязательность полей адреса при самовывозе
+            document.getElementById('{{ form.address.id_for_label }}').required = false;
         }
     }
 
     deliveryOptionRadios.forEach(radio => radio.addEventListener('change', updateOrderForm));
+
+    // Запуск при загрузке
     updateOrderForm();
 });
 </script>
 
 <style>
-    /* ... ваши стили для формы ... */
+    /* --- Основной контейнер --- */
+    .checkout-container {
+        max-width: 800px;
+        margin: 0 auto;
+        font-family: var(--body-font-family);
+        color: var(--main-text-color);
+    }
+
+    h1 { text-align: center; margin-bottom: 30px; }
+    h3 { margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; font-family: var(--heading-font-family); }
+
+    /* --- Информация о заказе --- */
+    .order-info {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        border: 1px solid #eee;
+    }
+    .order-info ul { list-style: none; padding: 0; margin: 0; }
+    .order-info li { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95em; }
+    .order-total { text-align: right; font-size: 1.1em; font-weight: bold; margin-top: 15px; padding-top: 10px; border-top: 1px dashed #ccc; }
+
+    /* --- Блоки формы --- */
+    .section-block { margin-bottom: 30px; }
+
+    /* --- Поля ввода --- */
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9em; }
+
+    /* Стилизация инпутов, чтобы они были одинаковыми */
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group input[type="tel"] {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 16px;
+        box-sizing: border-box; /* Важно: включает padding в ширину */
+        font-family: var(--body-font-family);
+        transition: border-color 0.3s;
+    }
+    .form-group input:focus { border-color: var(--accent-color); outline: none; }
+
+    /* --- Выравнивание в строку (Имя/Фамилия) --- */
+    .form-row { display: flex; gap: 20px; }
+    .half-width { flex: 1; } /* Каждое поле занимает 50% минус отступ */
+
+    /* --- Радио кнопки (выбор доставки) --- */
+    .delivery-options { display: flex; gap: 15px; flex-wrap: wrap; }
+    .radio-card {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-width: 250px;
+    }
+    .radio-card:hover { border-color: var(--accent-color); background-color: #fffdfd; }
+    .radio-card input { margin-right: 15px; accent-color: var(--accent-color); transform: scale(1.2); }
+    .radio-label { display: flex; flex-direction: column; }
+    .radio-title { font-weight: bold; font-size: 1.05em; }
+    .radio-desc { font-size: 0.9em; color: #666; }
+
+    /* --- Инфо-бокс --- */
+    .info-box { background-color: #e3f2fd; padding: 20px; border-radius: 8px; color: #0d47a1; }
+    .info-link { color: #0d47a1; font-weight: bold; text-decoration: underline; }
+
+    /* --- Итого и кнопка --- */
+    .checkout-summary {
+        background: #f8f8f8;
+        padding: 25px;
+        border-radius: 8px;
+        margin-top: 30px;
+    }
+    .summary-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 1.1em; }
+    .summary-row.total { font-size: 1.4em; font-weight: bold; color: var(--accent-color); border-top: 2px solid #ddd; padding-top: 15px; margin-top: 15px; }
+
+    .btn-submit {
+        width: 100%;
+        background-color: var(--accent-color);
+        color: white;
+        padding: 15px;
+        font-size: 1.2em;
+        font-weight: bold;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: opacity 0.3s;
+        font-family: var(--heading-font-family);
+    }
+    .btn-submit:hover { opacity: 0.9; }
+
+    /* Адаптив для мобильных */
+    @media (max-width: 600px) {
+        .form-row { flex-direction: column; gap: 0; }
+        .delivery-options { flex-direction: column; }
+    }
 </style>
 {% endblock %}

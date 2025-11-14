@@ -22,12 +22,11 @@
             <tbody>
                 {% for item in cart %}
                     {% with product=item.product %}
-                        <!-- ИЗМЕНЕНИЕ: Добавляем класс 'table-danger', если товара не хватает -->
                         <tr {% if not item.is_stock_sufficient %}class="table-danger"{% endif %}>
                             <td>
                                 <a href="{{ product.get_absolute_url }}">
                                     {% if product.image_thumbnail %}
-                                        <img src="{{ product.image_thumbnail.url }}" alt="{{ product.name }}" style="width: 100px; border-radius: 5px;">
+                                        <img src="{{ product.image_thumbnail.url }}" alt="{{ product.name }}">
                                     {% endif %}
                                 </a>
                             </td>
@@ -36,11 +35,10 @@
                                 <form action="{% url 'cart:cart_add' product.id %}" method="post" class="quantity-form">
                                     {{ item.update_quantity_form.quantity }}
                                     {{ item.update_quantity_form.update }}
-                                    <button type="submit">Обновить</button>
                                     {% csrf_token %}
+                                    <button type="submit" class="btn">Обновить</button>
                                 </form>
 
-                                <!-- ИЗМЕНЕНИЕ: Показываем сообщение об ошибке, если нужно -->
                                 {% if not item.is_stock_sufficient %}
                                     <div class="stock-error">
                                         Выбранное количество недоступно.<br>Пожалуйста, уменьшите его.
@@ -72,7 +70,6 @@
         <div style="text-align: right; margin-top: 20px;">
             <a href="{% url 'shop:product_list_all' %}" class="btn-secondary">Продолжить покупки</a>
 
-            <!-- ИЗМЕНЕНИЕ: Делаем кнопку оформления заказа условной -->
             {% if is_checkout_possible %}
                 <a href="{% url 'orders:order_create' %}" class="btn-primary">Оформить заказ</a>
             {% else %}
@@ -85,26 +82,7 @@
 
     {% else %}
         <p>Ваша корзина пуста.</p>
-        <a href="{% url 'shop:product_list_all' %}">Начать покупки</a>
+        <a href="{% url 'shop:product_list_all' %}" class="btn">Начать покупки</a>
     {% endif %}
 </div>
-
-<style>
-    .cart-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-    th, td { border: 1px solid #ddd; padding: 12px; text-align: center; vertical-align: middle; }
-    th { background-color: #f2f2f2; }
-    .quantity-form { display: flex; align-items: center; justify-content: center; gap: 10px; }
-    .total { font-weight: bold; font-size: 1.2em; }
-    .remove-actions { margin-top: 20px; padding: 15px; background-color: #f8f8f8; border-radius: 5px; }
-    .remove-btn { background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
-    .btn-secondary, .btn-primary { padding: 10px 15px; text-decoration: none; border-radius: 5px; display: inline-block; }
-    .btn-secondary { background-color: #6c757d; color: white; }
-    .btn-primary { background-color: #007bff; color: white; border: none; font-size: inherit; }
-
-    /* НОВЫЕ СТИЛИ ДЛЯ ОТОБРАЖЕНИЯ ОШИБОК */
-    .table-danger { background-color: #f8d7da !important; }
-    .stock-error { color: #721c24; margin-top: 10px; font-size: 0.9em; }
-    .checkout-error { color: #721c24; margin-bottom: 5px; font-size: 0.9em; }
-    .btn-primary:disabled { background-color: #ccc; cursor: not-allowed; }
-</style>
 {% endblock %}

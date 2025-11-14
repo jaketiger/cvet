@@ -2,7 +2,8 @@
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.http import require_POST
-from .models import Category, Product, SiteSettings, FooterPage
+# --- Убедимся, что Banner импортирован ---
+from .models import Category, Product, SiteSettings, FooterPage, Banner
 from django.contrib.auth.decorators import login_required
 from cart.forms import CartAddProductForm
 from django.http import JsonResponse
@@ -13,80 +14,48 @@ from orders.models import Order
 from cart.cart import Cart
 from django_q.tasks import async_task
 from django.db.models import Func
-
-# --- ИМПОРТЫ ДЛЯ ПОИСКА ---
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank,  SearchHeadline
 
 
-
-
 def search_results(request):
-    """
-    Представление для полнотекстового поиска товаров.
-    """
     query = request.GET.get('q', '').strip()
     products = Product.objects.none()
-
     if query:
-        search_vector = SearchVector('name', 'description', config='russian')
-        # search_vector = SearchVector('name', config='russian') + SearchVector('description', config='russian')
-
+        search_vector = SearchVector('name', 'description_right', 'description_bottom', config='russian')
         search_query = SearchQuery(query, config='russian')
-
-        products = (
-            Product.objects.annotate(
-                rank=SearchRank(search_vector, search_query),
-                highlighted_name=SearchHeadline('name', search_query, start_sel='<mark>', stop_sel='</mark>', config='russian'),
-                highlighted_description=SearchHeadline('description', search_query, start_sel='<mark>', stop_sel='</mark>', config='russian'),
-            )
-            .filter(available=True)
-            .filter(rank__gte=0.05)  # отсекаем нерелевантные результаты
-            .order_by('-rank')
-        )
-
-    cart_product_form = CartAddProductForm()
-
-    return render(request, 'shop/search_results.html', {
-        'query': query,
-        'products': products,
-        # 'cart_product_form': cart_product_form,
-
-    })
+        products = ( Product.objects.annotate( rank=SearchRank(search_vector, search_query), highlighted_name=SearchHeadline('name', search_query, start_sel='<mark>', stop_sel='</mark>', config='russian'), highlighted_description=SearchHeadline('description_right', search_query, start_sel='<mark>', stop_sel='</mark>', config='russian'), ).filter(available=True).filter(rank__gte=0.05).order_by('-rank') )
+    return render(request, 'shop/search_results.html', {'query': query, 'products': products})
 
 
 def home_page(request):
-    site_settings = SiteSettings.get_solo()
+    # Загружаем избранные товары
     featured_products = Product.objects.filter(is_featured=True, available=True)[:8]
+    # Загружаем активные баннеры
+    banners = Banner.objects.filter(is_active=True).order_by('order')
+
+    # Передаем обе переменных в шаблон.
+    # site_settings передается автоматически через context_processor, его здесь не нужно.
     return render(request, 'shop/home.html', {
-        'settings': site_settings,
         'featured_products': featured_products,
+        'banners': banners,
     })
 
 
 def product_list_all(request):
     products = Product.objects.filter(available=True)
-    return render(request, 'shop/product_list.html', {
-        'current_category': None,
-        'products': products
-    })
+    return render(request, 'shop/product_list.html', {'current_category': None, 'products': products})
 
 
 def product_list_by_category(request, category_slug):
     category = get_object_or_404(Category, slug=category_slug)
     products = Product.objects.filter(available=True, category__slug=category_slug)
-    return render(request, 'shop/product_list.html', {
-        'current_category': category,
-        'products': products
-    })
+    return render(request, 'shop/product_list.html', {'current_category': category, 'products': products})
 
 
 def product_detail(request, id, slug):
     product = get_object_or_404(Product, id=id, slug=slug, available=True)
     cart_product_form = CartAddProductForm()
-    return render(request,
-                  'shop/product_detail.html',
-                  {'product': product,
-                   'cart_product_form': cart_product_form})
+    return render(request, 'shop/product_detail.html', {'product': product, 'cart_product_form': cart_product_form})
 
 
 @login_required
@@ -101,12 +70,10 @@ def profile_edit(request):
         user_form = UserEditForm(instance=request.user, data=request.POST)
         profile_form = ProfileEditForm(instance=request.user.profile, data=request.POST)
         if user_form.is_valid() and profile_form.is_valid():
-            user_form.save()
-            profile_form.save()
+            user_form.save(); profile_form.save()
             messages.success(request, 'Ваш профиль был успешно обновлен!')
             return redirect('shop:cabinet')
-        else:
-            messages.error(request, 'Пожалуйста, исправьте ошибки в форме.')
+        else: messages.error(request, 'Пожалуйста, исправьте ошибки в форме.')
     else:
         user_form = UserEditForm(instance=request.user)
         profile_form = ProfileEditForm(instance=request.user.profile)
@@ -114,8 +81,7 @@ def profile_edit(request):
 
 
 def contact_page(request):
-    site_settings = SiteSettings.get_solo()
-    return render(request, 'shop/contacts.html', {'settings': site_settings})
+    return render(request, 'shop/contacts.html')
 
 
 def footer_page_detail(request, slug):
@@ -137,18 +103,11 @@ def cancel_order(request, order_id):
     if order.can_be_cancelled:
         for item in order.items.all():
             product = item.product
-            if product:
-                cart.add(product=product, quantity=item.quantity, update_quantity=True)
-        order.status = 'cancelled'
-        order.save()
+            if product: cart.add(product=product, quantity=item.quantity, update_quantity=True)
+        order.status = 'cancelled'; order.save()
         base_url = f"{request.scheme}://{request.get_host()}"
-        async_task(
-            'orders.utils.send_cancellation_email_task',
-            order_id=order.id,
-            base_url=base_url
-        )
-        messages.success(request,
-                         f'Заказ #{order.id} был отменен. Товары возвращены в вашу корзину для редактирования.')
+        async_task('orders.utils.send_cancellation_email_task', order_id=order.id, base_url=base_url)
+        messages.success(request, f'Заказ #{order.id} был отменен. Товары возвращены в вашу корзину для редактирования.')
     else:
         messages.error(request, f'Этот заказ уже нельзя отменить.')
     return redirect('shop:cabinet')

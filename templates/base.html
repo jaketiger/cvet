@@ -1,91 +1,118 @@
-<!-- templates/base.html -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}{{ site_settings.shop_name }} - Магазин цветов{% endblock %}</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            {% if site_settings.background_image %}
-                background-image: url("{{ site_settings.background_image.url }}");
-            {% else %}
-                background-image: url("{% static 'shop/img/background.jpg' %}");
-            {% endif %}
-            background-size: cover;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
-            margin: 0;
-            padding: 20px;
-        }
-        .container { max-width: 1200px; margin: auto; background-color: rgba(255, 255, 255, 0.95); border-radius: 8px; padding: 20px; min-height: 90vh; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
-        .logo a { text-decoration: none; color: #333; font-size: 1.8em; font-weight: bold; }
-        .user-navigation { font-size: 0.9em; display: flex; align-items: center; }
-        .cart { margin-left: 20px; font-weight: bold; }
-        .category-nav { text-align: center; padding: 10px 0; background-color: #f8f8f8; border-radius: 5px; margin-bottom: 30px; }
-        .category-nav a { margin: 0 15px; text-decoration: none; color: #333; font-weight: bold; }
-        .category-nav a:hover { color: #e53935; }
-        .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; font-size: 0.9em; }
-        .footer-links a { margin: 0 10px; color: #555; text-decoration: none; }
-        .footer-links a:hover { text-decoration: underline; }
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ site_settings.shop_name|default:'MegaCvet' }}{% endblock %}</title>
 
-        /* --- СТИЛИ ДЛЯ ФОРМЫ ПОИСКА --- */
-        .search-form { display: flex; }
-        .search-form input[type="text"] { border: 1px solid #ccc; padding: 8px; border-radius: 4px 0 0 4px; }
-        .search-form button { background-color: #007bff; color: white; border: 1px solid #007bff; padding: 8px 12px; border-radius: 0 4px 4px 0; cursor: pointer; }
+    <!-- Подключение шрифтов из Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&family=Open+Sans:wght@400;700&family=Lora:wght@400;700&family=Merriweather:wght@400;700&family=Playfair+Display:wght@400;700&family=Lobster&family=Pacifico&display=swap" rel="stylesheet">
+
+    <!-- Подключение Swiper CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+
+    <!-- ▼▼▼ САМАЯ ВАЖНАЯ СТРОКА: ПОДКЛЮЧЕНИЕ ВАШЕГО ФАЙЛА СТИЛЕЙ ▼▼▼ -->
+    <link rel="stylesheet" href="{% static 'shop/css/main.css' %}">
+
+    <style>
+        :root {
+            /* --- Переменные, управляемые из админки --- */
+            /* Шрифты */
+            --font-roboto: 'Roboto', sans-serif;
+            --font-montserrat: 'Montserrat', sans-serif;
+            --font-open-sans: 'Open Sans', sans-serif;
+            --font-lora: 'Lora', serif;
+            --font-merriweather: 'Merriweather', serif;
+            --font-playfair-display: 'Playfair Display', serif;
+            --font-lobster: 'Lobster', cursive;
+            --font-pacifico: 'Pacifico', cursive;
+
+            /* Основные стили */
+            --body-font-family: var(--font-{{ site_settings.body_font_family|default:'roboto' }});
+            --heading-font-family: var(--font-{{ site_settings.heading_font_family|default:'montserrat' }});
+            --base-font-size: {{ site_settings.base_font_size|default:16 }}px;
+            --main-text-color: {{ site_settings.main_text_color|default:'#333333' }};
+            --accent-color: {{ site_settings.accent_color|default:'#e53935' }};
+
+            /* Стили кнопок */
+            --button-bg-color: {{ site_settings.button_bg_color|default:site_settings.accent_color }};
+            --button-text-color: {{ site_settings.button_text_color|default:'#FFFFFF' }};
+            --button-hover-bg-color: {{ site_settings.button_hover_bg_color|default:'#333333' }};
+            --button-border-radius: {{ site_settings.button_border_radius|default:5 }}px;
+            --button-font-family: var(--font-{{ site_settings.button_font_family|default:site_settings.body_font_family }});
+
+            /* Переменные для кнопки "В корзину" с фолбэком (запасным вариантом) */
+            --add-to-cart-bg-color: {{ site_settings.add_to_cart_bg_color|default:'var(--button-bg-color)' }};
+            --add-to-cart-text-color: {{ site_settings.add_to_cart_text_color|default:'var(--button-text-color)' }};
+            --add-to-cart-hover-bg-color: {{ site_settings.add_to_cart_hover_bg_color|default:'var(--button-hover-bg-color)' }};
+        }
+
+        body {
+            /* Устанавливаем фон, если он есть в настройках */
+            {% if site_settings.background_image %}
+                background-image: url('{{ site_settings.background_image.url }}');
+            {% endif %}
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <div class="logo">
-                <a href="{% url 'shop:home' %}" style="display: inline-flex; align-items: center; gap: 10px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16"><path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/></svg>
-                    {{ site_settings.shop_name }}
+
+<div class="container">
+    <header class="header">
+        <div class="logo">
+            <a href="{% url 'shop:home' %}" style="font-size: {{ site_settings.logo_font_size|default:24 }}px; color: {{ site_settings.logo_color|default:'var(--main-text-color)' }}; font-family: var(--font-{{ site_settings.logo_font_family|default:site_settings.heading_font_family }});">{{ site_settings.shop_name }}</a>
+        </div>
+        <form class="search-form" action="{% url 'shop:search_results' %}" method="get">
+            <input type="text" name="q" placeholder="Поиск по товарам...">
+            <button type="submit">Найти</button>
+        </form>
+        <nav class="user-navigation">
+            {% if user.is_authenticated %}
+                <a href="{% url 'shop:cabinet' %}">Личный кабинет</a>
+                &nbsp;(<a href="{% url 'logout' %}">Выйти</a>)
+            {% else %}
+                <a href="{% url 'login' %}">Войти</a>
+                &nbsp;|&nbsp;
+                <a href="{% url 'users:register' %}">Регистрация</a>
+            {% endif %}
+            <div class="cart">
+                <a href="{% url 'cart:cart_detail' %}">
+                    🛒 Корзина: {{ cart|length }} товар(а) на {{ cart.get_total_price }} руб.
                 </a>
             </div>
-
-            <!-- ============================================= -->
-            <!-- ======== НАЧАЛО: ФОРМА ПОИСКА ДОБАВЛЕНА ======== -->
-            <!-- ============================================= -->
-            <div class="search-container">
-                <form method="get" action="{% url 'shop:search_results' %}" class="search-form">
-                    <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Поиск по товарам...">
-                    <button type="submit" style="padding: 8px 15px; background: #ffb6c1; color: white; border: none; border-radius: 0 8px 8px 0; cursor: pointer; font-size: 16px;">Найти</button>
-                </form>
-            </div>
-            <!-- ============================================= -->
-            <!-- ========= КОНЕЦ: ФОРМА ПОИСКА ДОБАВЛЕНА ========= -->
-            <!-- ============================================= -->
-
-            <div class="user-navigation">
-                {% if user.is_authenticated %}
-                    <span>Привет, {{ user.first_name|default:user.username }}!</span>&nbsp;|&nbsp;
-                    <a href="{% url 'shop:cabinet' %}">Личный кабинет</a>&nbsp;|&nbsp;
-                    <form action="{% url 'logout' %}" method="post" style="display: inline;"><button type="submit" style="background:none; border:none; padding:0; color:#007bff; text-decoration:underline; cursor:pointer;">Выйти</button>{% csrf_token %}</form>
-                {% else %}
-                    <a href="{% url 'login' %}">Войти</a>&nbsp;|&nbsp;
-                    <a href="{% url 'register' %}">Регистрация</a>
-                {% endif %}
-                <span class="cart">
-                    <a href="{% url 'cart:cart_detail' %}" style="text-decoration: none; color: #333; display: inline-flex; align-items: center;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16" style="margin-right: 8px;"><path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>{% with total_items=cart|length %}{% if total_items > 0 %}{{ total_items }} товар(а) - {{ cart.get_total_price }} руб.{% else %}Корзина пуста{% endif %}{% endwith %}</a>
-                </span>
-            </div>
-        </header>
-        <nav class="category-nav">
-            <a href="{% url 'shop:product_list_all' %}">Все товары</a>
-            {% for c in categories %}<a href="{{ c.get_absolute_url }}">{{ c.name }}</a>{% endfor %}
         </nav>
-        <main>{% block content %}{% endblock %}</main>
-    </div>
+    </header>
+
+    <nav class="category-nav">
+        <a href="{% url 'shop:product_list_all' %}">Все товары</a>
+        {% for c in categories %}
+            <a href="{{ c.get_absolute_url }}">{{ c.name }}</a>
+        {% endfor %}
+    </nav>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
     <footer class="footer">
         <div class="footer-links">
+            {% for page in footer_pages %}
+                <a href="{{ page.get_absolute_url }}">{{ page.title }}</a>
+            {% endfor %}
             <a href="{% url 'shop:contacts' %}">Контакты</a>
-            {% for page in footer_pages %}<a href="{{ page.get_absolute_url }}">{{ page.title }}</a>{% endfor %}
         </div>
-        <p style="margin-top: 10px;">&copy; {% now "Y" %} {{ site_settings.shop_name }}. Все права защищены.</p>
+        <p>&copy; {% now "Y" %} {{ site_settings.shop_name }}. Все права защищены.</p>
     </footer>
+
+</div>
+
+<!-- Подключение Swiper JS -->
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+{% block extra_scripts %}{% endblock %}
+
 </body>
 </html>

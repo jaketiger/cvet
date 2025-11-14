@@ -7,23 +7,41 @@
 
 {% block content %}
     <div class="product-container">
-        <div class="product-image">
-            {% if product.image %}
-                <img src="{{ product.image.url }}" alt="{{ product.name }}">
-            {% endif %}
+        <div class="product-gallery">
+            <div class="main-image">
+                {% if product.image %}
+                    <img id="main-product-image" src="{{ product.image.url }}" alt="{{ product.name }}">
+                {% else %}
+                    <img id="main-product-image" src="{% static 'shop/img/placeholder.png' %}" alt="Изображение отсутствует">
+                {% endif %}
+            </div>
+
+            {% with all_images=product.images.all %}
+                {% if product.image or all_images %}
+                    <div class="thumbnails">
+                        {% if product.image %}
+                            <img src="{{ product.image_thumbnail.url }}" alt="Превью {{ product.name }}" class="thumbnail active" onclick="changeMainImage('{{ product.image.url }}', this)">
+                        {% endif %}
+                        {% for img in all_images %}
+                            <img src="{{ img.image_thumbnail.url }}" alt="{{ img.alt_text|default:'Превью товара' }}" class="thumbnail" onclick="changeMainImage('{{ img.image.url }}', this)">
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
         </div>
+
         <div class="product-info">
             <h1>{{ product.name }}</h1>
             <p class="price">{{ product.price }} руб.</p>
-            <div class="description">
-                <h3>Описание:</h3>
-                <p>{{ product.description|linebreaksbr }}</p>
+
+            {% if product.description_right %}
+            <div class="description-right">
+                <h3>{{ product.description_right_title|default:site_settings.product_description_right_title }}:</h3>
+                <p>{{ product.description_right|linebreaksbr }}</p>
             </div>
+            {% endif %}
 
             {% if product.stock > 0 %}
-                <!-- ==================================================== -->
-                <!-- ИЗМЕНЕНИЕ ЗДЕСЬ: Убрали точное количество со склада -->
-                <!-- ==================================================== -->
                 <p class="stock-status in-stock">
                     <strong>Наличие:</strong> В наличии
                 </p>
@@ -44,26 +62,26 @@
         </div>
     </div>
 
+    {% if product.description_bottom %}
+    <div class="description-bottom-container">
+        <h3>{{ product.description_bottom_title|default:site_settings.product_description_bottom_title }}:</h3>
+        <p>{{ product.description_bottom|linebreaksbr }}</p>
+    </div>
+    {% endif %}
+
     <a href="{% url 'shop:product_list_all' %}" class="back-link">← Вернуться в каталог</a>
 
-    <style>
-        .product-container { display: flex; gap: 40px; background-color: white; padding: 20px; border-radius: 8px; }
-        .product-image { flex: 1; }
-        .product-image img { max-width: 100%; border-radius: 8px; }
-        .product-info { flex: 1; }
-        .product-info h1 { font-size: 2em; margin-top: 0; }
-        .product-info .price { font-size: 1.5em; font-weight: bold; color: #e53935; margin: 20px 0; }
-        .product-info .description { line-height: 1.6; }
-        .add-to-cart-btn { display: inline-block; background-color: #4CAF50; color: white; padding: 15px 30px; text-align: center; text-decoration: none; font-size: 16px; border-radius: 8px; border: none; cursor: pointer; margin-top: 20px; }
-        .back-link { display: block; margin-top: 30px; }
-
-        .stock-status { font-size: 1.1em; margin-bottom: 20px; }
-        .in-stock { color: #4CAF50; }
-        .out-of-stock { color: #e53935; }
-
-        .add-to-cart-btn:disabled {
-            background-color: #9E9E9E;
-            cursor: not-allowed;
+    <script>
+        function changeMainImage(newSrc, clickedThumbnail) {
+            document.getElementById('main-product-image').src = newSrc;
+            const thumbnails = document.querySelectorAll('.thumbnail');
+            thumbnails.forEach(thumb => {
+                thumb.classList.remove('active');
+            });
+            clickedThumbnail.classList.add('active');
         }
-    </style>
+    </script>
+
+    <!-- Встроенные стили ниже были удалены, чтобы использовались глобальные из main.css -->
+
 {% endblock %}
