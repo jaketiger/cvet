@@ -53,7 +53,7 @@
             <div class="search-container">
                 <form method="get" action="{% url 'shop:search_results' %}" class="search-form">
                     <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Поиск по товарам...">
-                    <button type="submit">Найти</button>
+                    <button type="submit" style="padding: 8px 15px; background: #ffb6c1; color: white; border: none; border-radius: 0 8px 8px 0; cursor: pointer; font-size: 16px;">Найти</button>
                 </form>
             </div>
             <!-- ============================================= -->
