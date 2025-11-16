@@ -2,7 +2,6 @@
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.http import require_POST
-# --- Убедимся, что Banner импортирован ---
 from .models import Category, Product, SiteSettings, FooterPage, Banner
 from django.contrib.auth.decorators import login_required
 from cart.forms import CartAddProductForm
@@ -21,20 +20,35 @@ def search_results(request):
     query = request.GET.get('q', '').strip()
     products = Product.objects.none()
     if query:
-        search_vector = SearchVector('name', 'description_right', 'description_bottom', config='russian')
+        # ▼▼▼ ИЗМЕНЕНИЕ: Заменяем старые имена полей на новые (description, composition) ▼▼▼
+        search_vector = SearchVector('name', 'description', 'composition', config='russian')
         search_query = SearchQuery(query, config='russian')
-        products = ( Product.objects.annotate( rank=SearchRank(search_vector, search_query), highlighted_name=SearchHeadline('name', search_query, start_sel='<mark>', stop_sel='</mark>', config='russian'), highlighted_description=SearchHeadline('description_right', search_query, start_sel='<mark>', stop_sel='</mark>', config='russian'), ).filter(available=True).filter(rank__gte=0.05).order_by('-rank') )
+        products = (
+            Product.objects.annotate(
+                rank=SearchRank(search_vector, search_query),
+                highlighted_name=SearchHeadline(
+                    'name',
+                    search_query,
+                    start_sel='<mark>',
+                    stop_sel='</mark>',
+                    config='russian'
+                ),
+                highlighted_description=SearchHeadline(
+                    'description',  # Ищем и подсвечиваем в основном поле "Описание"
+                    search_query,
+                    start_sel='<mark>',
+                    stop_sel='</mark>',
+                    config='russian'
+                ),
+            ).filter(available=True).filter(rank__gte=0.05).order_by('-rank')
+        )
+        # ▲▲▲ КОНЕЦ ИЗМЕНЕНИЯ ▲▲▲
     return render(request, 'shop/search_results.html', {'query': query, 'products': products})
 
 
 def home_page(request):
-    # Загружаем избранные товары
     featured_products = Product.objects.filter(is_featured=True, available=True)[:8]
-    # Загружаем активные баннеры
     banners = Banner.objects.filter(is_active=True).order_by('order')
-
-    # Передаем обе переменных в шаблон.
-    # site_settings передается автоматически через context_processor, его здесь не нужно.
     return render(request, 'shop/home.html', {
         'featured_products': featured_products,
         'banners': banners,

@@ -117,14 +117,23 @@ class FooterPageAdmin(SortableAdminMixin, admin.ModelAdmin):
 class SiteSettingsAdmin(SingletonModelAdmin):
     form = SiteSettingsForm
 
+    # ▼▼▼ ВОССТАНОВЛЕННЫЙ БЛОК fieldsets ▼▼▼
     fieldsets = (
+        ('Настройки мобильной версии', {
+            'description': 'Здесь настраивается внешний вид сайта на смартфонах и планшетах.',
+            'fields': (
+                'mobile_header_style',
+                'mobile_product_grid',
+                'collapse_categories_threshold',
+                'collapse_footer_threshold',
+            )
+        }),
         ('Основные настройки',
          {'fields': ('shop_name', 'contact_phone', 'admin_notification_emails', 'delivery_cost', 'background_image')}),
 
         ('Глобальное оформление сайта', {
             'classes': ('collapse',),
             'fields': (
-                # ▼▼▼ ДОБАВЛЕНА НАСТРОЙКА СТИЛЯ ▼▼▼
                 'navigation_style',
                 ('main_text_color', 'accent_color'),
                 ('body_font_family', 'heading_font_family'),
@@ -175,6 +184,7 @@ class SiteSettingsAdmin(SingletonModelAdmin):
         }),
     )
 
+    # ▼▼▼ ВОССТАНОВЛЕННЫЕ МЕТОДЫ ДЛЯ КАСТОМНЫХ КНОПОК ▼▼▼
     change_form_template = "admin/shop/sitesettings/change_form.html"
 
     def get_urls(self):
@@ -203,5 +213,5 @@ class SiteSettingsAdmin(SingletonModelAdmin):
             error_message = f"Ошибка создания бэкапа: {e}"
             if isinstance(e, subprocess.CalledProcessError): error_message += f" | {e.stderr}"
             self.message_user(request, error_message, level='error')
-            return redirect(reverse('admin:shop_sitesettings_change', args=[SiteSettings.singleton_instance_id]))
+            return redirect(reverse('admin:shop_sitesettings_change', args=[SiteSettings.objects.get().pk]))
         return FileResponse(open(backup_path, 'rb'), as_attachment=True, filename='megacvet_backup.dump')

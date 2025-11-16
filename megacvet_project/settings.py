@@ -107,6 +107,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 CART_SESSION_ID = 'cart'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+ACCOUNT_LOGOUT_ON_GET = True
 
 AUTHENTICATION_BACKENDS = [
     'users.backends.EmailBackend',

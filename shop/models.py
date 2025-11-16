@@ -113,7 +113,6 @@ class Profile(models.Model):
 
 
 class SiteSettings(SingletonModel):
-    # ▼▼▼ ИЗМЕНЕНИЕ: Добавляем 2 новых стиля ▼▼▼
     NAV_STYLE_CHOICES = [
         ('underline', 'Анимация подчеркивания'),
         ('highlight', 'Фоновая подсветка'),
@@ -121,25 +120,54 @@ class SiteSettings(SingletonModel):
         ('shadow', 'Сдвиг с тенью (3D)'),
         ('wave', '"Жидкая" волна'),
     ]
-    # ▲▲▲ КОНЕЦ ИЗМЕНЕНИЯ ▲▲▲
-
     navigation_style = models.CharField(
         "Стиль анимации навигации",
         max_length=10,
         choices=NAV_STYLE_CHOICES,
         default='underline',
-        help_text="Выберите эффект, который будет применяться при наведении на ссылки в шапке, меню категорий и подвале."
+        help_text="Эффект при наведении на ссылки в меню."
     )
 
-    # --- Основные ---
+    MOBILE_HEADER_CHOICES = [
+        ('full', 'Иконки и полный текст (как на десктопе)'),
+        ('partial', 'Иконки и короткий текст (Кабинет, Корзина)'),
+        ('icons', 'Только иконки'),
+    ]
+    mobile_header_style = models.CharField(
+        "Стиль шапки на мобильных",
+        max_length=10,
+        choices=MOBILE_HEADER_CHOICES,
+        default='partial'
+    )
+
+    mobile_grid_choices = [
+        (1, 'Одна колонка'),
+        (2, 'Две колонки'),
+        (3, 'Три колонки (для планшетов)'),
+    ]
+    mobile_product_grid = models.PositiveSmallIntegerField(
+        "Кол-во товаров в ряду на мобильных",
+        choices=mobile_grid_choices,
+        default=2
+    )
+
+    collapse_categories_threshold = models.PositiveSmallIntegerField(
+        "Схлопывать категории в иконку, если их больше чем",
+        default=3,
+        help_text="На мобильных устройствах, если категорий больше этого числа, они скроются под иконку-бургер."
+    )
+    collapse_footer_threshold = models.PositiveSmallIntegerField(
+        "Схлопывать ссылки в подвале, если их больше чем",
+        default=3,
+        help_text="На мобильных, если ссылок в футере больше этого числа, они скроются под иконку 'еще'."
+    )
+
     shop_name = models.CharField("Название магазина", max_length=100, default="MegaCvet");
     contact_phone = models.CharField("Контактный телефон", max_length=50, blank=True);
     admin_notification_emails = models.TextField("Email для уведомлений", blank=True);
     background_image = models.ImageField("Фоновое изображение", upload_to='backgrounds/', blank=True, null=True)
     delivery_cost = models.DecimalField("Стоимость доставки", max_digits=10, decimal_places=2, default=300.00,
                                         help_text="Стоимость доставки будет добавлена к общей сумме заказа.")
-
-    # --- Глобальное оформление ---
     main_text_color = models.CharField("Основной цвет текста", max_length=7, default='#333333');
     accent_color = models.CharField("Акцентный цвет (ссылки, кнопки)", max_length=7, default='#e53935');
     body_font_family = models.CharField("Шрифт для основного текста", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES,
@@ -147,15 +175,11 @@ class SiteSettings(SingletonModel):
     heading_font_family = models.CharField("Шрифт для заголовков", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES,
                                            default='montserrat');
     base_font_size = models.PositiveIntegerField("Базовый размер шрифта (px)", default=16)
-
-    # --- Стилизация логотипа ---
     logo_color = models.CharField("Цвет", max_length=7, blank=True, help_text="Пусто = глобальный цвет");
     logo_font_size = models.PositiveIntegerField("Размер (px)", blank=True, null=True,
                                                  help_text="Пусто = по умолчанию");
     logo_font_family = models.CharField("Стиль шрифта названия", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES,
                                         blank=True)
-
-    # --- Тонкие настройки ---
     category_nav_font_family = models.CharField("Стиль шрифта", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES,
                                                 blank=True)
     category_nav_font_size = models.PositiveIntegerField("Размер (px)", blank=True, null=True)
@@ -168,8 +192,6 @@ class SiteSettings(SingletonModel):
     product_card_price_color = models.CharField("Цвет цены", max_length=7, blank=True)
     footer_font_size = models.PositiveIntegerField("Размер шрифта (px)", blank=True, null=True)
     footer_font_color = models.CharField("Цвет текста", max_length=7, blank=True)
-
-    # --- Стилизация кнопок ---
     button_bg_color = models.CharField("Цвет фона", max_length=7, blank=True, help_text="Пусто = акцентный цвет")
     button_text_color = models.CharField("Цвет текста", max_length=7, blank=True, help_text="Пусто = белый")
     button_hover_bg_color = models.CharField("Цвет фона при наведении", max_length=7, blank=True,
@@ -178,28 +200,25 @@ class SiteSettings(SingletonModel):
                                                        help_text="Пусто = 5px")
     button_font_family = models.CharField("Стиль шрифта", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True,
                                           help_text="Пусто = шрифт основного текста")
-
     add_to_cart_bg_color = models.CharField("Цвет фона кнопки 'В корзину'", max_length=7, blank=True,
                                             help_text="Если пусто, используется основной цвет кнопок.")
     add_to_cart_text_color = models.CharField("Цвет текста кнопки 'В корзину'", max_length=7, blank=True,
                                               help_text="Если пусто, используется основной цвет текста кнопок.")
     add_to_cart_hover_bg_color = models.CharField("Цвет фона 'В корзину' при наведении", max_length=7, blank=True,
                                                   help_text="Если пусто, используется основной цвет кнопок при наведении.")
-
-    # --- Настройки слайдера ---
     SLIDER_EFFECT_CHOICES = [('slide', 'Пролистывание'), ('fade', 'Наплыв'), ('cube', '3D Куб'),
                              ('flip', '3D Переворот')];
     slider_duration = models.PositiveIntegerField("Пауза (сек)", default=5);
     slider_effect = models.CharField("Эффект", max_length=10, choices=SLIDER_EFFECT_CHOICES, default='slide')
-
-    # --- Заголовки по умолчанию для страницы товара ---
     default_composition_title = models.CharField("Заголовок 'Состава' (по умолч.)", max_length=100, default="Состав");
     default_description_title = models.CharField("Заголовок 'Описания' (по умолч.)", max_length=100,
                                                  default="Описание");
 
-    class Meta: verbose_name = "Настройки сайта"
+    class Meta:
+        verbose_name = "Настройки сайта"
 
-    def __str__(self): return "Настройки сайта"
+    def __str__(self):
+        return "Настройки сайта"
 
 
 class FooterPage(models.Model):

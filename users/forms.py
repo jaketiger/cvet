@@ -1,77 +1,79 @@
 # users/forms.py
 
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import AuthenticationForm
 from shop.models import Profile
-import random
 
 
-class RegistrationForm(UserCreationForm):
-    first_name = forms.CharField(label="Имя", max_length=150, required=True)
-    last_name = forms.CharField(label="Фамилия", max_length=150, required=True)
-    email = forms.EmailField(label="Email", required=True)
+class RegistrationForm(forms.ModelForm):
+    # Определяем поля для паролей, чтобы они были доступны в форме
+    password = forms.CharField(label='Пароль', widget=forms.PasswordInput)
+    password2 = forms.CharField(label='Повторите пароль', widget=forms.PasswordInput)
 
-    class Meta(UserCreationForm.Meta):
+    class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email',)
+        fields = ('email', 'first_name')  # Фамилию убрали, но можно вернуть, если нужно
 
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if User.objects.filter(email__iexact=email).exists():
-            raise forms.ValidationError(
-                "Этот email уже зарегистрирован. Пожалуйста, войдите или используйте другой email.")
-        return email
-
+    # Мы будем добавлять классы и плейсхолдеры через виджеты, это чище
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['password1'].label = "Пароль"
-        self.fields['password1'].help_text = None
-        self.fields['password2'].label = "Подтверждение пароля"
-        self.fields['password2'].help_text = None
-        for field_name, field in self.fields.items():
+        self.fields['email'].widget.attrs.update({'placeholder': 'ivanov@email.com'})
+        self.fields['first_name'].widget.attrs.update({'placeholder': 'Иван'})
+
+        # Применяем стили ко всем полям сразу
+        for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
-            if field_name == 'first_name':
-                field.widget.attrs['placeholder'] = 'Иван'
-            elif field_name == 'last_name':
-                field.widget.attrs['placeholder'] = 'Иванов'
-            elif field_name == 'email':
-                field.widget.attrs['placeholder'] = 'ivanov@email.com'
+
+    def clean_password2(self):
+        cd = self.cleaned_data
+        if cd.get('password') and cd.get('password2') and cd['password'] != cd['password2']:
+            raise forms.ValidationError('Пароли не совпадают.')
+        return cd.get('password2')
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email').lower()  # Приводим email к нижнему регистру
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError('Пользователь с таким email уже существует.')
+        return email
 
     def save(self, commit=True):
         user = super().save(commit=False)
+        # Устанавливаем пароль правильным, хешированным способом
+        user.set_password(self.cleaned_data["password"])
+
+        # Генерируем уникальный username из email
         email = self.cleaned_data['email']
-        username_base = email.split('@')[0]
+        username_base = email.split('@')[0].replace('.', '').replace('-', '')  # Очищаем от лишних символов
         username = username_base
         counter = 1
         while User.objects.filter(username=username).exists():
             username = f"{username_base}{counter}"
             counter += 1
         user.username = username
-        user.first_name = self.cleaned_data['first_name']
-        user.last_name = self.cleaned_data['last_name']
-        user.email = email
+
         if commit:
             user.save()
         return user
 
 
 class LoginForm(AuthenticationForm):
+    # Эта форма остается без изменений, но используем ваш вариант
     username = forms.EmailField(label="Email",
                                 widget=forms.EmailInput(attrs={'autofocus': True, 'class': 'form-control'}))
     password = forms.CharField(label="Пароль", strip=False, widget=forms.PasswordInput(
         attrs={'autocomplete': 'current-password', 'class': 'form-control'}))
 
 
-# --- НОВАЯ ФОРМА ДЛЯ РЕДАКТИРОВАНИЯ ДАННЫХ USER ---
 class UserEditForm(forms.ModelForm):
+    # Эта форма остается без изменений
     class Meta:
         model = User
         fields = ('first_name', 'last_name', 'email')
 
 
-# --- НОВАЯ ФОРМА ДЛЯ РЕДАКТИРОВАНИЯ ДАННЫХ PROFILE ---
 class ProfileEditForm(forms.ModelForm):
+    # Эта форма остается без изменений
     class Meta:
         model = Profile
         fields = ('phone', 'address', 'postal_code', 'city')
