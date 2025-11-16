@@ -1,89 +1,87 @@
 <!-- cart/templates/cart/detail.html -->
-
 {% extends "base.html" %}
 {% load static %}
-
-{% block title %}Ваша корзина{% endblock %}
+{% block title %}
+  Ваша корзина
+{% endblock %}
 
 {% block content %}
-<div class="container" style="padding-top: 2rem;">
-    <h1>Ваша корзина</h1>
+  <h1>Ваша корзина</h1>
 
-    {% if cart %}
-        <table class="cart-table">
-            <thead>
-                <tr>
-                    <th>Изображение</th>
-                    <th>Товар</th>
-                    <th>Количество</th>
-                    <th>Цена за шт.</th>
-                    <th>Сумма</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in cart %}
-                    {% with product=item.product %}
-                        <tr {% if not item.is_stock_sufficient %}class="table-danger"{% endif %}>
-                            <td>
-                                <a href="{{ product.get_absolute_url }}">
-                                    {% if product.image_thumbnail %}
-                                        <img src="{{ product.image_thumbnail.url }}" alt="{{ product.name }}">
-                                    {% endif %}
-                                </a>
-                            </td>
-                            <td>{{ product.name }}</td>
-                            <td>
-                                <form action="{% url 'cart:cart_add' product.id %}" method="post" class="quantity-form">
-                                    {{ item.update_quantity_form.quantity }}
-                                    {{ item.update_quantity_form.update }}
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn">Обновить</button>
-                                </form>
-
-                                {% if not item.is_stock_sufficient %}
-                                    <div class="stock-error">
-                                        Выбранное количество недоступно.<br>Пожалуйста, уменьшите его.
-                                    </div>
-                                {% endif %}
-                            </td>
-                            <td>{{ item.price }} руб.</td>
-                            <td>{{ item.total_price }} руб.</td>
-                        </tr>
-                    {% endwith %}
-                {% endfor %}
-                <tr class="total">
-                    <td colspan="4">Итого:</td>
-                    <td colspan="1">{{ cart.get_total_price }} руб.</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="remove-actions">
-            <h4>Удалить товар из корзины:</h4>
-            {% for item in cart %}
-                <form action="{% url 'cart:cart_remove' item.product.id %}" method="post" style="display: inline;">
+  {% if cart %}
+    <div class="cart-container">
+      <table class="cart-table">
+        <thead class="cart-header">
+          <tr>
+            <th scope="col" class="product-col">Товар</th>
+            <th scope="col">Цена</th>
+            <th scope="col">Кол-во</th>
+            <th scope="col">Стоимость</th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in cart %}
+            {% with product=item.product %}
+              <tr class="cart-item">
+                <td data-label="Товар:" class="product-col">
+                  <div class="product-info-cell">
+                    <a href="{{ product.get_absolute_url }}" class="product-image-link">
+                      <img src="{% if product.image_thumbnail %}{{ product.image_thumbnail.url }}{% else %}{% static 'img/no-image.png' %}{% endif %}">
+                    </a>
+                    <div class="product-details">
+                      <a href="{{ product.get_absolute_url }}" class="product-name">{{ product.name }}</a>
+                      {% if item.variant_name %}
+                        <small class="variant-name">({{ item.variant_name }})</small>
+                      {% endif %}
+                    </div>
+                  </div>
+                </td>
+                <td data-label="Цена:">{{ item.price }} ₽</td>
+                <td data-label="Кол-во:">
+                  <form action="{% url 'cart:cart_add' product.id %}" method="post" class="quantity-form">
                     {% csrf_token %}
-                    <button type="submit" class="remove-btn">Удалить "{{ item.product.name }}"</button>
-                </form>
-            {% endfor %}
-        </div>
+                    <input type="hidden" name="variant_id" value="{{ item.variant_id|default_if_none:'' }}">
+                    {{ item.update_quantity_form.quantity }}
+                    {{ item.update_quantity_form.update }}
+                    <button type="submit" class="btn-secondary">Обновить</button>
+                  </form>
+                </td>
+                <td data-label="Стоимость:">{{ item.total_price }} ₽</td>
+                <td class="remove-col">
+                  <form action="{% url 'cart:cart_remove' product.id %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="variant_id" value="{{ item.variant_id|default_if_none:'' }}">
+                    <button type="submit" class="remove-btn" aria-label="Удалить товар">
+                      <span class="desktop-text">Удалить</span>
+                      <!-- ▼▼▼ ИЗМЕНЕНИЕ: Заменяем крестик на иконку корзины ▼▼▼ -->
+                      <span class="mobile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                      </span>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% endwith %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
 
-        <div style="text-align: right; margin-top: 20px;">
+    <div class="cart-summary">
+        <h2>Итого: {{ cart.get_total_price }} ₽</h2>
+        <div class="cart-actions">
             <a href="{% url 'shop:product_list_all' %}" class="btn-secondary">Продолжить покупки</a>
-
-            {% if is_checkout_possible %}
-                <a href="{% url 'orders:order_create' %}" class="btn-primary">Оформить заказ</a>
-            {% else %}
-                <div class="checkout-error">
-                    Невозможно оформить заказ, пока не будет исправлено количество.
-                </div>
-                <button class="btn-primary" disabled>Оформить заказ</button>
-            {% endif %}
+            <a href="{% url 'orders:order_create' %}" class="btn-primary">
+                Оформить заказ
+            </a>
         </div>
+    </div>
 
-    {% else %}
+  {% else %}
+    <div class="cart-empty">
         <p>Ваша корзина пуста.</p>
-        <a href="{% url 'shop:product_list_all' %}" class="btn">Начать покупки</a>
-    {% endif %}
-</div>
+        <a href="{% url 'shop:product_list_all' %}" class="btn-primary">Перейти к покупкам</a>
+    </div>
+  {% endif %}
 {% endblock %}

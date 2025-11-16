@@ -121,10 +121,7 @@ class SiteSettings(SingletonModel):
         ('wave', '"Жидкая" волна'),
     ]
     navigation_style = models.CharField(
-        "Стиль анимации навигации",
-        max_length=10,
-        choices=NAV_STYLE_CHOICES,
-        default='underline',
+        "Стиль анимации навигации", max_length=10, choices=NAV_STYLE_CHOICES, default='underline',
         help_text="Эффект при наведении на ссылки в меню."
     )
 
@@ -134,32 +131,39 @@ class SiteSettings(SingletonModel):
         ('icons', 'Только иконки'),
     ]
     mobile_header_style = models.CharField(
-        "Стиль шапки на мобильных",
-        max_length=10,
-        choices=MOBILE_HEADER_CHOICES,
-        default='partial'
+        "Отображение ссылок в шапке (моб. версия)", max_length=10, choices=MOBILE_HEADER_CHOICES, default='partial'
     )
 
     mobile_grid_choices = [
+        (0, 'Как на десктопе (адаптивно)'),
         (1, 'Одна колонка'),
         (2, 'Две колонки'),
         (3, 'Три колонки (для планшетов)'),
     ]
     mobile_product_grid = models.PositiveSmallIntegerField(
-        "Кол-во товаров в ряду на мобильных",
-        choices=mobile_grid_choices,
-        default=2
+        "Кол-во товаров в ряду (моб. версия)", choices=mobile_grid_choices, default=2
     )
 
     collapse_categories_threshold = models.PositiveSmallIntegerField(
-        "Схлопывать категории в иконку, если их больше чем",
-        default=3,
+        "Схлопывать категории в иконку, если их больше чем", default=3,
         help_text="На мобильных устройствах, если категорий больше этого числа, они скроются под иконку-бургер."
     )
     collapse_footer_threshold = models.PositiveSmallIntegerField(
-        "Схлопывать ссылки в подвале, если их больше чем",
-        default=3,
+        "Схлопывать ссылки в подвале, если их больше чем", default=3,
         help_text="На мобильных, если ссылок в футере больше этого числа, они скроются под иконку 'еще'."
+    )
+
+    mobile_dropdown_bg_color = models.CharField(
+        "Фон выпадающих меню (моб. версия)",
+        max_length=7,
+        default='#FFFFFF',
+        help_text="Цвет фона для выпадающего меню категорий и поиска на мобильных."
+    )
+    mobile_dropdown_opacity = models.FloatField(
+        "Прозрачность фона выпадающих меню (%)",
+        default=95,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="От 0 (полностью прозрачный) до 100 (непрозрачный)."
     )
 
     shop_name = models.CharField("Название магазина", max_length=100, default="MegaCvet");
@@ -219,6 +223,19 @@ class SiteSettings(SingletonModel):
 
     def __str__(self):
         return "Настройки сайта"
+
+    @property
+    def mobile_dropdown_opacity_css(self):
+        return self.mobile_dropdown_opacity / 100
+
+    # ▼▼▼ НОВОЕ СВОЙСТВО ДЛЯ КОНВЕРТАЦИИ ЦВЕТА ▼▼▼
+    @property
+    def mobile_dropdown_bg_rgb(self):
+        hex_color = self.mobile_dropdown_bg_color.lstrip('#')
+        try:
+            return ", ".join(str(int(hex_color[i:i + 2], 16)) for i in (0, 2, 4))
+        except (ValueError, IndexError):
+            return "255, 255, 255"  # Возвращаем белый цвет в случае ошибки
 
 
 class FooterPage(models.Model):

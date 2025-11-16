@@ -24,11 +24,12 @@ class SiteSettingsForm(forms.ModelForm):
             'button_bg_color': ColorInput(),
             'button_text_color': ColorInput(),
             'button_hover_bg_color': ColorInput(),
-
-            # --- ДОБАВЛЕНО: виджеты для новых полей ---
             'add_to_cart_bg_color': ColorInput(),
             'add_to_cart_text_color': ColorInput(),
             'add_to_cart_hover_bg_color': ColorInput(),
+
+            # ▼▼▼ ДОБАВЬТЕ ЭТУ СТРОКУ ▼▼▼
+            'mobile_dropdown_bg_color': ColorInput(),
         }
 
 

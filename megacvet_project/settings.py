@@ -3,9 +3,13 @@
 import os
 from pathlib import Path
 import dj_database_url
+from django.conf import settings
+from django.conf.urls.static import static
 
 from dotenv import load_dotenv
 load_dotenv()
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -15,6 +19,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'your-default-secret-key-for-de
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
 
 ALLOWED_HOSTS = ['109.120.142.26', '127.0.0.1', 'localhost']
 
@@ -134,3 +139,4 @@ Q_CLUSTER = {
     'queue_limit': 50,
     'orm': 'default', # Использовать стандартную БД Django для хранения задач
 }
+

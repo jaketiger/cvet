@@ -1,0 +1,10 @@
+<!-- templates/admin/base_site.html -->
+{% extends "admin/base.html" %}
+
+{% block extrastyle %}{{ block.super }}
+    <!-- Здесь можно подключать кастомные CSS для админки, если понадобится -->
+{% endblock %}
+
+{% block extrahead %}{{ block.super }}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% endblock %}

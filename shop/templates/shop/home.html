@@ -1,5 +1,4 @@
 <!-- shop/templates/shop/home.html -->
-
 {% extends "base.html" %}
 {% load static %}
 
@@ -10,36 +9,28 @@
     <div class="swiper-container">
         <div class="swiper-wrapper">
             {% for banner in banners %}
-                {% if banner.link and not banner.button_text %}
-                    <a href="{{ banner.link }}" class="swiper-slide" style="background-image: url('{{ banner.image.url }}');">
-                {% else %}
-                    <div class="swiper-slide" style="background-image: url('{{ banner.image.url }}');">
-                {% endif %}
-                        <div class="slide-content-wrapper pos-{{ banner.content_position }}">
-                            {% if banner.title or banner.subtitle or banner.button_text %}
-                                <div class="slide-content" style="
-                                    background-color: rgba(0, 0, 0, {{ banner.background_opacity_css }});
-                                    color: {{ banner.font_color|default:'#FFFFFF' }};
-                                    border-radius: {{ banner.background_border_radius }}px;
-                                    {% if banner.add_text_shadow %}text-shadow: 1px 1px 3px rgba(0,0,0,0.5);{% endif %}
-                                    font-family: {% with font=banner.font_family|default:'roboto' %}{% if font == 'roboto' %}'Roboto', sans-serif{% elif font == 'montserrat' %}'Montserrat', sans-serif{% elif font == 'open-sans' %}'Open Sans', sans-serif{% elif font == 'lora' %}'Lora', serif{% elif font == 'merriweather' %}'Merriweather', serif{% elif font == 'playfair-display' %}'Playfair Display', serif{% elif font == 'lobster' %}'Lobster', cursive{% elif font == 'pacifico' %}'Pacifico', cursive{% else %}'Roboto', sans-serif{% endif %}{% endwith %};
-                                ">
-                                    {% if banner.title %}<h1 style="font-size: {{ banner.title_font_size }}px;">{{ banner.title }}</h1>{% endif %}
-                                    {% if banner.subtitle %}<p style="font-size: {{ banner.subtitle_font_size }}px;">{{ banner.subtitle }}</p>{% endif %}
-                                    {% if banner.link and banner.button_text %}
-                                        <a href="{{ banner.link }}" class="slide-btn" style="
-                                            background-color: {{ banner.button_color }};
-                                            color: {{ banner.button_text_color }};
-                                        ">{{ banner.button_text }}</a>
-                                    {% endif %}
-                                </div>
-                            {% endif %}
-                        </div>
-                {% if banner.link and not banner.button_text %}
-                    </a>
-                {% else %}
+                <div class="swiper-slide">
+                    <img src="{{ banner.image.url }}" class="swiper-slide-image" alt="{{ banner.title|default:'Баннер' }}">
+                    <div class="slide-content-wrapper pos-{{ banner.content_position }}">
+                        {% if banner.title or banner.subtitle or banner.button_text %}
+                            <div class="slide-content" style="
+                                background-color: rgba(0, 0, 0, {{ banner.background_opacity_css }});
+                                color: {{ banner.font_color|default:'#FFFFFF' }};
+                                font-family: {% with font=banner.font_family|default:'roboto' %}{% if font == 'roboto' %}'Roboto', sans-serif{% elif font == 'montserrat' %}'Montserrat', sans-serif{% elif font == 'open-sans' %}'Open Sans', sans-serif{% elif font == 'lora' %}'Lora', serif{% elif font == 'merriweather' %}'Merriweather', serif{% elif font == 'playfair-display' %}'Playfair Display', serif{% elif font == 'lobster' %}'Lobster', cursive{% elif font == 'pacifico' %}'Pacifico', cursive{% else %}'Roboto', sans-serif{% endif %}{% endwith %};
+                            ">
+                                {% if banner.title %}<h1>{{ banner.title }}</h1>{% endif %}
+                                {% if banner.subtitle %}<p>{{ banner.subtitle }}</p>{% endif %}
+                                {% if banner.link and banner.button_text %}
+                                    <a href="{{ banner.link }}" class="slide-btn">{{ banner.button_text }}</a>
+                                {% elif banner.link %}
+                                    <a href="{{ banner.link }}" class="slide-full-link"></a>
+                                {% endif %}
+                            </div>
+                        {% elif banner.link %}
+                             <a href="{{ banner.link }}" class="slide-full-link"></a>
+                        {% endif %}
                     </div>
-                {% endif %}
+                </div>
             {% endfor %}
         </div>
         <div class="swiper-pagination"></div><div class="swiper-button-prev"></div><div class="swiper-button-next"></div>
