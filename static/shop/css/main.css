@@ -228,7 +228,7 @@ a:active, button:active, .product-card:active { transform: scale(0.98); opacity:
     /* --- Шапка --- */
     .header { flex-wrap: nowrap; align-items: center; margin-bottom: 0; }
     .search-form-desktop { display: none; }
-    .logo { flex-grow: 1; }
+    .logo { flex-grow: 0; flex-shrink: 0; margin-right: auto; } /* Логотип прижат влево */
     .mobile-nav-container { order: 2; position: relative; } /* "Якорь" для выпадающих меню */
     .user-navigation { flex-grow: 0; justify-content: flex-end; font-size: 0.9em; gap: 0 10px; flex-wrap: nowrap; }
     .user-nav-link { padding: 8px 5px; }
