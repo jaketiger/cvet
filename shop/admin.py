@@ -111,6 +111,7 @@ class SiteSettingsAdmin(SingletonModelAdmin):
         ('Настройки мобильной версии', {
             'description': 'Здесь настраивается внешний вид сайта на смартфонах и планшетах.',
             'fields': (
+                'mobile_force_desktop_view',
                 'mobile_header_style',
                 'mobile_product_grid',
                 'collapse_categories_threshold',
@@ -130,9 +131,12 @@ class SiteSettingsAdmin(SingletonModelAdmin):
                 'base_font_size'
             )
         }),
-        ('Тонкие настройки: Шапка (Логотип)', {
+        ('Тонкие настройки: Шапка', {
             'classes': ('collapse',),
-            'fields': ('logo_color', 'logo_font_size', 'logo_font_family')
+            'fields': (
+                ('logo_color', 'logo_font_size', 'logo_font_family'),
+                ('header_icon_size', 'mobile_icon_size')  # <-- ДОБАВЛЕНО
+            )
         }),
         ('Тонкие настройки: Меню категорий', {
             'classes': ('collapse',),

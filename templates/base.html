@@ -4,7 +4,9 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    {% if not site_settings.mobile_force_desktop_view %}
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% endif %}
     <title>{% block title %}{{ site_settings.shop_name|default:'MegaCvet' }}{% endblock %}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,6 +40,8 @@
             --add-to-cart-text-color: {{ site_settings.add_to_cart_text_color|default:'var(--button-text-color)' }};
             --add-to-cart-hover-bg-color: {{ site_settings.add_to_cart_hover_bg_color|default:'var(--button-hover-bg-color)' }};
             --mobile-dropdown-bg: rgba({{ site_settings.mobile_dropdown_bg_rgb }}, {{ site_settings.mobile_dropdown_opacity_css }});
+            --header-icon-size: {{ site_settings.header_icon_size|default:22 }}px;
+            --mobile-icon-size: {{ site_settings.mobile_icon_size|default:24 }}px;
         }
         body {
             {% if site_settings.background_image %}

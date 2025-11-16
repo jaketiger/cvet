@@ -161,9 +161,26 @@ class SiteSettings(SingletonModel):
     )
     mobile_dropdown_opacity = models.FloatField(
         "Прозрачность фона выпадающих меню (%)",
-        default=95,
+        default=45,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
         help_text="От 0 (полностью прозрачный) до 100 (непрозрачный)."
+    )
+
+    mobile_force_desktop_view = models.BooleanField(
+        "Принудительный десктопный вид на мобильных",
+        default=False,
+        help_text="Если включено, сайт на мобильных устройствах не будет адаптироваться, а покажет полную версию, которую можно масштабировать."
+    )
+
+    header_icon_size = models.PositiveSmallIntegerField(
+        "Размер иконок в шапке (px)",
+        default=22,
+        help_text="Размер иконок 'Кабинет', 'Корзина', 'Поиск', 'Категории' на десктопе."
+    )
+    mobile_icon_size = models.PositiveSmallIntegerField(
+        "Размер иконок в шапке (моб. версия, px)",
+        default=24,
+        help_text="Увеличенный размер иконок для удобства нажатия на мобильных."
     )
 
     shop_name = models.CharField("Название магазина", max_length=100, default="MegaCvet");
