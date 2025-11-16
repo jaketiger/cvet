@@ -3,74 +3,81 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{{ product.name }} - MegaCvet{% endblock %}
+{% block title %}{{ product.name }} - {{ site_settings.shop_name }}{% endblock %}
 
 {% block content %}
-    <div class="product-container">
-        <div class="product-gallery">
-            <div class="main-image">
-                {% if product.image %}
-                    <img id="main-product-image" src="{{ product.image.url }}" alt="{{ product.name }}">
-                {% else %}
-                    <img id="main-product-image" src="{% static 'shop/img/placeholder.png' %}" alt="Изображение отсутствует">
-                {% endif %}
+    <div class="product-detail-container">
+        <!-- ЛЕВАЯ КОЛОНКА: Фото и Состав -->
+        <div class="product-left-column">
+            <div class="product-gallery">
+                <div class="main-image">
+                    {% if product.image %}
+                        <img id="main-product-image" src="{{ product.image.url }}" alt="{{ product.name }}">
+                    {% else %}
+                        <img id="main-product-image" src="{% static 'shop/img/no_image.png' %}" alt="Изображение отсутствует">
+                    {% endif %}
+                </div>
+                {% with all_images=product.images.all %}
+                    {% if product.image or all_images %}
+                        <div class="thumbnails">
+                            {% if product.image %}
+                                <img src="{{ product.image_thumbnail.url }}" alt="Превью {{ product.name }}" class="thumbnail active" onclick="changeMainImage('{{ product.image.url }}', this)">
+                            {% endif %}
+                            {% for img in all_images %}
+                                <img src="{{ img.image_thumbnail.url }}" alt="{{ img.alt_text|default:'Превью товара' }}" class="thumbnail" onclick="changeMainImage('{{ img.image.url }}', this)">
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
             </div>
 
-            {% with all_images=product.images.all %}
-                {% if product.image or all_images %}
-                    <div class="thumbnails">
-                        {% if product.image %}
-                            <img src="{{ product.image_thumbnail.url }}" alt="Превью {{ product.name }}" class="thumbnail active" onclick="changeMainImage('{{ product.image.url }}', this)">
-                        {% endif %}
-                        {% for img in all_images %}
-                            <img src="{{ img.image_thumbnail.url }}" alt="{{ img.alt_text|default:'Превью товара' }}" class="thumbnail" onclick="changeMainImage('{{ img.image.url }}', this)">
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            {% endwith %}
+            {% if product.composition %}
+            <div class="product-composition-section">
+                <h3>{{ product.composition_title|default:site_settings.default_composition_title }}:</h3>
+                <p>{{ product.composition|linebreaksbr }}</p>
+            </div>
+            {% endif %}
         </div>
 
-        <div class="product-info">
+        <!-- ПРАВАЯ КОЛОНКА: Название, Цена, Описание и Кнопка -->
+        <div class="product-right-column">
             <h1>{{ product.name }}</h1>
             <p class="price">{{ product.price }} руб.</p>
 
-            {% if product.description_right %}
-            <div class="description-right">
-                <h3>{{ product.description_right_title|default:site_settings.product_description_right_title }}:</h3>
-                <p>{{ product.description_right|linebreaksbr }}</p>
+            {% if product.description %}
+            <div class="product-description-section">
+                <h3>{{ product.description_title|default:site_settings.default_description_title }}:</h3>
+                <p>{{ product.description|linebreaksbr }}</p>
             </div>
             {% endif %}
 
-            {% if product.stock > 0 %}
-                <p class="stock-status in-stock">
-                    <strong>Наличие:</strong> В наличии
-                </p>
-                <form action="{% url 'cart:cart_add' product.id %}" method="post">
-                    {% csrf_token %}
-                    {{ cart_product_form.quantity.label_tag }}
-                    {{ cart_product_form.quantity }}
-                    <br>
-                    <button type="submit" class="add-to-cart-btn">Добавить в корзину</button>
-                </form>
-            {% else %}
-                <p class="stock-status out-of-stock">
-                    <strong>Наличие:</strong> Нет в наличии
-                </p>
-                <button class="add-to-cart-btn" disabled>Нет в наличии</button>
-            {% endif %}
-
+            <div class="product-actions-box">
+                {% if product.stock > 0 and product.available %}
+                    <p class="stock-status in-stock">
+                        <strong>Наличие:</strong> В наличии
+                    </p>
+                    <form class="add-to-cart-form-detail" action="{% url 'cart:cart_add' product.id %}" method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            {{ cart_product_form.quantity.label_tag }}
+                            {{ cart_product_form.quantity }}
+                        </div>
+                        <button type="submit" class="add-to-cart-btn">Добавить в корзину</button>
+                    </form>
+                {% else %}
+                    <p class="stock-status out-of-stock">
+                        <strong>Наличие:</strong> Нет в наличии
+                    </p>
+                    <button class="add-to-cart-btn" disabled>Нет в наличии</button>
+                {% endif %}
+            </div>
         </div>
     </div>
 
-    {% if product.description_bottom %}
-    <div class="description-bottom-container">
-        <h3>{{ product.description_bottom_title|default:site_settings.product_description_bottom_title }}:</h3>
-        <p>{{ product.description_bottom|linebreaksbr }}</p>
-    </div>
-    {% endif %}
-
     <a href="{% url 'shop:product_list_all' %}" class="back-link">← Вернуться в каталог</a>
+{% endblock %}
 
+{% block extra_scripts %}
     <script>
         function changeMainImage(newSrc, clickedThumbnail) {
             document.getElementById('main-product-image').src = newSrc;
@@ -81,7 +88,4 @@
             clickedThumbnail.classList.add('active');
         }
     </script>
-
-    <!-- Встроенные стили ниже были удалены, чтобы использовались глобальные из main.css -->
-
 {% endblock %}

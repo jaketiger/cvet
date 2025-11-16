@@ -1,4 +1,5 @@
 <!-- shop/templates/shop/home.html -->
+
 {% extends "base.html" %}
 {% load static %}
 
@@ -48,13 +49,9 @@
     <h2 style="text-align: center; margin: 40px 0;">Популярные букеты</h2>
     <div class="product-grid">
         {% for product in featured_products %}
-            <div class="product-card">
-                <a href="{{ product.get_absolute_url }}">{% if product.image_thumbnail %}<img src="{{ product.image_thumbnail.url }}" alt="{{ product.name }}">{% endif %}</a>
-                <h2><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h2><p class="price">{{ product.price }} руб.</p>
-                <form action="{% url 'cart:cart_add' product.id %}" method="post">{% csrf_token %}<input type="hidden" name="quantity" value="1"><input type="hidden" name="update" value="False"><input type="submit" value="В корзину" class="add-to-cart-btn-small"></form>
-            </div>
+            {% include "shop/includes/product_card.html" with product=product %}
         {% empty %}
-            <p style="text-align: center;">Избранных товаров пока нет. Отметьте их в админ-панели.</p>
+            <p style="text-align: center; grid-column: 1 / -1;">Избранных товаров пока нет. Отметьте их в админ-панели.</p>
         {% endfor %}
     </div>
 {% endblock %}

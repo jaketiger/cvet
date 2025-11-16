@@ -1,0 +1,44 @@
+<!-- shop/templates/shop/includes/product_card.html -->
+
+{% load static %}
+<div class="product-card">
+    <a href="{{ product.get_absolute_url }}" class="product-card-link">
+        <div class="product-image-wrapper">
+            <img src="{% if product.image_thumbnail %}{{ product.image_thumbnail.url }}{% else %}{% static 'shop/img/no_image.png' %}{% endif %}" alt="{{ product.name }}" class="product-image">
+
+            {% if product.combined_rank %}
+                <div class="product-rank-badge">{{ product.combined_rank|floatformat:2 }}</div>
+            {% endif %}
+        </div>
+
+        <h2 class="product-title">
+            {% if product.highlighted_name %}
+                {{ product.highlighted_name|safe }}
+            {% else %}
+                {{ product.name }}
+            {% endif %}
+        </h2>
+
+        <div class="product-description">
+            {% if product.highlighted_description %}
+                <p>{{ product.highlighted_description|safe }}</p>
+            {% else %}
+                <p>{{ product.description_right|truncatewords:15 }}</p>
+            {% endif %}
+        </div>
+
+        <div class="product-footer">
+            <span class="product-price">{{ product.price }} ₽</span>
+            {% if product.name_similarity and product.name_similarity > 0.3 %}
+                <span class="product-similarity-badge">Высокое соответствие</span>
+            {% endif %}
+        </div>
+    </a>
+
+    <form action="{% url 'cart:cart_add' product.id %}" method="post" class="add-to-cart-form">
+        {% csrf_token %}
+        <input type="hidden" name="quantity" value="1">
+        <input type="hidden" name="update" value="False">
+        <button type="submit" class="add-to-cart-btn-small">🛒 В корзину</button>
+    </form>
+</div>

@@ -73,11 +73,13 @@ class ProductAdmin(admin.ModelAdmin):
     def image_preview_list(self, obj):
         if obj.image_thumbnail: return format_html('<img src="{}" width="50" />', obj.image_thumbnail.url)
         return "Нет фото"
+
     image_preview_list.short_description = 'Фото'
 
     def image_preview_detail(self, obj):
         if obj.image: return format_html('<img src="{}" width="200" />', obj.image.url)
         return "Нет фото"
+
     image_preview_detail.short_description = 'Превью основного изображения'
 
     list_display = ['name', 'slug', 'image_preview_list', 'category_list', 'price', 'stock', 'available', 'is_featured']
@@ -86,17 +88,22 @@ class ProductAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ['name', 'slug']
     filter_horizontal = ('category',)
-    fieldsets = ((None, {'fields': ('name', 'slug', 'category')}),
-                 ('Основное изображение', {'fields': ('image', 'image_preview_detail')}),
-                 ('Текстовый блок (справа от фото)', {'fields': ('description_right_title', 'description_right')}),
-                 ('Текстовый блок (под фото)', {'fields': ('description_bottom_title', 'description_bottom')}),
-                 ('Цена и наличие', {'fields': ('price', 'stock')}),
-                 ('Статус', {'fields': ('available', 'is_featured')}),)
+
+    fieldsets = (
+        (None, {'fields': ('name', 'slug', 'category')}),
+        ('Основное изображение', {'fields': ('image', 'image_preview_detail')}),
+        ('Состав (блок под фото)', {'fields': ('composition_title', 'composition')}),
+        ('Описание (блок справа от фото)', {'fields': ('description_title', 'description')}),
+        ('Цена и наличие', {'fields': ('price', 'stock')}),
+        ('Статус', {'fields': ('available', 'is_featured')}),
+    )
+
     readonly_fields = ('image_preview_detail',)
     inlines = [ProductImageInline]
 
     def category_list(self, obj):
         return ", ".join([c.name for c in obj.category.all()])
+
     category_list.short_description = 'Категории'
 
 
@@ -117,6 +124,8 @@ class SiteSettingsAdmin(SingletonModelAdmin):
         ('Глобальное оформление сайта', {
             'classes': ('collapse',),
             'fields': (
+                # ▼▼▼ ДОБАВЛЕНА НАСТРОЙКА СТИЛЯ ▼▼▼
+                'navigation_style',
                 ('main_text_color', 'accent_color'),
                 ('body_font_family', 'heading_font_family'),
                 'base_font_size'
@@ -142,7 +151,6 @@ class SiteSettingsAdmin(SingletonModelAdmin):
             'fields': ('footer_font_size', 'footer_font_color')
         }),
 
-        # --- ▼▼▼ ИЗМЕНЕННЫЙ БЛОК ▼▼▼ ---
         ('Тонкие настройки: Кнопки', {
             'classes': ('collapse',),
             'description': """
@@ -160,11 +168,11 @@ class SiteSettingsAdmin(SingletonModelAdmin):
                 'button_font_family',
             )
         }),
-        # --- ▲▲▲ КОНЕЦ ИЗМЕНЕННОГО БЛОКА ▲▲▲ ---
 
         ('Настройки слайдера', {'fields': (('slider_duration', 'slider_effect'),)}),
-        ('Настройки карточки товара (текст)',
-         {'fields': ('product_description_right_title', 'product_description_bottom_title')}),
+        ('Заголовки по умолчанию для страницы товара', {
+            'fields': ('default_composition_title', 'default_description_title')
+        }),
     )
 
     change_form_template = "admin/shop/sitesettings/change_form.html"

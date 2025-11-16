@@ -37,12 +37,14 @@ class Product(models.Model):
     image = models.ImageField(upload_to='products/%Y/%m/%d', blank=True, verbose_name="Основное изображение");
     image_thumbnail = ImageSpecField(source='image', processors=[ResizeToFill(300, 250)], format='JPEG',
                                      options={'quality': 80});
-    description_right_title = models.CharField("Уникальный заголовок блока справа", max_length=100, blank=True,
-                                               help_text="Если оставить пустым, будет использован заголовок из Настроек сайта.");
-    description_right = models.TextField("Текстовый блок (справа от фото)", blank=True);
-    description_bottom_title = models.CharField("Уникальный заголовок блока внизу", max_length=100, blank=True,
-                                                help_text="Если оставить пустым, будет использован заголовок из Настроек сайта.");
-    description_bottom = models.TextField("Текстовый блок (под фото)", blank=True);
+
+    composition_title = models.CharField("Заголовок для 'Состава'", max_length=100, blank=True,
+                                         help_text="Если пусто, будет использован заголовок из Настроек сайта.");
+    composition = models.TextField("Состав (блок под фото)", blank=True);
+    description_title = models.CharField("Заголовок для 'Описания'", max_length=100, blank=True,
+                                         help_text="Если пусто, будет использован заголовок из Настроек сайта.");
+    description = models.TextField("Описание (блок справа от фото)", blank=True);
+
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена");
     stock = models.PositiveIntegerField(verbose_name="Остаток на складе");
     available = models.BooleanField(default=True, verbose_name="Доступен для заказа");
@@ -111,6 +113,24 @@ class Profile(models.Model):
 
 
 class SiteSettings(SingletonModel):
+    # ▼▼▼ ИЗМЕНЕНИЕ: Добавляем 2 новых стиля ▼▼▼
+    NAV_STYLE_CHOICES = [
+        ('underline', 'Анимация подчеркивания'),
+        ('highlight', 'Фоновая подсветка'),
+        ('lift', 'Эффект приподнимания'),
+        ('shadow', 'Сдвиг с тенью (3D)'),
+        ('wave', '"Жидкая" волна'),
+    ]
+    # ▲▲▲ КОНЕЦ ИЗМЕНЕНИЯ ▲▲▲
+
+    navigation_style = models.CharField(
+        "Стиль анимации навигации",
+        max_length=10,
+        choices=NAV_STYLE_CHOICES,
+        default='underline',
+        help_text="Выберите эффект, который будет применяться при наведении на ссылки в шапке, меню категорий и подвале."
+    )
+
     # --- Основные ---
     shop_name = models.CharField("Название магазина", max_length=100, default="MegaCvet");
     contact_phone = models.CharField("Контактный телефон", max_length=50, blank=True);
@@ -159,7 +179,6 @@ class SiteSettings(SingletonModel):
     button_font_family = models.CharField("Стиль шрифта", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True,
                                           help_text="Пусто = шрифт основного текста")
 
-    # --- ДОБАВЛЕНО: Поля для кнопки "В корзину" ---
     add_to_cart_bg_color = models.CharField("Цвет фона кнопки 'В корзину'", max_length=7, blank=True,
                                             help_text="Если пусто, используется основной цвет кнопок.")
     add_to_cart_text_color = models.CharField("Цвет текста кнопки 'В корзину'", max_length=7, blank=True,
@@ -173,11 +192,10 @@ class SiteSettings(SingletonModel):
     slider_duration = models.PositiveIntegerField("Пауза (сек)", default=5);
     slider_effect = models.CharField("Эффект", max_length=10, choices=SLIDER_EFFECT_CHOICES, default='slide')
 
-    # --- Остальное ---
-    product_description_right_title = models.CharField("Заголовок блока справа (по умолч.)", max_length=100,
-                                                       default="Описание");
-    product_description_bottom_title = models.CharField("Заголовок блока внизу (по умолч.)", max_length=100,
-                                                        default="Состав")
+    # --- Заголовки по умолчанию для страницы товара ---
+    default_composition_title = models.CharField("Заголовок 'Состава' (по умолч.)", max_length=100, default="Состав");
+    default_description_title = models.CharField("Заголовок 'Описания' (по умолч.)", max_length=100,
+                                                 default="Описание");
 
     class Meta: verbose_name = "Настройки сайта"
 

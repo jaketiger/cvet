@@ -1,35 +1,30 @@
 <!-- shop/templates/shop/product_list.html -->
+
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Каталог товаров - MegaCvet{% endblock %}
+{% block title %}
+    {% if current_category %}
+        {{ current_category.name }}
+    {% else %}
+        Каталог товаров
+    {% endif %} - {{ site_settings.shop_name }}
+{% endblock %}
 
 {% block content %}
-    <h1>Наш каталог цветов</h1>
+    <h1>
+        {% if current_category %}
+            {{ current_category.name }}
+        {% else %}
+            Наш каталог цветов
+        {% endif %}
+    </h1>
 
     <div class="product-grid">
-    {% for product in products %}
-        <div class="product-card">
-            <a href="{{ product.get_absolute_url }}">
-                {% if product.image %}
-                    <img src="{{ product.image_thumbnail.url }}" alt="{{ product.name }}">
-                {% endif %}
-            </a>
-            <h2>
-                <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
-            </h2>
-            <p class="price">{{ product.price }} руб.</p>
-
-            <form action="{% url 'cart:cart_add' product.id %}" method="post">
-                {% csrf_token %}
-                <input type="hidden" name="quantity" value="1">
-                <input type="hidden" name="update" value="False">
-                <input type="submit" value="В корзину" class="add-to-cart-btn-small">
-            </form>
-
-        </div>
-    {% empty %}
-        <p>В данный момент в каталоге нет товаров.</p>
-    {% endfor %}
+        {% for product in products %}
+            {% include "shop/includes/product_card.html" with product=product %}
+        {% empty %}
+            <p style="grid-column: 1 / -1;">В данный момент в этой категории нет товаров.</p>
+        {% endfor %}
     </div>
 {% endblock %}
