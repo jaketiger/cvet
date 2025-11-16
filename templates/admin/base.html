@@ -1,6 +1,7 @@
 <!-- templates/admin/base.html -->
 {% extends "admin/base.html" %}
 
-{% block extrahead %}{{ block.super }}
+{% block extrahead %}
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{ block.super }}
 {% endblock %}
