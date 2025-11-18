@@ -1,0 +1,6 @@
+<!-- templates/widgets/clearable_color_input.html -->
+
+<div style="display: flex; align-items: center; gap: 10px;">
+    <input type="color" name="{{ widget.name }}" {% if widget.value %}value="{{ widget.value|stringformat:'s' }}"{% endif %} {% include "django/forms/widgets/attrs.html" %}>
+    <a href="#" onclick="this.previousElementSibling.value = ''; return false;" title="Сбросить к значению по умолчанию" style="text-decoration: none; font-size: 1.5em; color: #999;">&times;</a>
+</div>

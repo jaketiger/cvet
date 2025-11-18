@@ -37,14 +37,12 @@ class Product(models.Model):
     image = models.ImageField(upload_to='products/%Y/%m/%d', blank=True, verbose_name="Основное изображение");
     image_thumbnail = ImageSpecField(source='image', processors=[ResizeToFill(300, 250)], format='JPEG',
                                      options={'quality': 80});
-
     composition_title = models.CharField("Заголовок для 'Состава'", max_length=100, blank=True,
                                          help_text="Если пусто, будет использован заголовок из Настроек сайта.");
     composition = models.TextField("Состав (блок под фото)", blank=True);
     description_title = models.CharField("Заголовок для 'Описания'", max_length=100, blank=True,
                                          help_text="Если пусто, будет использован заголовок из Настроек сайта.");
     description = models.TextField("Описание (блок справа от фото)", blank=True);
-
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена");
     stock = models.PositiveIntegerField(verbose_name="Остаток на складе");
     available = models.BooleanField(default=True, verbose_name="Доступен для заказа");
@@ -85,11 +83,10 @@ class Banner(models.Model):
                                    help_text="Если пусто, весь баннер будет ссылкой.")
     content_position = models.CharField("Расположение текста", max_length=20, choices=CONTENT_POSITION_CHOICES,
                                         default='center-center')
-    background_opacity = models.FloatField("Прозрачность фона текста (%)", default=45,
-                                           validators=[MinValueValidator(0), MaxValueValidator(100)],
-                                           help_text="От 0 (полностью прозрачный) до 100 (непрозрачный).")
-    font_color = models.CharField("Цвет шрифта", max_length=7, default='#FFFFFF',
-                                  help_text="В формате HEX, например, #FFFFFF для белого.")
+    background_opacity = models.FloatField("Прозрачность фона текста", default=45,
+                                           validators=[MinValueValidator(0), MaxValueValidator(100)])
+    font_color = models.CharField("Цвет шрифта", max_length=7, blank=True,
+                                  help_text="Сброс к значению по умолчанию: очистите поле (нажмите ×)")
     font_family = models.CharField("Стиль шрифта", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES, default='roboto')
     is_active = models.BooleanField("Активен", default=True, help_text="Только активные баннеры будут показаны.");
     order = models.PositiveIntegerField("Порядок", default=0, help_text="Чем меньше число, тем раньше.")
@@ -113,127 +110,173 @@ class Profile(models.Model):
 
 
 class SiteSettings(SingletonModel):
-    NAV_STYLE_CHOICES = [
-        ('underline', 'Анимация подчеркивания'),
-        ('highlight', 'Фоновая подсветка'),
-        ('lift', 'Эффект приподнимания'),
-        ('shadow', 'Сдвиг с тенью (3D)'),
-        ('wave', '"Жидкая" волна'),
+    NAV_STYLE_CHOICES = [('underline', 'Анимация подчеркивания'), ('highlight', 'Фоновая подсветка'),
+                         ('lift', 'Эффект приподнимания'), ('shadow', 'Сдвиг с тенью (3D)'),
+                         ('wave', '"Жидкая" волна'), ]
+    # ===== НАЧАЛО ИЗМЕНЕНИЙ: Добавлены варианты анимации иконок =====
+    ICON_ANIMATION_CHOICES = [
+        ('scale', 'Увеличение (стандарт)'),
+        ('rotate', 'Вращение'),
+        ('bounce', 'Подпрыгивание'),
     ]
-    navigation_style = models.CharField(
-        "Стиль анимации навигации", max_length=10, choices=NAV_STYLE_CHOICES, default='underline',
-        help_text="Эффект при наведении на ссылки в меню."
-    )
+    # ===== КОНЕЦ ИЗМЕНЕНИЙ =====
+    MOBILE_VIEW_CHOICES = [('adaptive', 'Адаптивный вид (стандарт)'),
+                           ('desktop_full', 'Принудительный десктопный вид (с текстом)'),
+                           ('desktop_icons', 'Принудительный десктопный вид (только иконки)'), ]
 
     MOBILE_HEADER_CHOICES = [
-        ('full', 'Иконки и полный текст (как на десктопе)'),
-        ('partial', 'Иконки и короткий текст (Кабинет, Корзина)'),
+        ('partial', 'Иконки и внизу текст'),
+        ('icons_plus_cat_full', 'Иконки+Категории(полная вер.)'),
         ('icons', 'Только иконки'),
     ]
-    mobile_header_style = models.CharField(
-        "Отображение ссылок в шапке (моб. версия)", max_length=10, choices=MOBILE_HEADER_CHOICES, default='partial'
-    )
 
-    mobile_grid_choices = [
-        (0, 'Как на десктопе (адаптивно)'),
-        (1, 'Одна колонка'),
-        (2, 'Две колонки'),
-        (3, 'Три колонки (для планшетов)'),
-    ]
-    mobile_product_grid = models.PositiveSmallIntegerField(
-        "Кол-во товаров в ряду (моб. версия)", choices=mobile_grid_choices, default=2
-    )
+    MOBILE_GRID_CHOICES = [(0, 'Как на десктопе'), (1, 'Одна колонка'),
+                           (2, 'Две колонки'), (3, 'Три колонки'),
+                           (4, 'Четыре колонки'), ]
 
-    collapse_categories_threshold = models.PositiveSmallIntegerField(
-        "Схлопывать категории в иконку, если их больше чем", default=3,
-        help_text="На мобильных устройствах, если категорий больше этого числа, они скроются под иконку-бургер."
-    )
-    collapse_footer_threshold = models.PositiveSmallIntegerField(
-        "Схлопывать ссылки в подвале, если их больше чем", default=3,
-        help_text="На мобильных, если ссылок в футере больше этого числа, они скроются под иконку 'еще'."
-    )
+    SLIDER_EFFECT_CHOICES = [('slide', 'Пролистывание'), ('fade', 'Наплыв'), ('cube', '3D Куб'),
+                             ('flip', '3D Переворот')]
 
-    mobile_dropdown_bg_color = models.CharField(
-        "Фон выпадающих меню (моб. версия)",
-        max_length=7,
-        default='#FFFFFF',
-        help_text="Цвет фона для выпадающего меню категорий и поиска на мобильных."
-    )
-    mobile_dropdown_opacity = models.FloatField(
-        "Прозрачность фона выпадающих меню (%)",
-        default=45,
-        validators=[MinValueValidator(0), MaxValueValidator(100)],
-        help_text="От 0 (полностью прозрачный) до 100 (непрозрачный)."
-    )
-
-    mobile_force_desktop_view = models.BooleanField(
-        "Принудительный десктопный вид на мобильных",
-        default=False,
-        help_text="Если включено, сайт на мобильных устройствах не будет адаптироваться, а покажет полную версию, которую можно масштабировать."
-    )
-
-    header_icon_size = models.PositiveSmallIntegerField(
-        "Размер иконок в шапке (px)",
-        default=22,
-        help_text="Размер иконок 'Кабинет', 'Корзина', 'Поиск', 'Категории' на десктопе."
-    )
-    mobile_icon_size = models.PositiveSmallIntegerField(
-        "Размер иконок в шапке (моб. версия, px)",
-        default=24,
-        help_text="Увеличенный размер иконок для удобства нажатия на мобильных."
-    )
-
-    shop_name = models.CharField("Название магазина", max_length=100, default="MegaCvet");
-    contact_phone = models.CharField("Контактный телефон", max_length=50, blank=True);
-    admin_notification_emails = models.TextField("Email для уведомлений", blank=True);
+    # --- Основные настройки ---
+    shop_name = models.CharField("Название магазина", max_length=100, default="MegaCvet")
+    contact_phone = models.CharField("Контактный телефон", max_length=50, blank=True)
+    admin_notification_emails = models.TextField("Email для уведомлений", blank=True,
+                                                 help_text="Можно указать несколько адресов через запятую.")
     background_image = models.ImageField("Фоновое изображение", upload_to='backgrounds/', blank=True, null=True)
     delivery_cost = models.DecimalField("Стоимость доставки", max_digits=10, decimal_places=2, default=300.00,
                                         help_text="Стоимость доставки будет добавлена к общей сумме заказа.")
-    main_text_color = models.CharField("Основной цвет текста", max_length=7, default='#333333');
-    accent_color = models.CharField("Акцентный цвет (ссылки, кнопки)", max_length=7, default='#e53935');
-    body_font_family = models.CharField("Шрифт для основного текста", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES,
-                                        default='roboto');
-    heading_font_family = models.CharField("Шрифт для заголовков", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES,
-                                           default='montserrat');
-    base_font_size = models.PositiveIntegerField("Базовый размер шрифта (px)", default=16)
-    logo_color = models.CharField("Цвет", max_length=7, blank=True, help_text="Пусто = глобальный цвет");
-    logo_font_size = models.PositiveIntegerField("Размер (px)", blank=True, null=True,
-                                                 help_text="Пусто = по умолчанию");
-    logo_font_family = models.CharField("Стиль шрифта названия", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES,
-                                        blank=True)
-    category_nav_font_family = models.CharField("Стиль шрифта", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES,
-                                                blank=True)
-    category_nav_font_size = models.PositiveIntegerField("Размер (px)", blank=True, null=True)
-    category_nav_font_color = models.CharField("Цвет текста", max_length=7, blank=True)
-    category_nav_hover_color = models.CharField("Цвет при наведении", max_length=7, blank=True)
-    product_card_title_font_family = models.CharField("Шрифт названия", max_length=50,
-                                                      choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True)
-    product_card_title_font_size = models.PositiveIntegerField("Размер названия (px)", blank=True, null=True)
-    product_card_title_color = models.CharField("Цвет названия", max_length=7, blank=True)
-    product_card_price_color = models.CharField("Цвет цены", max_length=7, blank=True)
-    footer_font_size = models.PositiveIntegerField("Размер шрифта (px)", blank=True, null=True)
-    footer_font_color = models.CharField("Цвет текста", max_length=7, blank=True)
-    button_bg_color = models.CharField("Цвет фона", max_length=7, blank=True, help_text="Пусто = акцентный цвет")
-    button_text_color = models.CharField("Цвет текста", max_length=7, blank=True, help_text="Пусто = белый")
-    button_hover_bg_color = models.CharField("Цвет фона при наведении", max_length=7, blank=True,
-                                             help_text="Пусто = темно-серый (#333)")
-    button_border_radius = models.PositiveIntegerField("Скругление углов (px)", blank=True, null=True,
-                                                       help_text="Пусто = 5px")
-    button_font_family = models.CharField("Стиль шрифта", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True,
-                                          help_text="Пусто = шрифт основного текста")
-    add_to_cart_bg_color = models.CharField("Цвет фона кнопки 'В корзину'", max_length=7, blank=True,
-                                            help_text="Если пусто, используется основной цвет кнопок.")
-    add_to_cart_text_color = models.CharField("Цвет текста кнопки 'В корзину'", max_length=7, blank=True,
-                                              help_text="Если пусто, используется основной цвет текста кнопок.")
-    add_to_cart_hover_bg_color = models.CharField("Цвет фона 'В корзину' при наведении", max_length=7, blank=True,
-                                                  help_text="Если пусто, используется основной цвет кнопок при наведении.")
-    SLIDER_EFFECT_CHOICES = [('slide', 'Пролистывание'), ('fade', 'Наплыв'), ('cube', '3D Куб'),
-                             ('flip', '3D Переворот')];
-    slider_duration = models.PositiveIntegerField("Пауза (сек)", default=5);
+
+    # --- Настройки каталога и товара ---
+    all_products_text = models.CharField("Текст ссылки 'Все товары'", max_length=50, default="Все товары")
+    default_composition_title = models.CharField("Заголовок 'Состава' (по умолч.)", max_length=100, default="Состав")
+    default_description_title = models.CharField("Заголовок 'Описания' (по умолч.)", max_length=100, default="Описание")
+
+    # --- Настройки слайдера ---
+    slider_duration = models.PositiveIntegerField("Пауза (сек)", default=5)
     slider_effect = models.CharField("Эффект", max_length=10, choices=SLIDER_EFFECT_CHOICES, default='slide')
-    default_composition_title = models.CharField("Заголовок 'Состава' (по умолч.)", max_length=100, default="Состав");
-    default_description_title = models.CharField("Заголовок 'Описания' (по умолч.)", max_length=100,
-                                                 default="Описание");
+
+    # --- Глобальное оформление ---
+    navigation_style = models.CharField("Стиль анимации навигации", max_length=10, choices=NAV_STYLE_CHOICES,
+                                        default='underline', help_text="Эффект при наведении на ссылки в меню.")
+    # ===== НАЧАЛО ИЗМЕНЕНИЙ: Добавлено поле для анимации иконок =====
+    icon_animation_style = models.CharField("Стиль анимации иконок", max_length=10, choices=ICON_ANIMATION_CHOICES,
+                                            default='scale', help_text="Эффект при наведении на иконки в шапке.")
+    # ===== КОНЕЦ ИЗМЕНЕНИЙ =====
+
+    # По умолчанию
+    default_font_family = models.CharField("Шрифт", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES, default='roboto')
+    default_font_size = models.PositiveIntegerField("Размер (px)", default=16)
+    default_text_color = models.CharField("Цвет шрифта", max_length=7, default='#333333',
+                                          help_text="Сброс к значению по умолчанию: очистите поле (нажмите ×)")
+
+    # Название магазина
+    logo_font_family = models.CharField("Шрифт", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True,
+                                        help_text="Если пусто, используется значение 'По умолчанию'")
+    logo_font_size = models.PositiveIntegerField("Размер (px)", blank=True, null=True,
+                                                 help_text="Если пусто, используется значение 'По умолчанию'")
+    logo_color = models.CharField("Цвет", max_length=7, blank=True,
+                                  help_text="Сброс к значению по умолчанию: очистите поле (нажмите ×)")
+
+    # Иконки
+    icon_size = models.PositiveIntegerField("Размер (px)", blank=True, null=True,
+                                            help_text="Если пусто, используется значение по умолчанию (22px)")
+    icon_color = models.CharField("Цвет", max_length=7, blank=True,
+                                  help_text="Сброс к значению по умолчанию: очистите поле (нажмите ×)")
+
+    # Категории
+    category_font_family = models.CharField("Шрифт", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True,
+                                            help_text="Если пусто, используется значение 'По умолчанию'")
+    category_font_size = models.PositiveIntegerField("Размер (px)", blank=True, null=True,
+                                                     help_text="Если пусто, используется значение 'По умолчанию'")
+    category_text_color = models.CharField("Цвет шрифта", max_length=7, blank=True,
+                                           help_text="Сброс к значению по умолчанию: очистите поле (нажмите ×)")
+
+    # Футер
+    footer_font_family = models.CharField("Шрифт", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True,
+                                          help_text="Если пусто, используется значение 'По умолчанию'")
+    footer_font_size = models.PositiveIntegerField("Размер (px)", blank=True, null=True,
+                                                   help_text="Если пусто, используется значение 'По умолчанию'")
+    footer_text_color = models.CharField("Цвет шрифта", max_length=7, blank=True,
+                                         help_text="Сброс к значению по умолчанию: очистите поле (нажмите ×)")
+
+    # Название товара на карточке
+    product_title_font_family = models.CharField("Шрифт", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True,
+                                                 help_text="Если пусто, используется значение 'По умолчанию'")
+    product_title_font_size = models.PositiveIntegerField("Размер (px)", blank=True, null=True,
+                                                          help_text="Если пусто, используется значение 'По умолчанию'")
+    product_title_text_color = models.CharField("Цвет шрифта", max_length=7, blank=True,
+                                                help_text="Сброс к значению по умолчанию: очистите поле (нажмите ×)")
+
+    # Заголовки в описании товара
+    product_header_font_family = models.CharField("Шрифт", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES,
+                                                  blank=True,
+                                                  help_text="Если пусто, используется значение 'По умолчанию'")
+    product_header_font_size = models.PositiveIntegerField("Размер (px)", blank=True, null=True,
+                                                           help_text="Если пусто, используется значение 'По умолчанию'")
+    product_header_text_color = models.CharField("Цвет шрифта", max_length=7, blank=True,
+                                                 help_text="Сброс к значению по умолчанию: очистите поле (нажмите ×)")
+
+    accent_color = models.CharField("Акцентный цвет (кнопки)", max_length=7, default='#e53935',
+                                    help_text="Сброс к значению по умолчанию: очистите поле (нажмите ×)")
+    heading_font_family = models.CharField("Шрифт для заголовков", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES,
+                                           default='montserrat')
+
+    # Старые поля, скрыты из админки
+    main_text_color = models.CharField("Основной цвет текста (устарело)", max_length=7, default='#333333',
+                                       editable=False)
+    body_font_family = models.CharField("Шрифт для основного текста (устарело)", max_length=50,
+                                        choices=GLOBAL_FONT_FAMILY_CHOICES, default='roboto', editable=False)
+    base_font_size = models.PositiveIntegerField("Базовый размер шрифта (устарело, px)", default=16, editable=False)
+
+    # --- Настройки кнопок ---
+    button_bg_color = models.CharField("Цвет фона", max_length=7, blank=True,
+                                       help_text="Сброс к значению по умолчанию: очистите поле (нажмите ×)")
+    button_text_color = models.CharField("Цвет текста", max_length=7, blank=True,
+                                         help_text="Сброс к значению по умолчанию: очистите поле (нажмите ×)")
+    button_hover_bg_color = models.CharField("Цвет фона при наведении", max_length=7, blank=True,
+                                             help_text="Сброс к значению по умолчанию: очистите поле (нажмите ×)")
+    button_border_radius = models.PositiveIntegerField("Скругление углов (px)", blank=True, null=True,
+                                                       help_text="Сброс к значению по умолчанию: очистите поле")
+    button_font_family = models.CharField("Стиль шрифта", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True,
+                                          help_text="Если пусто, используется значение 'По умолчанию'")
+    add_to_cart_bg_color = models.CharField("Цвет фона кнопки 'В корзину'", max_length=7, blank=True,
+                                            help_text="Сброс к значению по умолчанию: очистите поле (нажмите ×)")
+    add_to_cart_text_color = models.CharField("Цвет текста кнопки 'В корзину'", max_length=7, blank=True,
+                                              help_text="Сброс к значению по умолчанию: очистите поле (нажмите ×)")
+    add_to_cart_hover_bg_color = models.CharField("Цвет фона 'В корзину' при наведении", max_length=7, blank=True,
+                                                  help_text="Сброс к значению по умолчанию: очистите поле (нажмите ×)")
+
+    # --- Настройки мобильной версии ---
+    mobile_view_mode = models.CharField("Режим отображения на мобильных", max_length=15, choices=MOBILE_VIEW_CHOICES,
+                                        default='adaptive',
+                                        help_text="Выберите, как сайт будет выглядеть на смартфонах.")
+    mobile_header_style = models.CharField("Отображение ссылок в шапке", max_length=25, choices=MOBILE_HEADER_CHOICES,
+                                           default='partial', help_text="Только для адаптивного режима.")
+    mobile_product_grid = models.PositiveSmallIntegerField("Кол-во товаров в ряду", choices=MOBILE_GRID_CHOICES,
+                                                           default=2, help_text="Только для адаптивного режима.")
+    collapse_categories_threshold = models.PositiveSmallIntegerField(
+        "Схлопывать категории в иконку, если их больше чем", default=4, help_text="Только для адаптивного режима.")
+    collapse_footer_threshold = models.PositiveSmallIntegerField("Схлопывать ссылки в подвале, если их больше чем",
+                                                                 default=4, help_text="Только для адаптивного режима.")
+    mobile_dropdown_bg_color = models.CharField("Фон", max_length=7, blank=True, default='',
+                                                help_text="Сброс к значению по умолчанию: очистите поле (нажмите ×)")
+    mobile_dropdown_opacity = models.FloatField("Прозрачность фона", default=95,
+                                                validators=[MinValueValidator(0), MaxValueValidator(100)])
+    mobile_dropdown_font_family = models.CharField("Стиль шрифта", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES,
+                                                   blank=True, help_text="Сброс к значению по умолчанию: очистите поле")
+    mobile_dropdown_font_size = models.PositiveSmallIntegerField("Размер шрифта (px)", blank=True, null=True,
+                                                                 help_text="Сброс к значению по умолчанию: очистите поле")
+    mobile_dropdown_font_color = models.CharField("Цвет текста", max_length=7, blank=True,
+                                                  help_text="Сброс к значению по умолчанию: очистите поле (нажмите ×)")
+    mobile_dropdown_button_bg_color = models.CharField("Цвет фона кнопок", max_length=7, blank=True,
+                                                       help_text="Сброс к значению по умолчанию: очистите поле (нажмите ×)")
+    mobile_dropdown_button_text_color = models.CharField("Цвет текста кнопок", max_length=7, blank=True,
+                                                         help_text="Сброс к значению по умолчанию: очистите поле (нажмите ×)")
+    mobile_dropdown_button_border_radius = models.PositiveSmallIntegerField("Скругление кнопок (px)", blank=True,
+                                                                            null=True,
+                                                                            help_text="Сброс к значению по умолчанию: очистите поле")
+    mobile_dropdown_button_opacity = models.FloatField("Прозрачность кнопок", default=100,
+                                                       validators=[MinValueValidator(0), MaxValueValidator(100)])
 
     class Meta:
         verbose_name = "Настройки сайта"
@@ -243,16 +286,29 @@ class SiteSettings(SingletonModel):
 
     @property
     def mobile_dropdown_opacity_css(self):
-        return self.mobile_dropdown_opacity / 100
+        value = self.mobile_dropdown_opacity / 100;
+        return str(value).replace(',', '.')
 
-    # ▼▼▼ НОВОЕ СВОЙСТВО ДЛЯ КОНВЕРТАЦИИ ЦВЕТА ▼▼▼
     @property
     def mobile_dropdown_bg_rgb(self):
-        hex_color = self.mobile_dropdown_bg_color.lstrip('#')
+        hex_color = (self.mobile_dropdown_bg_color or '#FFFFFF').lstrip('#');
         try:
             return ", ".join(str(int(hex_color[i:i + 2], 16)) for i in (0, 2, 4))
         except (ValueError, IndexError):
-            return "255, 255, 255"  # Возвращаем белый цвет в случае ошибки
+            return "255, 255, 255"
+
+    @property
+    def mobile_dropdown_button_opacity_css(self):
+        value = self.mobile_dropdown_button_opacity / 100;
+        return str(value).replace(',', '.')
+
+    @property
+    def mobile_dropdown_button_bg_rgb(self):
+        hex_color = (self.mobile_dropdown_button_bg_color or self.button_bg_color or self.accent_color).lstrip('#');
+        try:
+            return ", ".join(str(int(hex_color[i:i + 2], 16)) for i in (0, 2, 4))
+        except (ValueError, IndexError):
+            return "229, 57, 53"
 
 
 class FooterPage(models.Model):

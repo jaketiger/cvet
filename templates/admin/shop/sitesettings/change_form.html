@@ -1,54 +1,145 @@
-<!-- templates/admin/shop/sitesettings/change_form.html -->
-
 {% extends "admin/change_form.html" %}
-{% load i18n admin_urls %}
+{% load i18n admin_urls static admin_modify %}
 
-{# Переопределяем блок 'submit_buttons_bottom', чтобы добавить нашу кнопку и информацию #}
-{% block submit_buttons_bottom %}
-    {# Сначала выводим стандартные кнопки "Сохранить", "Удалить" и т.д. #}
-    {{ block.super }}
+{% block field_sets %}
+<fieldset class="module aligned">
+    <h2>Основные настройки</h2>
+    <div class="description">{{ adminform.model_admin.fieldsets.0.1.description|safe }}</div>
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.shop_name %}
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.contact_phone %}
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.admin_notification_emails %}
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.delivery_cost %}
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.background_image %}
+</fieldset>
 
-    {# Добавляем горизонтальную черту для разделения #}
-    <hr style="margin: 20px 0;">
+<fieldset class="module aligned">
+    <h2>Настройки каталога и товара</h2>
+    <div class="description">{{ adminform.model_admin.fieldsets.1.1.description|safe }}</div>
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.all_products_text %}
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.default_composition_title %}
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.default_description_title %}
+</fieldset>
 
-    {# ---- НАЧАЛО БЛОКА РЕЗЕРВНОГО КОПИРОВАНИЯ ---- #}
-    <div class="submit-row">
-        {# Кнопка теперь ссылается на наш новый URL для скачивания #}
-        <a href="{% url 'admin:site_backup_download' %}" class="button">Создать и скачать резервную копию</a>
+<fieldset class="module aligned">
+    <h2>Настройки слайдера (баннеров)</h2>
+    <div class="description">{{ adminform.model_admin.fieldsets.2.1.description|safe }}</div>
+    <div class="form-row">
+        <div>
+            <label>Настройки:</label>
+            {{ adminform.form.slider_duration.label_tag }} {{ adminform.form.slider_duration }}
+            {{ adminform.form.slider_effect.label_tag }} {{ adminform.form.slider_effect }}
+        </div>
+    </div>
+</fieldset>
+
+<fieldset class="module aligned collapse">
+    <h2>Глобальное оформление сайта</h2>
+    <div class="description" style="padding: 10px; background-color: #f2f2f2; border-radius: 4px; margin-bottom: 20px;">
+        {{ adminform.model_admin.fieldsets.3.1.description|safe }}
     </div>
 
-    <div class="help" style="padding: 15px; margin: 20px 0; border: 1px solid #ddd; background-color: #f9f9f9; border-radius: 4px;">
-
-        <h3 style="margin-top: 0; color: #c41c1c;">⚠️ Важная информация о резервном копировании</h3>
-
-        <p>
-            При нажатии на кнопку выше создается полная резервная копия <strong>базы данных</strong> (товары, заказы, пользователи, настройки) с помощью утилиты <code>pg_dump</code>.
-        </p>
-        <p>
-            <strong>Изображения (фото товаров, баннеры) в этот файл НЕ ВКЛЮЧАЮТСЯ.</strong>
-        </p>
-        <p>
-            Для полного восстановления сайта вам необходимо вручную скопировать с сервера папку с медиафайлами.
-        </p>
-        <p>
-            <strong>Путь к папке на сервере:</strong> <code style="font-weight: bold; background-color: #eee; padding: 2px 5px; border-radius: 3px;">{{ media_root_path }}</code>
-        </p>
-
-        <details style="margin-top: 15px; cursor: pointer;">
-            <summary style="font-weight: bold; color: #333;">Показать/скрыть инструкцию по восстановлению</summary>
-            <div style="margin-top: 10px; padding: 10px 0 0 20px; border-left: 3px solid #ccc;">
-                <h4>Пошаговый план восстановления из бэкапа <code>.dump</code>:</h4>
-                <ol>
-                    <li>Разверните чистый проект из GitHub и настройте <code>.env</code>.</li>
-                    <li>Создайте пустую базу данных в PostgreSQL. <strong>Миграции (migrate) применять НЕ НУЖНО!</strong></li>
-                    <li><strong>Скопируйте вашу сохраненную папку <code>media</code> на сервер</strong> по пути, указанному выше.</li>
-                    <li>Положите файл бэкапа <code>.dump</code> на сервер.</li>
-                    <li>Выполните в терминале команду для восстановления из файла: <br><code>pg_restore --clean --no-acl --no-owner -U &lt;user&gt; -d &lt;dbname&gt; &lt;backup_file.dump&gt;</code><br>
-                    <small>(Подставьте имя пользователя, имя базы и имя файла бэкапа)</small></li>
-                    <li>Перезапустите сервер.</li>
-                </ol>
-            </div>
-        </details>
+    <h3>По умолчанию:</h3>
+    <div class="form-row">
+        {{ adminform.form.default_font_family.label_tag }} {{ adminform.form.default_font_family }}
+        {{ adminform.form.default_font_size.label_tag }} {{ adminform.form.default_font_size }}
+        {{ adminform.form.default_text_color.label_tag }} {{ adminform.form.default_text_color }}
     </div>
-    {# ---- КОНЕЦ БЛОКА РЕЗЕРВНОГО КОПИРОВАНИЯ ---- #}
+    <hr>
+
+    <h3>Название магазина (Логотип):</h3>
+    <div class="form-row">
+        {{ adminform.form.logo_font_family.label_tag }} {{ adminform.form.logo_font_family }}
+        {{ adminform.form.logo_font_size.label_tag }} {{ adminform.form.logo_font_size }}
+        {{ adminform.form.logo_color.label_tag }} {{ adminform.form.logo_color }}
+    </div>
+    <hr>
+
+    <h3>Иконки в шапке:</h3>
+    <div class="form-row">
+        {{ adminform.form.icon_size.label_tag }} {{ adminform.form.icon_size }}
+        {{ adminform.form.icon_color.label_tag }} {{ adminform.form.icon_color }}
+    </div>
+    <hr>
+
+    <h3>Категории:</h3>
+    <div class="form-row">
+        {{ adminform.form.category_font_family.label_tag }} {{ adminform.form.category_font_family }}
+        {{ adminform.form.category_font_size.label_tag }} {{ adminform.form.category_font_size }}
+        {{ adminform.form.category_text_color.label_tag }} {{ adminform.form.category_text_color }}
+    </div>
+    <hr>
+
+    <h3>Футер (подвал сайта):</h3>
+    <div class="form-row">
+        {{ adminform.form.footer_font_family.label_tag }} {{ adminform.form.footer_font_family }}
+        {{ adminform.form.footer_font_size.label_tag }} {{ adminform.form.footer_font_size }}
+        {{ adminform.form.footer_text_color.label_tag }} {{ adminform.form.footer_text_color }}
+    </div>
+    <hr>
+
+    <h3>Название товара (в каталоге):</h3>
+    <div class="form-row">
+        {{ adminform.form.product_title_font_family.label_tag }} {{ adminform.form.product_title_font_family }}
+        {{ adminform.form.product_title_font_size.label_tag }} {{ adminform.form.product_title_font_size }}
+        {{ adminform.form.product_title_text_color.label_tag }} {{ adminform.form.product_title_text_color }}
+    </div>
+    <hr>
+
+    <h3>Заголовки в описании товара:</h3>
+    <div class="form-row">
+        {{ adminform.form.product_header_font_family.label_tag }} {{ adminform.form.product_header_font_family }}
+        {{ adminform.form.product_header_font_size.label_tag }} {{ adminform.form.product_header_font_size }}
+        {{ adminform.form.product_header_text_color.label_tag }} {{ adminform.form.product_header_text_color }}
+    </div>
+    <hr>
+
+    <h3>Общие настройки:</h3>
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.navigation_style %}
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.icon_animation_style %}
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.heading_font_family %}
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.accent_color %}
+</fieldset>
+
+<fieldset class="module aligned collapse">
+    <h2>Тонкие настройки: Кнопки</h2>
+     <div class="description">{{ adminform.model_admin.fieldsets.4.1.description|safe }}</div>
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.button_bg_color %}
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.button_text_color %}
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.button_hover_bg_color %}
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.add_to_cart_bg_color %}
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.add_to_cart_text_color %}
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.add_to_cart_hover_bg_color %}
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.button_border_radius %}
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.button_font_family %}
+</fieldset>
+
+<fieldset class="module aligned">
+    <h2>Настройки мобильной версии</h2>
+     <div class="description">{{ adminform.model_admin.fieldsets.5.1.description|safe }}</div>
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.mobile_view_mode %}
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.mobile_header_style %}
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.mobile_product_grid %}
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.collapse_categories_threshold %}
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.collapse_footer_threshold %}
+</fieldset>
+
+<fieldset class="module aligned collapse">
+    <h2>Настройки выпадающих меню (моб. версия)</h2>
+    <div class="description">{{ adminform.model_admin.fieldsets.6.1.description|safe }}</div>
+    <div class="form-row">
+        {{ adminform.form.mobile_dropdown_bg_color.label_tag }} {{ adminform.form.mobile_dropdown_bg_color }}
+        {{ adminform.form.mobile_dropdown_opacity.label_tag }} {{ adminform.form.mobile_dropdown_opacity }}
+    </div>
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.mobile_dropdown_font_color %}
+    <div class="form-row">
+        {{ adminform.form.mobile_dropdown_font_family.label_tag }} {{ adminform.form.mobile_dropdown_font_family }}
+        {{ adminform.form.mobile_dropdown_font_size.label_tag }} {{ adminform.form.mobile_dropdown_font_size }}
+    </div>
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.mobile_dropdown_button_bg_color %}
+    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.mobile_dropdown_button_text_color %}
+    <div class="form-row">
+        {{ adminform.form.mobile_dropdown_button_border_radius.label_tag }} {{ adminform.form.mobile_dropdown_button_border_radius }}
+        {{ adminform.form.mobile_dropdown_button_opacity.label_tag }} {{ adminform.form.mobile_dropdown_button_opacity }}
+    </div>
+</fieldset>
 {% endblock %}

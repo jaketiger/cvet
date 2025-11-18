@@ -1,0 +1,12 @@
+<!-- templates/admin/shop/sitesettings/includes/field_renderer.html -->
+
+<div class="form-row field-{{ field.name }}">
+    <div>
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.field.help_text %}
+            <div class="help">{{ field.field.help_text|safe }}</div>
+        {% endif %}
+        {{ field.errors }}
+    </div>
+</div>

@@ -15,14 +15,11 @@ from django.shortcuts import redirect
 from .forms import SiteSettingsForm, BannerAdminForm
 
 
-class ProfileInline(admin.StackedInline):
-    model = Profile
-    can_delete = False
-    verbose_name_plural = 'Дополнительные поля профиля'
+class ProfileInline(
+    admin.StackedInline): model = Profile; can_delete = False; verbose_name_plural = 'Дополнительные поля профиля'
 
 
-class UserAdmin(BaseUserAdmin):
-    inlines = (ProfileInline,)
+class UserAdmin(BaseUserAdmin): inlines = (ProfileInline,)
 
 
 admin.site.unregister(User)
@@ -31,174 +28,186 @@ admin.site.register(User, UserAdmin)
 
 @admin.register(Banner)
 class BannerAdmin(SortableAdminMixin, admin.ModelAdmin):
-    form = BannerAdminForm
-    def image_preview(self, obj):
-        if obj.image: return format_html('<img src="{}" width="200" />', obj.image.url)
-        return "Нет фото"
-    image_preview.short_description = 'Превью'
-    list_display = ('title', 'image_preview', 'is_active', 'order')
-    list_editable = ('is_active',)
+    form = BannerAdminForm;
+    list_display = ('title', 'image_preview', 'is_active', 'order');
+    list_editable = ('is_active',);
     search_fields = ('title', 'subtitle')
     fieldsets = (('Контент', {'fields': ('title', 'subtitle', 'button_text', 'link', 'content_position')}),
                  ('Стилизация текста', {'fields': ('background_opacity', 'font_color', 'font_family')}),
                  ('Изображение', {'fields': ('image', 'image_preview')}),
-                 ('Статус и порядок', {'fields': ('is_active',)}),)
+                 ('Статус и порядок', {'fields': ('is_active',)}),);
     readonly_fields = ('image_preview',)
+
+    def image_preview(self, obj):
+        if obj.image: return format_html('<img src="{}" width="200" />', obj.image.url)
+        return "Нет фото"
+
+    image_preview.short_description = 'Превью'
 
 
 @admin.register(Category)
-class CategoryAdmin(SortableAdminMixin, admin.ModelAdmin):
-    list_display = ('name', 'slug', 'order')
-    prepopulated_fields = {'slug': ('name',)}
-    search_fields = ['name', 'slug']
+class CategoryAdmin(SortableAdminMixin, admin.ModelAdmin): list_display = (
+    'name', 'slug', 'order'); prepopulated_fields = {'slug': ('name',)}; search_fields = ['name', 'slug']
 
 
 class ProductImageInline(admin.TabularInline):
-    model = ProductImage
-    extra = 1
+    model = ProductImage;
+    extra = 1;
+    fields = ('image', 'image_preview', 'alt_text');
+    readonly_fields = ('image_preview',)
+
     def image_preview(self, obj):
         if obj.image_thumbnail: return format_html('<img src="{}" />', obj.image_thumbnail.url)
         return "Нет фото"
+
     image_preview.short_description = 'Превью'
-    fields = ('image', 'image_preview', 'alt_text')
-    readonly_fields = ('image_preview',)
 
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+    list_display = ['name', 'slug', 'image_preview_list', 'category_list', 'price', 'stock', 'available',
+                    'is_featured'];
+    list_filter = ['available', 'is_featured', 'created', 'updated'];
+    list_editable = ['price', 'stock', 'available', 'is_featured'];
+    prepopulated_fields = {'slug': ('name',)};
+    search_fields = ['name', 'slug'];
+    filter_horizontal = ('category',)
+    fieldsets = ((None, {'fields': ('name', 'slug', 'category')}),
+                 ('Основное изображение', {'fields': ('image', 'image_preview_detail')}),
+                 ('Блок "Состав" (под фото)', {'fields': ('composition_title', 'composition')}),
+                 ('Блок "Описание" (справа от фото)', {'fields': ('description_title', 'description')}),
+                 ('Цена и наличие', {'fields': ('price', 'stock')}),
+                 ('Статус', {'fields': ('available', 'is_featured')}),);
+    readonly_fields = ('image_preview_detail',);
+    inlines = [ProductImageInline]
+
     def image_preview_list(self, obj):
         if obj.image_thumbnail: return format_html('<img src="{}" width="50" />', obj.image_thumbnail.url)
         return "Нет фото"
+
     image_preview_list.short_description = 'Фото'
+
     def image_preview_detail(self, obj):
         if obj.image: return format_html('<img src="{}" width="200" />', obj.image.url)
         return "Нет фото"
+
     image_preview_detail.short_description = 'Превью основного изображения'
 
-    list_display = ['name', 'slug', 'image_preview_list', 'category_list', 'price', 'stock', 'available', 'is_featured']
-    list_filter = ['available', 'is_featured', 'created', 'updated']
-    list_editable = ['price', 'stock', 'available', 'is_featured']
-    prepopulated_fields = {'slug': ('name',)}
-    search_fields = ['name', 'slug']
-    filter_horizontal = ('category',)
-    fieldsets = (
-        (None, {'fields': ('name', 'slug', 'category')}),
-        ('Основное изображение', {'fields': ('image', 'image_preview_detail')}),
-        ('Состав (блок под фото)', {'fields': ('composition_title', 'composition')}),
-        ('Описание (блок справа от фото)', {'fields': ('description_title', 'description')}),
-        ('Цена и наличие', {'fields': ('price', 'stock')}),
-        ('Статус', {'fields': ('available', 'is_featured')}),
-    )
-    readonly_fields = ('image_preview_detail',)
-    inlines = [ProductImageInline]
-
     def category_list(self, obj):
-        return ", ".join([c.name for c in obj.category.all()])
-    category_list.short_description = 'Категории'
+        return ", ".join([c.name for c in obj.category.all()]);
+        category_list.short_description = 'Категории'
 
 
 @admin.register(FooterPage)
-class FooterPageAdmin(SortableAdminMixin, admin.ModelAdmin):
-    list_display = ('title', 'slug', 'order')
-    prepopulated_fields = {'slug': ('title',)}
+class FooterPageAdmin(SortableAdminMixin, admin.ModelAdmin): list_display = (
+    'title', 'slug', 'order'); prepopulated_fields = {'slug': ('title',)}
 
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(SingletonModelAdmin):
     form = SiteSettingsForm
-
     fieldsets = (
-        ('Настройки мобильной версии', {
-            'description': 'Здесь настраивается внешний вид сайта на смартфонах и планшетах.',
+        ('Основные настройки', {
+            'description': "Ключевая информация о вашем магазине: название, контакты, email для уведомлений и стоимость доставки.",
             'fields': (
-                'mobile_force_desktop_view',
-                'mobile_header_style',
-                'mobile_product_grid',
-                'collapse_categories_threshold',
-                'collapse_footer_threshold',
-                'mobile_dropdown_bg_color', # <-- ДОБАВЛЕНО
-                'mobile_dropdown_opacity',  # <-- ДОБАВЛЕНО
+                'shop_name', 'contact_phone', 'admin_notification_emails',
+                'delivery_cost', 'background_image'
             )
         }),
-        ('Основные настройки',
-         {'fields': ('shop_name', 'contact_phone', 'admin_notification_emails', 'delivery_cost', 'background_image')}),
+        ('Настройки каталога и товара', {
+            'description': "Тексты по умолчанию для элементов каталога и страниц товаров.",
+            'fields': (
+                'all_products_text', 'default_composition_title', 'default_description_title'
+            )
+        }),
+        ('Настройки слайдера (баннеров)', {
+            'description': "Управление поведением слайдера на главной странице.",
+            'fields': (
+                ('slider_duration', 'slider_effect'),
+            )
+        }),
         ('Глобальное оформление сайта', {
             'classes': ('collapse',),
+            'description': "Управление основными стилями сайта: шрифтами, размерами и цветами. Эти настройки применяются ко всему сайту, если не переопределены более конкретными параметрами.",
             'fields': (
+                'default_font_family', 'default_font_size', 'default_text_color',
+                'logo_font_family', 'logo_font_size', 'logo_color',
+                'icon_size', 'icon_color',
+                'category_font_family', 'category_font_size', 'category_text_color',
+                'footer_font_family', 'footer_font_size', 'footer_text_color',
+                'product_title_font_family', 'product_title_font_size', 'product_title_text_color',
+                'product_header_font_family', 'product_header_font_size', 'product_header_text_color',
                 'navigation_style',
-                ('main_text_color', 'accent_color'),
-                ('body_font_family', 'heading_font_family'),
-                'base_font_size'
+                'icon_animation_style',
+                'heading_font_family',
+                'accent_color',
             )
-        }),
-        ('Тонкие настройки: Шапка', {
-            'classes': ('collapse',),
-            'fields': (
-                ('logo_color', 'logo_font_size', 'logo_font_family'),
-                ('header_icon_size', 'mobile_icon_size')  # <-- ДОБАВЛЕНО
-            )
-        }),
-        ('Тонкие настройки: Меню категорий', {
-            'classes': ('collapse',),
-            'fields': ('category_nav_font_family', 'category_nav_font_size',
-                       ('category_nav_font_color', 'category_nav_hover_color'))
-        }),
-        ('Тонкие настройки: Карточка товара', {
-            'classes': ('collapse',),
-            'fields': ('product_card_title_font_family', 'product_card_title_font_size',
-                       ('product_card_title_color', 'product_card_price_color'))
-        }),
-        ('Тонкие настройки: Футер', {
-            'classes': ('collapse',),
-            'fields': ('footer_font_size', 'footer_font_color')
         }),
         ('Тонкие настройки: Кнопки', {
             'classes': ('collapse',),
-            'description': """...""",
+            'description': "Кастомизация внешнего вида всех кнопок на сайте. Если поле оставить пустым, будет использован 'Акцентный цвет'.",
             'fields': (
-                ('button_bg_color', 'button_text_color'),
-                'button_hover_bg_color',
-                'add_to_cart_bg_color',
-                'add_to_cart_text_color',
-                'add_to_cart_hover_bg_color',
-                'button_border_radius',
-                'button_font_family',
+                'button_bg_color', 'button_text_color', 'button_hover_bg_color', 'add_to_cart_bg_color',
+                'add_to_cart_text_color', 'add_to_cart_hover_bg_color', 'button_border_radius', 'button_font_family',
             )
         }),
-        ('Настройки слайдера', {'fields': (('slider_duration', 'slider_effect'),)}),
-        ('Заголовки по умолчанию для страницы товара', {
-            'fields': ('default_composition_title', 'default_description_title')
+        ('Настройки мобильной версии', {
+            'description': "Все, что связано с отображением сайта на смартфонах и планшетах.",
+            'fields': (
+                'mobile_view_mode', 'mobile_header_style', 'mobile_product_grid',
+                'collapse_categories_threshold', 'collapse_footer_threshold',
+            )
+        }),
+        ('Настройки выпадающих меню (моб. версия)', {
+            'classes': ('collapse',),
+            'description': "Стилизация всплывающих окон (поиск, корзина, кабинет, категории) в мобильной версии.",
+            'fields': (
+                ('mobile_dropdown_bg_color', 'mobile_dropdown_opacity'),
+                'mobile_dropdown_font_color',
+                ('mobile_dropdown_font_family', 'mobile_dropdown_font_size'),
+                'mobile_dropdown_button_bg_color',
+                'mobile_dropdown_button_text_color',
+                ('mobile_dropdown_button_border_radius', 'mobile_dropdown_button_opacity'),
+            )
         }),
     )
 
     change_form_template = "admin/shop/sitesettings/change_form.html"
 
+    class Media:
+        js = ('admin/js/custom_admin.js',)
+
     def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [path('backup/download/', self.admin_site.admin_view(self.download_backup_view),
-                            name='site_backup_download')]
+        urls = super().get_urls();
+        custom_urls = [
+            path('backup/download/', self.admin_site.admin_view(self.download_backup_view),
+                 name='site_backup_download')];
         return custom_urls + urls
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
-        extra_context = extra_context or {}
-        extra_context['media_root_path'] = settings.MEDIA_ROOT
-        return super().change_view(request, object_id, form_url, extra_context=extra_context)
-
+        extra_context = extra_context or {};
+        extra_context[
+            'media_root_path'] = settings.MEDIA_ROOT;
+        return super().change_view(request, object_id, form_url,
+                                   extra_context=extra_context)
 
     def download_backup_view(self, request):
-        backup_dir = os.path.join(settings.BASE_DIR, 'backups')
-        os.makedirs(backup_dir, exist_ok=True)
-        backup_path = os.path.join(backup_dir, 'backup.dump')
+        backup_dir = os.path.join(settings.BASE_DIR, 'backups');
+        os.makedirs(backup_dir, exist_ok=True);
+        backup_path = os.path.join(backup_dir, 'backup.dump');
         db = settings.DATABASES['default']
         command = ['pg_dump', '-U', db.get('USER'), '-h', db.get('HOST', 'localhost'), '-p', str(db.get('PORT', 5432)),
-                   '--format=custom', '-f', backup_path, db.get('NAME')]
+                   '--format=custom', '-f', backup_path, db.get('NAME')];
         env = os.environ.copy()
         if db.get('PASSWORD'): env['PGPASSWORD'] = db['PASSWORD']
         try:
             subprocess.run(command, env=env, check=True, capture_output=True, text=True)
         except (subprocess.CalledProcessError, FileNotFoundError) as e:
-            error_message = f"Ошибка создания бэкапа: {e}"
-            if isinstance(e, subprocess.CalledProcessError): error_message += f" | {e.stderr}"
-            self.message_user(request, error_message, level='error')
-            return redirect(reverse('admin:shop_sitesettings_change', args=[SiteSettings.objects.get().pk]))
+            error_message = f"Ошибка создания бэкапа: {e}";
+            (isinstance(e, subprocess.CalledProcessError) and (
+                error_message := f"{error_message} | {e.stderr}"));
+            self.message_user(request, error_message,
+                              level='error');
+            return redirect(
+                reverse('admin:shop_sitesettings_change', args=[SiteSettings.objects.get().pk]))
         return FileResponse(open(backup_path, 'rb'), as_attachment=True, filename='megacvet_backup.dump')
