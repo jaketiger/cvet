@@ -41,7 +41,8 @@
 
         <!-- ПРАВАЯ КОЛОНКА: Название, Цена, Описание и Кнопка -->
         <div class="product-right-column">
-            <h1>{{ product.name }}</h1>
+            <!-- Добавлен класс responsive-title -->
+            <h1 class="responsive-title">{{ product.name }}</h1>
             <p class="price">{{ product.price }} руб.</p>
 
             {% if product.description %}

@@ -12,7 +12,8 @@
 {% endblock %}
 
 {% block content %}
-    <h1 style="
+    <!-- Добавлен класс responsive-title для адаптивности -->
+    <h1 class="responsive-title" style="
         {% if not current_category %}
             color: {{ site_settings.catalog_title_color|default:'inherit' }};
             font-family: var(--font-{{ site_settings.catalog_title_font_family|default:site_settings.default_font_family|default:'roboto' }});

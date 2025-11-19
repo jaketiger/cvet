@@ -153,7 +153,6 @@ class SiteSettings(SingletonModel):
         ('icons', 'Только иконки'),
     ]
 
-    # --- ИЗМЕНЕН ТЕКСТ ОПЦИИ 0 ---
     MOBILE_GRID_CHOICES = [(0, 'Как на десктопе (адаптивный от разрешения экрана)'), (1, 'Одна колонка'),
                            (2, 'Две колонки'), (3, 'Три колонки'),
                            (4, 'Четыре колонки'), ]
@@ -176,19 +175,18 @@ class SiteSettings(SingletonModel):
     # Каталог
     catalog_title = models.CharField("Заголовок страницы каталога", max_length=200, default='Наш каталог цветов',
                                      help_text="Отображается на странице 'Все товары'")
-    catalog_title_color = models.CharField("Цвет заголовка каталога", max_length=7, blank=True,
-                                           help_text="Если пусто, используется основной цвет текста")
+    catalog_title_color = models.CharField("Цвет заголовка каталога", max_length=7, blank=True, default='')
     catalog_title_font_family = models.CharField("Шрифт заголовка каталога", max_length=50,
-                                                 choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True)
+                                                 choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True, default='')
     catalog_title_font_style = models.CharField("Начертание заголовка каталога", max_length=20,
                                                 choices=FONT_STYLE_CHOICES, default='bold')
 
     # Популярные
     popular_title = models.CharField("Заголовок (Популярные)", max_length=200, default='Популярные букеты',
                                      help_text="Заголовок блока на главной странице")
-    popular_title_color = models.CharField("Цвет заголовка (Популярные)", max_length=7, blank=True)
+    popular_title_color = models.CharField("Цвет заголовка (Популярные)", max_length=7, blank=True, default='')
     popular_title_font_family = models.CharField("Шрифт (Популярные)", max_length=50,
-                                                 choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True)
+                                                 choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True, default='')
     popular_title_font_style = models.CharField("Начертание (Популярные)", max_length=20, choices=FONT_STYLE_CHOICES,
                                                 default='bold')
 
@@ -208,41 +206,45 @@ class SiteSettings(SingletonModel):
     # Шрифты и цвета
     default_font_family = models.CharField("Шрифт", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES, default='roboto')
     default_font_size = models.PositiveIntegerField("Размер (px)", default=16)
-    default_text_color = models.CharField("Цвет шрифта", max_length=7, default='#333333',
+    default_text_color = models.CharField("Цвет шрифта", max_length=7, default='#333333', blank=True,
                                           help_text="Сброс к значению по умолчанию: очистите поле (нажмите ×)")
 
-    logo_font_family = models.CharField("Шрифт", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True)
+    logo_font_family = models.CharField("Шрифт", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True,
+                                        default='')
     logo_font_size = models.PositiveIntegerField("Размер (px)", blank=True, null=True)
     logo_font_style = models.CharField("Начертание", max_length=20, choices=FONT_STYLE_CHOICES, default='bold')
-    logo_color = models.CharField("Цвет", max_length=7, blank=True)
+    logo_color = models.CharField("Цвет", max_length=7, blank=True, default='')
 
     icon_size = models.PositiveIntegerField("Размер (px)", blank=True, null=True)
-    icon_color = models.CharField("Цвет", max_length=7, blank=True)
+    icon_color = models.CharField("Цвет", max_length=7, blank=True, default='')
 
-    category_font_family = models.CharField("Шрифт", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True)
+    category_font_family = models.CharField("Шрифт", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True,
+                                            default='')
     category_font_size = models.PositiveIntegerField("Размер (px)", blank=True, null=True)
     category_font_style = models.CharField("Начертание", max_length=20, choices=FONT_STYLE_CHOICES, default='normal')
-    category_text_color = models.CharField("Цвет шрифта", max_length=7, blank=True)
+    category_text_color = models.CharField("Цвет шрифта", max_length=7, blank=True, default='')
 
-    footer_font_family = models.CharField("Шрифт", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True)
+    footer_font_family = models.CharField("Шрифт", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True,
+                                          default='')
     footer_font_size = models.PositiveIntegerField("Размер (px)", blank=True, null=True)
     footer_font_style = models.CharField("Начертание", max_length=20, choices=FONT_STYLE_CHOICES, default='normal')
-    footer_text_color = models.CharField("Цвет шрифта", max_length=7, blank=True)
+    footer_text_color = models.CharField("Цвет шрифта", max_length=7, blank=True, default='')
 
-    product_title_font_family = models.CharField("Шрифт", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True)
+    product_title_font_family = models.CharField("Шрифт", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True,
+                                                 default='')
     product_title_font_size = models.PositiveIntegerField("Размер (px)", blank=True, null=True)
     product_title_font_style = models.CharField("Начертание", max_length=20, choices=FONT_STYLE_CHOICES,
                                                 default='normal')
-    product_title_text_color = models.CharField("Цвет шрифта", max_length=7, blank=True)
+    product_title_text_color = models.CharField("Цвет шрифта", max_length=7, blank=True, default='')
 
     product_header_font_family = models.CharField("Шрифт", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES,
-                                                  blank=True)
+                                                  blank=True, default='')
     product_header_font_size = models.PositiveIntegerField("Размер (px)", blank=True, null=True)
     product_header_font_style = models.CharField("Начертание", max_length=20, choices=FONT_STYLE_CHOICES,
                                                  default='bold')
-    product_header_text_color = models.CharField("Цвет шрифта", max_length=7, blank=True)
+    product_header_text_color = models.CharField("Цвет шрифта", max_length=7, blank=True, default='')
 
-    accent_color = models.CharField("Акцентный цвет (кнопки)", max_length=7, default='#e53935')
+    accent_color = models.CharField("Акцентный цвет (кнопки)", max_length=7, default='#e53935', blank=True)
     heading_font_family = models.CharField("Шрифт для заголовков", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES,
                                            default='montserrat')
     heading_font_style = models.CharField("Начертание заголовков", max_length=20, choices=FONT_STYLE_CHOICES,
@@ -256,15 +258,17 @@ class SiteSettings(SingletonModel):
     base_font_size = models.PositiveIntegerField("Базовый размер шрифта (устарело, px)", default=16, editable=False)
 
     # --- Кнопки ---
-    button_bg_color = models.CharField("Цвет фона", max_length=7, blank=True)
-    button_text_color = models.CharField("Цвет текста", max_length=7, blank=True)
-    button_hover_bg_color = models.CharField("Цвет фона при наведении", max_length=7, blank=True)
+    button_bg_color = models.CharField("Цвет фона", max_length=7, blank=True, default='')
+    button_text_color = models.CharField("Цвет текста", max_length=7, blank=True, default='')
+    button_hover_bg_color = models.CharField("Цвет фона при наведении", max_length=7, blank=True, default='')
     button_border_radius = models.PositiveIntegerField("Скругление углов (px)", blank=True, null=True)
-    button_font_family = models.CharField("Стиль шрифта", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True)
+    button_font_family = models.CharField("Стиль шрифта", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES, blank=True,
+                                          default='')
     button_font_style = models.CharField("Начертание", max_length=20, choices=FONT_STYLE_CHOICES, default='bold')
-    add_to_cart_bg_color = models.CharField("Цвет фона кнопки 'В корзину'", max_length=7, blank=True)
-    add_to_cart_text_color = models.CharField("Цвет текста кнопки 'В корзину'", max_length=7, blank=True)
-    add_to_cart_hover_bg_color = models.CharField("Цвет фона 'В корзину' при наведении", max_length=7, blank=True)
+    add_to_cart_bg_color = models.CharField("Цвет фона кнопки 'В корзину'", max_length=7, blank=True, default='')
+    add_to_cart_text_color = models.CharField("Цвет текста кнопки 'В корзину'", max_length=7, blank=True, default='')
+    add_to_cart_hover_bg_color = models.CharField("Цвет фона 'В корзину' при наведении", max_length=7, blank=True,
+                                                  default='')
 
     # --- Мобильная версия ---
 
@@ -272,25 +276,33 @@ class SiteSettings(SingletonModel):
                                            default='partial')
     mobile_product_grid = models.PositiveSmallIntegerField("Кол-во товаров в ряду", choices=MOBILE_GRID_CHOICES,
                                                            default=2)
+
+    # === ИЗМЕНЕНО: ВАЛИДАТОРЫ [-50, 50] ===
+    mobile_font_scale = models.IntegerField(
+        "Корректировка размера заголовков", default=0, blank=True,
+        validators=[MinValueValidator(-50), MaxValueValidator(50)],
+        help_text="0% - стандарт (по центру). Влево до -50%, вправо до +50%."
+    )
+
     collapse_categories_threshold = models.PositiveSmallIntegerField("Схлопывать категории в иконку", default=4)
     collapse_footer_threshold = models.PositiveSmallIntegerField("Схлопывать ссылки в подвале", default=4)
 
     mobile_dropdown_bg_color = models.CharField("Фон", max_length=7, blank=True, default='')
-    mobile_dropdown_opacity = models.FloatField("Прозрачность фона", default=95,
+    mobile_dropdown_opacity = models.FloatField("Прозрачность фона", default=95, blank=True, null=True,
                                                 validators=[MinValueValidator(0), MaxValueValidator(100)])
     mobile_dropdown_font_family = models.CharField("Стиль шрифта", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES,
-                                                   blank=True)
+                                                   blank=True, default='')
     mobile_dropdown_font_size = models.PositiveSmallIntegerField("Размер шрифта (px)", blank=True, null=True)
     mobile_dropdown_font_style = models.CharField("Начертание", max_length=20, choices=FONT_STYLE_CHOICES,
                                                   default='normal')
     mobile_dropdown_view_mode = models.CharField("Вид информации", max_length=20, choices=MENU_VIEW_MODE_CHOICES,
                                                  default='text')
-    mobile_dropdown_font_color = models.CharField("Цвет текста", max_length=7, blank=True)
-    mobile_dropdown_button_bg_color = models.CharField("Цвет фона кнопок", max_length=7, blank=True)
-    mobile_dropdown_button_text_color = models.CharField("Цвет текста кнопок", max_length=7, blank=True)
+    mobile_dropdown_font_color = models.CharField("Цвет текста", max_length=7, blank=True, default='')
+    mobile_dropdown_button_bg_color = models.CharField("Цвет фона кнопок", max_length=7, blank=True, default='')
+    mobile_dropdown_button_text_color = models.CharField("Цвет текста кнопок", max_length=7, blank=True, default='')
     mobile_dropdown_button_border_radius = models.PositiveSmallIntegerField("Скругление кнопок (px)", blank=True,
                                                                             null=True)
-    mobile_dropdown_button_opacity = models.FloatField("Прозрачность кнопок", default=100,
+    mobile_dropdown_button_opacity = models.FloatField("Прозрачность кнопок", default=100, blank=True, null=True,
                                                        validators=[MinValueValidator(0), MaxValueValidator(100)])
 
     class Meta:
@@ -301,8 +313,14 @@ class SiteSettings(SingletonModel):
 
     @property
     def mobile_dropdown_opacity_css(self):
-        value = self.mobile_dropdown_opacity / 100
-        return str(value).replace(',', '.')
+        val = self.mobile_dropdown_opacity if self.mobile_dropdown_opacity is not None else 95
+        return str(val / 100).replace(',', '.')
+
+    @property
+    def mobile_font_scale_css(self):
+        val = self.mobile_font_scale if self.mobile_font_scale is not None else 0
+        factor = 1 + (val / 100)
+        return str(factor).replace(',', '.')
 
     @property
     def mobile_dropdown_bg_rgb(self):
@@ -314,8 +332,8 @@ class SiteSettings(SingletonModel):
 
     @property
     def mobile_dropdown_button_opacity_css(self):
-        value = self.mobile_dropdown_button_opacity / 100
-        return str(value).replace(',', '.')
+        val = self.mobile_dropdown_button_opacity if self.mobile_dropdown_button_opacity is not None else 100
+        return str(val / 100).replace(',', '.')
 
     @property
     def mobile_dropdown_button_bg_rgb(self):

@@ -177,7 +177,8 @@ class SiteSettingsAdmin(SingletonModelAdmin):
             'classes': ('collapse',),
             'description': "Все, что связано с отображением сайта на смартфонах и планшетах.",
             'fields': (
-                'mobile_header_style', 'mobile_product_grid',
+                'mobile_header_style', 'mobile_font_scale',
+                'mobile_product_grid',
                 'collapse_categories_threshold', 'collapse_footer_threshold',
             )
         }),
@@ -200,6 +201,14 @@ class SiteSettingsAdmin(SingletonModelAdmin):
 
     class Media:
         js = ('admin/js/custom_admin.js',)
+
+    # АВТОМАТИЧЕСКОЕ ИСПРАВЛЕНИЕ ДАННЫХ ПРИ СОХРАНЕНИИ
+    def save_model(self, request, obj, form, change):
+        # Если масштаб шрифта выходит за границы -50..50, сбрасываем его в 0
+        if obj.mobile_font_scale is not None:
+            if obj.mobile_font_scale > 50 or obj.mobile_font_scale < -50:
+                obj.mobile_font_scale = 0
+        super().save_model(request, obj, form, change)
 
     def get_urls(self):
         urls = super().get_urls()

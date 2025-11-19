@@ -8,7 +8,9 @@ from django.forms.utils import flatatt
 
 class ClearableColorInput(forms.Widget):
     def render(self, name, value, attrs=None, renderer=None):
-        final_attrs = self.build_attrs(attrs, {'type': 'color', 'name': name})
+        final_attrs = self.build_attrs(self.attrs, attrs)
+        final_attrs['type'] = 'color'
+        final_attrs['name'] = name
         if value:
             final_attrs['value'] = value
 
@@ -21,27 +23,96 @@ class ClearableColorInput(forms.Widget):
         return mark_safe(html)
 
 
-class RangeSliderWithLabels(forms.NumberInput):
+# --- ВИДЖЕТ ДЛЯ ПРОЗРАЧНОСТИ (0 ... 100) ---
+class OpacityRangeSlider(forms.NumberInput):
     input_type = 'range'
 
     def render(self, name, value, attrs=None, renderer=None):
-        final_attrs = self.build_attrs(attrs, {'type': self.input_type, 'name': name})
-        if 'id' not in final_attrs:
-            final_attrs['id'] = f'id_{name}'
+        final_attrs = self.build_attrs(self.attrs, attrs)
+        final_attrs['type'] = self.input_type
+        final_attrs['name'] = name
+        final_attrs['min'] = '0'
+        final_attrs['max'] = '100'
+        final_attrs['step'] = '1'
 
-        if value is not None:
-            final_attrs['value'] = str(value)
+        if value is None or value == '':
+            value = '100'
         else:
-            value = '0'
+            try:
+                final_attrs['value'] = str(int(float(value)))
+            except:
+                final_attrs['value'] = str(value)
 
-        output_id = f'output_{final_attrs["id"]}'
+        output_id = f'output_{final_attrs.get("id", name)}'
+        oninput_js = f"document.getElementById('{output_id}').textContent = this.value + '%'"
+
+        # СТРУКТУРА: [Цифра] [Шкала сверху] [Ползунок]
+        html = f"""
+            <div style="display: flex; align-items: center; gap: 15px; width: 100%;">
+                <!-- Текущее значение (СЛЕВА) -->
+                <span id="{output_id}" style="font-weight: bold; font-size: 14px; min-width: 40px; text-align: right; color: #333;">{final_attrs['value']}%</span>
+
+                <!-- Блок с ползунком -->
+                <div style="flex-grow: 1; display: flex; flex-direction: column;">
+                    <!-- Шкала СВЕРХУ -->
+                    <div style="display: flex; justify-content: space-between; font-size: 10px; color: #888; margin-bottom: 2px;">
+                        <span>0%</span>
+                        <span>100%</span>
+                    </div>
+                    <input{flatatt(final_attrs)} style="width: 100%; cursor: pointer; margin: 0;" oninput="{oninput_js}">
+                </div>
+            </div>
+        """
+        return mark_safe(html)
+
+
+# --- ВИДЖЕТ ДЛЯ КОРРЕКЦИИ ШРИФТА (-50 ... 0 ... +50) ---
+class FontScaleRangeSlider(forms.NumberInput):
+    input_type = 'range'
+
+    def render(self, name, value, attrs=None, renderer=None):
+        final_attrs = self.build_attrs(self.attrs, attrs)
+        final_attrs['type'] = self.input_type
+        final_attrs['name'] = name
+        final_attrs['min'] = '-50'
+        final_attrs['max'] = '50'
+        # ИЗМЕНЕНО: Шаг 2
+        final_attrs['step'] = '2'
+
+        if value is None or value == '':
+            final_attrs['value'] = '0'
+        else:
+            try:
+                int_val = int(float(value))
+                final_attrs['value'] = str(int_val)
+            except:
+                final_attrs['value'] = '0'
+
+        output_id = f'output_{final_attrs.get("id", name)}'
+        oninput_js = f"let v = parseInt(this.value); let s = v > 0 ? '+' + v : v; document.getElementById('{output_id}').textContent = s + '%'"
+
+        display_val = final_attrs['value']
+        try:
+            if int(display_val) > 0:
+                display_val = f"+{display_val}"
+        except:
+            pass
 
         html = f"""
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="color: #666; font-size: 0.9em; width: 30px;">0%</span>
-                <input{flatatt(final_attrs)} style="flex-grow: 1;" oninput="document.getElementById('{output_id}').textContent = this.value + '%'">
-                <span style="color: #666; font-size: 0.9em; width: 40px;">100%</span>
-                <span id="{output_id}" style="font-weight: bold; min-width: 45px; text-align: right;">{value}%</span>
+            <div style="display: flex; align-items: center; gap: 15px; width: 100%;">
+                <!-- Текущее значение (СЛЕВА) -->
+                <span id="{output_id}" style="font-weight: bold; font-size: 14px; min-width: 45px; text-align: right; color: #333;">{display_val}%</span>
+
+                <!-- Блок с ползунком -->
+                <div style="flex-grow: 1; display: flex; flex-direction: column;">
+                    <!-- Шкала СВЕРХУ -->
+                    <div style="display: flex; justify-content: space-between; font-size: 10px; color: #888; margin-bottom: 2px;">
+                        <span style="width: 30px; text-align: left;">-50%</span>
+                        <span style="width: 30px; text-align: center;">0%</span>
+                        <span style="width: 30px; text-align: right;">+50%</span>
+                    </div>
+                    <input{flatatt(final_attrs)} style="width: 100%; cursor: pointer; margin: 0;" oninput="{oninput_js}">
+                </div>
             </div>
         """
         return mark_safe(html)
@@ -74,9 +145,13 @@ class SiteSettingsForm(forms.ModelForm):
             'mobile_dropdown_button_bg_color': ClearableColorInput(),
             'mobile_dropdown_button_text_color': ClearableColorInput(),
 
-            'mobile_dropdown_opacity': RangeSliderWithLabels(attrs={'min': '0', 'max': '100', 'step': '1'}),
-            'mobile_dropdown_button_opacity': RangeSliderWithLabels(attrs={'min': '0', 'max': '100', 'step': '1'}),
-            'background_opacity': RangeSliderWithLabels(attrs={'min': '0', 'max': '100', 'step': '1'}),
+            # Используем ОБЫЧНЫЙ слайдер для прозрачности
+            'mobile_dropdown_opacity': OpacityRangeSlider(),
+            'mobile_dropdown_button_opacity': OpacityRangeSlider(),
+            'background_opacity': OpacityRangeSlider(),
+
+            # Используем ЦЕНТРИРОВАННЫЙ слайдер для шрифта
+            'mobile_font_scale': FontScaleRangeSlider(),
 
             'logo_font_size': forms.NumberInput(attrs={'placeholder': '24'}),
             'icon_size': forms.NumberInput(attrs={'placeholder': '22'}),
@@ -96,5 +171,5 @@ class BannerAdminForm(forms.ModelForm):
         fields = '__all__'
         widgets = {
             'font_color': ClearableColorInput(),
-            'background_opacity': RangeSliderWithLabels(attrs={'min': '0', 'max': '100', 'step': '1'}),
+            'background_opacity': OpacityRangeSlider(),
         }
