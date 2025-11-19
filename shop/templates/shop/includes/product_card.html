@@ -1,5 +1,4 @@
 <!-- shop/templates/shop/includes/product_card.html -->
-
 {% load static %}
 <div class="product-card">
     <a href="{{ product.get_absolute_url }}" class="product-card-link">
@@ -18,14 +17,6 @@
                 {{ product.name }}
             {% endif %}
         </h2>
-
-        <div class="product-description">
-            {% if product.highlighted_description %}
-                <p>{{ product.highlighted_description|safe }}</p>
-            {% else %}
-                <p>{{ product.description_right|truncatewords:15 }}</p>
-            {% endif %}
-        </div>
 
         <div class="product-footer">
             <span class="product-price">{{ product.price }} ₽</span>

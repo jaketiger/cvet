@@ -1,10 +1,21 @@
 <!-- templates/admin/base_site.html -->
 {% extends "admin/base.html" %}
 
-{% block extrastyle %}{{ block.super }}
-    <!-- Здесь можно подключать кастомные CSS для админки, если понадобится -->
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        @media (max-width: 767px) {
+            #header { display: flex; flex-wrap: wrap; align-items: center; }
+            #branding { margin-right: auto; }
+        }
+    </style>
 {% endblock %}
 
-{% block extrahead %}{{ block.super }}
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">{{ site_header|default:_('Django administration') }}</a></h1>
 {% endblock %}
+
+{% block nav-global %}{% endblock %}

@@ -15,7 +15,7 @@ class ClearableColorInput(forms.Widget):
         html = f"""
             <div style="display: flex; align-items: center; gap: 10px; max-width: 200px;">
                 <input{flatatt(final_attrs)}>
-                <a href="#" class="clear-color-btn" title="Сбросить к значению по умолчанию" style="text-decoration: none; font-size: 1.5em; color: #999;" onclick="this.previousElementSibling.value=''; return false;">&times;</a>
+                <a href="#" class="clear-color-btn" title="Сбросить" style="text-decoration: none; font-size: 1.5em; color: #999;" onclick="this.previousElementSibling.value=''; return false;">&times;</a>
             </div>
         """
         return mark_safe(html)
@@ -26,14 +26,22 @@ class RangeSliderWithLabels(forms.NumberInput):
 
     def render(self, name, value, attrs=None, renderer=None):
         final_attrs = self.build_attrs(attrs, {'type': self.input_type, 'name': name})
+        if 'id' not in final_attrs:
+            final_attrs['id'] = f'id_{name}'
+
         if value is not None:
             final_attrs['value'] = str(value)
+        else:
+            value = '0'
+
+        output_id = f'output_{final_attrs["id"]}'
 
         html = f"""
             <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="color: #999; font-size: 0.9em;">0%</span>
-                <input{flatatt(final_attrs)} style="flex-grow: 1;">
-                <span style="color: #999; font-size: 0.9em;">100%</span>
+                <span style="color: #666; font-size: 0.9em; width: 30px;">0%</span>
+                <input{flatatt(final_attrs)} style="flex-grow: 1;" oninput="document.getElementById('{output_id}').textContent = this.value + '%'">
+                <span style="color: #666; font-size: 0.9em; width: 40px;">100%</span>
+                <span id="{output_id}" style="font-weight: bold; min-width: 45px; text-align: right;">{value}%</span>
             </div>
         """
         return mark_safe(html)
@@ -42,44 +50,14 @@ class RangeSliderWithLabels(forms.NumberInput):
 class SiteSettingsForm(forms.ModelForm):
     class Meta:
         model = SiteSettings
-        # ===== НАЧАЛО ИЗМЕНЕНИЙ: Заменяем '__all__' на явный список полей =====
-        fields = (
-            # Основные настройки
-            'shop_name', 'contact_phone', 'admin_notification_emails',
-            'delivery_cost', 'background_image',
-            # Настройки каталога и товара
-            'all_products_text', 'default_composition_title', 'default_description_title',
-            # Настройки слайдера
-            'slider_duration', 'slider_effect',
-            # Глобальное оформление
-            'navigation_style', 'icon_animation_style',
-            'default_font_family', 'default_font_size', 'default_text_color',
-            'logo_font_family', 'logo_font_size', 'logo_color',
-            'icon_size', 'icon_color',
-            'category_font_family', 'category_font_size', 'category_text_color',
-            'footer_font_family', 'footer_font_size', 'footer_text_color',
-            'product_title_font_family', 'product_title_font_size', 'product_title_text_color',
-            'product_header_font_family', 'product_header_font_size', 'product_header_text_color',
-            'heading_font_family', 'accent_color',
-            # Настройки кнопок
-            'button_bg_color', 'button_text_color', 'button_hover_bg_color',
-            'add_to_cart_bg_color', 'add_to_cart_text_color', 'add_to_cart_hover_bg_color',
-            'button_border_radius', 'button_font_family',
-            # Настройки мобильной версии
-            'mobile_view_mode', 'mobile_header_style', 'mobile_product_grid',
-            'collapse_categories_threshold', 'collapse_footer_threshold',
-            'mobile_dropdown_bg_color', 'mobile_dropdown_opacity',
-            'mobile_dropdown_font_family', 'mobile_dropdown_font_size',
-            'mobile_dropdown_font_color', 'mobile_dropdown_button_bg_color',
-            'mobile_dropdown_button_text_color', 'mobile_dropdown_button_border_radius',
-            'mobile_dropdown_button_opacity'
-        )
-        # ===== КОНЕЦ ИЗМЕНЕНИЙ =====
+        fields = '__all__'
 
         widgets = {
             'default_text_color': ClearableColorInput(),
             'logo_color': ClearableColorInput(),
             'icon_color': ClearableColorInput(),
+            'catalog_title_color': ClearableColorInput(),
+            'popular_title_color': ClearableColorInput(),
             'category_text_color': ClearableColorInput(),
             'footer_text_color': ClearableColorInput(),
             'product_title_text_color': ClearableColorInput(),
@@ -98,6 +76,7 @@ class SiteSettingsForm(forms.ModelForm):
 
             'mobile_dropdown_opacity': RangeSliderWithLabels(attrs={'min': '0', 'max': '100', 'step': '1'}),
             'mobile_dropdown_button_opacity': RangeSliderWithLabels(attrs={'min': '0', 'max': '100', 'step': '1'}),
+            'background_opacity': RangeSliderWithLabels(attrs={'min': '0', 'max': '100', 'step': '1'}),
 
             'logo_font_size': forms.NumberInput(attrs={'placeholder': '24'}),
             'icon_size': forms.NumberInput(attrs={'placeholder': '22'}),

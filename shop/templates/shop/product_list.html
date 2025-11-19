@@ -7,16 +7,23 @@
     {% if current_category %}
         {{ current_category.name }}
     {% else %}
-        Каталог товаров
+        {{ site_settings.catalog_title|default:'Каталог товаров' }}
     {% endif %} - {{ site_settings.shop_name }}
 {% endblock %}
 
 {% block content %}
-    <h1>
+    <h1 style="
+        {% if not current_category %}
+            color: {{ site_settings.catalog_title_color|default:'inherit' }};
+            font-family: var(--font-{{ site_settings.catalog_title_font_family|default:site_settings.default_font_family|default:'roboto' }});
+            font-weight: {% if site_settings.catalog_title_font_style == 'bold' %}bold{% else %}normal{% endif %};
+            font-style: {% if site_settings.catalog_title_font_style == 'italic' %}italic{% else %}normal{% endif %};
+        {% endif %}
+    ">
         {% if current_category %}
             {{ current_category.name }}
         {% else %}
-            Наш каталог цветов
+            {{ site_settings.catalog_title|default:'Наш каталог цветов' }}
         {% endif %}
     </h1>
 

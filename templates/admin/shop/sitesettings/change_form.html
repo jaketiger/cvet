@@ -1,145 +1,229 @@
+<!-- templates/admin/shop/sitesettings/change_form.html -->
 {% extends "admin/change_form.html" %}
 {% load i18n admin_urls static admin_modify %}
 
+{# --- СТИЛИ --- #}
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* --- 1. ИСПРАВЛЕНИЕ ВНЕШНЕГО ВИДА РУБРИК --- */
+
+    /* Убираем белые "коробки" вокруг групп полей */
+    .change-form .module {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        margin-bottom: 30px !important;
+    }
+
+    /* Стили для рядов полей - УБИРАЕМ ЛИНИЮ СНИЗУ */
+    .change-form .form-row {
+        border-bottom: none !important;
+        padding: 12px 0 !important;
+    }
+
+    /* --- 2. ЗАГОЛОВКИ РУБРИК (КОНТРАСТНЫЕ) --- */
+    .change-form fieldset h2,
+    .change-form .module h2 {
+        color: #000000 !important;                 /* Текст ЧЕРНЫЙ (максимальный контраст) */
+        text-transform: uppercase !important;      /* Заглавные буквы */
+        margin: 20px 0 15px 0 !important;
+        border: none !important;                   /* Убираем рамку */
+        border-bottom: 3px solid #417690 !important; /* Жирная синяя линия снизу для разделения */
+        box-shadow: none !important;
+        letter-spacing: 1px;
+    }
+
+    /* Ссылка "Показать/Скрыть" */
+    .change-form fieldset h2 a.collapse-toggle {
+        color: #417690 !important;
+        font-size: 12px !important;
+        font-weight: normal !important;
+        text-transform: none !important;
+        margin-left: 15px;
+        vertical-align: middle;
+    }
+
+    /* --- 3. ПАНЕЛЬ БЭКАПОВ --- */
+    .backup-panel {
+        background-color: #e8eaeb;
+        border: 1px solid #ccc;
+        margin-top: 60px;
+        padding: 20px;
+        border-radius: 6px;
+        color: #333;
+    }
+    /* Заголовок панели бэкапов */
+    .backup-panel h2 {
+        margin-top: 0 !important;
+        padding: 0 !important;
+        background: none !important;
+        border: none !important;
+        color: #333 !important;
+        font-size: 16px !important;
+        font-weight: bold !important;
+        text-transform: none !important;
+    }
+
+    /* Кнопки сохранения вверху */
+    .top-submit-row {
+        margin-bottom: 20px;
+        padding: 15px 0;
+        text-align: right;
+        border-bottom: 1px solid #ccc;
+    }
+
+    /* Предупреждения */
+    .backup-alert {
+        font-size: 13px;
+        color: #333;
+        margin-bottom: 20px;
+        line-height: 1.5;
+        background: #fff;
+        padding: 15px;
+        border-left: 5px solid #c62828;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .warning-text {
+        color: #c62828;
+        font-weight: bold;
+    }
+
+    /* Кнопки бэкапа */
+    .backup-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    .backup-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 4px;
+        color: white !important;
+        font-weight: bold;
+        font-size: 13px;
+        border: none;
+        transition: opacity 0.2s;
+    }
+    .backup-btn:hover { opacity: 0.9; }
+
+    .btn-db { background-color: #455a64; }
+    .btn-media { background-color: #455a64; }
+    .btn-env { background-color: #607d8b; }
+
+    /* Инструкция */
+    .backup-instructions {
+        background-color: #fff;
+        border: 1px solid #ccc;
+        padding: 15px;
+        border-radius: 4px;
+    }
+    .backup-instructions summary {
+        cursor: pointer;
+        font-weight: bold;
+        color: #444;
+    }
+    .code-snippet {
+        display: block;
+        background: #2d2d2d;
+        color: #f0f0f0;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        border-left: 4px solid #4caf50;
+    }
+</style>
+{% endblock %}
+
+
+
+
+{# --- 1. ВСТАВЛЯЕМ КНОПКИ В НАЧАЛО ФОРМЫ --- #}
 {% block field_sets %}
-<fieldset class="module aligned">
-    <h2>Основные настройки</h2>
-    <div class="description">{{ adminform.model_admin.fieldsets.0.1.description|safe }}</div>
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.shop_name %}
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.contact_phone %}
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.admin_notification_emails %}
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.delivery_cost %}
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.background_image %}
-</fieldset>
+    <div class="submit-row-top">
+        {% submit_row %}
+    </div>
+    {{ block.super }}
+{% endblock %}
 
-<fieldset class="module aligned">
-    <h2>Настройки каталога и товара</h2>
-    <div class="description">{{ adminform.model_admin.fieldsets.1.1.description|safe }}</div>
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.all_products_text %}
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.default_composition_title %}
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.default_description_title %}
-</fieldset>
+{# --- 2. ПАНЕЛЬ БЭКАПОВ ВНИЗУ --- #}
+{% block after_related_objects %}
+    {{ block.super }}
 
-<fieldset class="module aligned">
-    <h2>Настройки слайдера (баннеров)</h2>
-    <div class="description">{{ adminform.model_admin.fieldsets.2.1.description|safe }}</div>
-    <div class="form-row">
-        <div>
-            <label>Настройки:</label>
-            {{ adminform.form.slider_duration.label_tag }} {{ adminform.form.slider_duration }}
-            {{ adminform.form.slider_effect.label_tag }} {{ adminform.form.slider_effect }}
+    <div class="backup-panel">
+        <h2>📦 Центр восстановления</h2>
+
+        <details style="margin-bottom: 15px;">
+            <summary>ℹ️ Что входит в эти файлы? (Нажмите, чтобы развернуть)</summary>
+            <div class="backup-alert" style="margin-top: 10px; border-left: 5px solid #546e7a;">
+                <ul style="padding-left: 20px; margin: 0;">
+                    <li style="margin-bottom: 5px;"><strong>БД (.dump):</strong> Тексты, товары, цены, заказы. <span class="warning-text">НЕ содержит картинки!</span></li>
+                    <li style="margin-bottom: 5px;"><strong>Media (.zip):</strong> Содержит <strong>ПАПКУ</strong> со всеми фотографиями товаров и баннеры. <span class="warning-text">Скачать обязательно!</span></li>
+                    <li style="margin-bottom: 5px;"><strong>Файл .env:</strong> Содержит пароли. <span class="warning-text">ВАЖНО:</span> Если скачался как <code>env</code> (без точки), переименуйте в <code>.env</code>!</li>
+                    <li><strong>Config (PM2):</strong> Настройки запуска сервера (ecosystem.config.js).</li>
+                </ul>
+            </div>
+        </details>
+
+        <div class="backup-buttons">
+            <a href="{% url 'admin:site_backup_db' %}" class="backup-btn btn-db">
+                1. Скачать БД (.dump)
+            </a>
+            <a href="{% url 'admin:site_backup_media' %}" class="backup-btn btn-media">
+                2. Скачать Media (.zip)
+            </a>
+            <a href="{% url 'admin:site_backup_env' %}" class="backup-btn btn-env">
+                3. Скачать .env
+            </a>
+            <a href="{% url 'admin:site_backup_config' %}" class="backup-btn btn-env">
+                4. Скачать Config (PM2)
+            </a>
         </div>
-    </div>
-</fieldset>
 
-<fieldset class="module aligned collapse">
-    <h2>Глобальное оформление сайта</h2>
-    <div class="description" style="padding: 10px; background-color: #f2f2f2; border-radius: 4px; margin-bottom: 20px;">
-        {{ adminform.model_admin.fieldsets.3.1.description|safe }}
+        <details class="backup-instructions">
+            <summary>📖 Инструкция по восстановлению (Универсальная)</summary>
+            <div>
+                <p style="margin-top: 10px; font-size: 13px;">Пошаговый план развертывания на чистом сервере:</p>
+                <ol style="padding-left: 20px; font-size: 13px; line-height: 1.6;">
+                    <li>
+                        <strong>Код и окружение:</strong>
+                        <div class="code-snippet">git clone https://github.com/username/repo.git /path/to/project
+cd /path/to/project
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt</div>
+                    </li>
+                    <li>
+                        <strong>Конфигурация:</strong>
+                        Загрузите файл <code>.env</code> в корень проекта.
+                    </li>
+                    <li>
+                        <strong>Медиа-файлы:</strong>
+                        Распакуйте архив <strong>ПАПКУ</strong> media в <code>/path/to/project/media/</code>.
+                    </li>
+                    <li>
+                        <strong>База данных:</strong>
+                        <br>Создайте пустую БД. Не делайте migrate. Выполните:
+                        <div class="code-snippet">pg_restore --clean --no-acl --no-owner -U <db_user> -d <db_name> <backup_file>.dump</div>
+                    </li>
+                    <li>
+                        <strong>Запуск и права:</strong>
+                        <div class="code-snippet">python manage.py collectstatic --noinput
+# ВАЖНО: Замените <your_linux_user> на реальное имя пользователя (например, www_jaketiger)
+sudo chown -R <your_linux_user>:<your_linux_user> /path/to/project
+sudo find /path/to/project/media -type d -exec chmod 755 {} \;
+sudo find /path/to/project/media -type f -exec chmod 644 {} \;
+# Перезапуск PM2
+pm2 restart ecosystem.config.js</div>
+                    </li>
+                </ol>
+            </div>
+        </details>
     </div>
-
-    <h3>По умолчанию:</h3>
-    <div class="form-row">
-        {{ adminform.form.default_font_family.label_tag }} {{ adminform.form.default_font_family }}
-        {{ adminform.form.default_font_size.label_tag }} {{ adminform.form.default_font_size }}
-        {{ adminform.form.default_text_color.label_tag }} {{ adminform.form.default_text_color }}
-    </div>
-    <hr>
-
-    <h3>Название магазина (Логотип):</h3>
-    <div class="form-row">
-        {{ adminform.form.logo_font_family.label_tag }} {{ adminform.form.logo_font_family }}
-        {{ adminform.form.logo_font_size.label_tag }} {{ adminform.form.logo_font_size }}
-        {{ adminform.form.logo_color.label_tag }} {{ adminform.form.logo_color }}
-    </div>
-    <hr>
-
-    <h3>Иконки в шапке:</h3>
-    <div class="form-row">
-        {{ adminform.form.icon_size.label_tag }} {{ adminform.form.icon_size }}
-        {{ adminform.form.icon_color.label_tag }} {{ adminform.form.icon_color }}
-    </div>
-    <hr>
-
-    <h3>Категории:</h3>
-    <div class="form-row">
-        {{ adminform.form.category_font_family.label_tag }} {{ adminform.form.category_font_family }}
-        {{ adminform.form.category_font_size.label_tag }} {{ adminform.form.category_font_size }}
-        {{ adminform.form.category_text_color.label_tag }} {{ adminform.form.category_text_color }}
-    </div>
-    <hr>
-
-    <h3>Футер (подвал сайта):</h3>
-    <div class="form-row">
-        {{ adminform.form.footer_font_family.label_tag }} {{ adminform.form.footer_font_family }}
-        {{ adminform.form.footer_font_size.label_tag }} {{ adminform.form.footer_font_size }}
-        {{ adminform.form.footer_text_color.label_tag }} {{ adminform.form.footer_text_color }}
-    </div>
-    <hr>
-
-    <h3>Название товара (в каталоге):</h3>
-    <div class="form-row">
-        {{ adminform.form.product_title_font_family.label_tag }} {{ adminform.form.product_title_font_family }}
-        {{ adminform.form.product_title_font_size.label_tag }} {{ adminform.form.product_title_font_size }}
-        {{ adminform.form.product_title_text_color.label_tag }} {{ adminform.form.product_title_text_color }}
-    </div>
-    <hr>
-
-    <h3>Заголовки в описании товара:</h3>
-    <div class="form-row">
-        {{ adminform.form.product_header_font_family.label_tag }} {{ adminform.form.product_header_font_family }}
-        {{ adminform.form.product_header_font_size.label_tag }} {{ adminform.form.product_header_font_size }}
-        {{ adminform.form.product_header_text_color.label_tag }} {{ adminform.form.product_header_text_color }}
-    </div>
-    <hr>
-
-    <h3>Общие настройки:</h3>
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.navigation_style %}
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.icon_animation_style %}
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.heading_font_family %}
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.accent_color %}
-</fieldset>
-
-<fieldset class="module aligned collapse">
-    <h2>Тонкие настройки: Кнопки</h2>
-     <div class="description">{{ adminform.model_admin.fieldsets.4.1.description|safe }}</div>
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.button_bg_color %}
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.button_text_color %}
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.button_hover_bg_color %}
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.add_to_cart_bg_color %}
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.add_to_cart_text_color %}
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.add_to_cart_hover_bg_color %}
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.button_border_radius %}
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.button_font_family %}
-</fieldset>
-
-<fieldset class="module aligned">
-    <h2>Настройки мобильной версии</h2>
-     <div class="description">{{ adminform.model_admin.fieldsets.5.1.description|safe }}</div>
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.mobile_view_mode %}
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.mobile_header_style %}
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.mobile_product_grid %}
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.collapse_categories_threshold %}
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.collapse_footer_threshold %}
-</fieldset>
-
-<fieldset class="module aligned collapse">
-    <h2>Настройки выпадающих меню (моб. версия)</h2>
-    <div class="description">{{ adminform.model_admin.fieldsets.6.1.description|safe }}</div>
-    <div class="form-row">
-        {{ adminform.form.mobile_dropdown_bg_color.label_tag }} {{ adminform.form.mobile_dropdown_bg_color }}
-        {{ adminform.form.mobile_dropdown_opacity.label_tag }} {{ adminform.form.mobile_dropdown_opacity }}
-    </div>
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.mobile_dropdown_font_color %}
-    <div class="form-row">
-        {{ adminform.form.mobile_dropdown_font_family.label_tag }} {{ adminform.form.mobile_dropdown_font_family }}
-        {{ adminform.form.mobile_dropdown_font_size.label_tag }} {{ adminform.form.mobile_dropdown_font_size }}
-    </div>
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.mobile_dropdown_button_bg_color %}
-    {% include "admin/shop/sitesettings/includes/field_renderer.html" with field=adminform.form.mobile_dropdown_button_text_color %}
-    <div class="form-row">
-        {{ adminform.form.mobile_dropdown_button_border_radius.label_tag }} {{ adminform.form.mobile_dropdown_button_border_radius }}
-        {{ adminform.form.mobile_dropdown_button_opacity.label_tag }} {{ adminform.form.mobile_dropdown_button_opacity }}
-    </div>
-</fieldset>
 {% endblock %}

@@ -8,7 +8,7 @@
     <title>{% block title %}{{ site_settings.shop_name|default:'MegaCvet' }}{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&family=Open+Sans:wght@400;700&family=Lora:wght@400;700&family=Merriweather:wght@400;700&family=Playfair+Display:wght@400;700&family=Lobster&family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400&family=Montserrat:ital,wght@0,400;0,700;1,400&family=Open+Sans:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,700;1,400&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lobster&family=Pacifico&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
     <link rel="stylesheet" href="{% static 'shop/css/main.css' %}">
 
@@ -31,41 +31,69 @@
             --base-font-size: var(--default-font-size);
             --main-text-color: var(--default-text-color);
             --accent-color: {{ site_settings.accent_color|default:'#e53935' }};
-            --heading-font-family: var(--font-{{ site_settings.heading_font_family|default:'montserrat' }});
 
+            /* Заголовки */
+            --heading-font-family: var(--font-{{ site_settings.heading_font_family|default:'montserrat' }});
+            --heading-font-weight: {% if site_settings.heading_font_style == 'bold' %}bold{% else %}normal{% endif %};
+            --heading-font-style: {% if site_settings.heading_font_style == 'italic' %}italic{% else %}normal{% endif %};
+
+            /* Логотип */
             --logo-font-family: var(--font-{{ site_settings.logo_font_family|default:site_settings.default_font_family|default:'roboto' }});
             --logo-font-size: {{ site_settings.logo_font_size|default:24 }}px;
             --logo-color: {{ site_settings.logo_color|default:'var(--default-text-color)' }};
+            --logo-font-weight: {% if site_settings.logo_font_style == 'bold' %}bold{% else %}normal{% endif %};
+            --logo-font-style: {% if site_settings.logo_font_style == 'italic' %}italic{% else %}normal{% endif %};
 
+            /* Иконки */
             --icon-size: {{ site_settings.icon_size|default:22 }}px;
             --icon-color: {{ site_settings.icon_color|default:'currentColor' }};
 
+            /* Категории */
             --category-font-family: var(--font-{{ site_settings.category_font_family|default:site_settings.default_font_family|default:'roboto' }});
             --category-font-size: {{ site_settings.category_font_size|default:site_settings.default_font_size|default:16 }}px;
             --category-text-color: {{ site_settings.category_text_color|default:'var(--default-text-color)' }};
+            --category-font-weight: {% if site_settings.category_font_style == 'bold' %}bold{% else %}normal{% endif %};
+            --category-font-style: {% if site_settings.category_font_style == 'italic' %}italic{% else %}normal{% endif %};
 
+            /* Футер */
             --footer-font-family: var(--font-{{ site_settings.footer_font_family|default:site_settings.default_font_family|default:'roboto' }});
             --footer-font-size: {{ site_settings.footer_font_size|default:14 }}px;
             --footer-text-color: {{ site_settings.footer_text_color|default:'#555555' }};
+            --footer-font-weight: {% if site_settings.footer_font_style == 'bold' %}bold{% else %}normal{% endif %};
+            --footer-font-style: {% if site_settings.footer_font_style == 'italic' %}italic{% else %}normal{% endif %};
 
+            /* Название товара */
             --product-title-font-family: var(--font-{{ site_settings.product_title_font_family|default:site_settings.default_font_family|default:'roboto' }});
             --product-title-font-size: {{ site_settings.product_title_font_size|default:1.1 }}em;
             --product-title-text-color: {{ site_settings.product_title_text_color|default:'var(--default-text-color)' }};
+            --product-title-font-weight: {% if site_settings.product_title_font_style == 'bold' %}bold{% else %}normal{% endif %};
+            --product-title-font-style: {% if site_settings.product_title_font_style == 'italic' %}italic{% else %}normal{% endif %};
 
+            /* Заголовки в товаре */
             --product-header-font-family: var(--font-{{ site_settings.product_header_font_family|default:site_settings.heading_font_family|default:'montserrat' }});
             --product-header-font-size: {{ site_settings.product_header_font_size|default:1.2 }}em;
             --product-header-text-color: {{ site_settings.product_header_text_color|default:'var(--default-text-color)' }};
+            --product-header-font-weight: {% if site_settings.product_header_font_style == 'bold' %}bold{% else %}normal{% endif %};
+            --product-header-font-style: {% if site_settings.product_header_font_style == 'italic' %}italic{% else %}normal{% endif %};
 
+            /* Кнопки */
             --button-font-family: var(--font-{{ site_settings.button_font_family|default:site_settings.default_font_family|default:'roboto' }});
             --button-bg-color: {{ site_settings.button_bg_color|default:'var(--accent-color)' }};
             --button-text-color: {{ site_settings.button_text_color|default:'#FFFFFF' }};
             --button-hover-bg-color: {{ site_settings.button_hover_bg_color|default:'#333333' }};
             --button-border-radius: {{ site_settings.button_border_radius|default:5 }}px;
+            --button-font-weight: {% if site_settings.button_font_style == 'bold' %}bold{% else %}normal{% endif %};
+            --button-font-style: {% if site_settings.button_font_style == 'italic' %}italic{% else %}normal{% endif %};
+
             --add-to-cart-bg-color: {{ site_settings.add_to_cart_bg_color|default:'var(--button-bg-color)' }};
             --add-to-cart-text-color: {{ site_settings.add_to_cart_text_color|default:'var(--button-text-color)' }};
             --add-to-cart-hover-bg-color: {{ site_settings.add_to_cart_hover_bg_color|default:'var(--button-hover-bg-color)' }};
 
             --mobile-icon-size: {{ site_settings.icon_size|default:24 }}px;
+
+            /* Мобильное меню */
+            --mobile-dropdown-font-weight: {% if site_settings.mobile_dropdown_font_style == 'bold' %}bold{% else %}normal{% endif %};
+            --mobile-dropdown-font-style: {% if site_settings.mobile_dropdown_font_style == 'italic' %}italic{% else %}normal{% endif %};
         }
 
         body {
@@ -74,25 +102,166 @@
             {% endif %}
         }
 
+        /* Применение стилей к элементам */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: var(--heading-font-weight);
+            font-style: var(--heading-font-style);
+        }
+
+        .logo a {
+            font-weight: var(--logo-font-weight);
+            font-style: var(--logo-font-style);
+        }
+
+        .category-nav-desktop a, .category-nav-header a {
+            font-weight: var(--category-font-weight);
+            font-style: var(--category-font-style);
+        }
+
+        .footer {
+            font-weight: var(--footer-font-weight);
+            font-style: var(--footer-font-style);
+        }
+
+        .product-title {
+            font-weight: var(--product-title-font-weight);
+            font-style: var(--product-title-font-style);
+            /* Используем line-clamp вместо truncate template filter */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .product-composition-section h3, .product-description-section h3 {
+            font-weight: var(--product-header-font-weight);
+            font-style: var(--product-header-font-style);
+        }
+
+        .btn, button, input[type="submit"], a.btn-primary, a.btn-secondary {
+            font-weight: var(--button-font-weight);
+            font-style: var(--button-font-style);
+        }
+
         .mobile-dropdown-content {
             font-family: var(--font-{{ site_settings.mobile_dropdown_font_family|default:site_settings.default_font_family|default:'roboto' }});
             font-size: {{ site_settings.mobile_dropdown_font_size|default:site_settings.default_font_size|default:16 }}px;
             color: {{ site_settings.mobile_dropdown_font_color|default:'var(--default-text-color)' }};
+            font-weight: var(--mobile-dropdown-font-weight);
+            font-style: var(--mobile-dropdown-font-style);
         }
         .mobile-dropdown-content a:not(.btn) {
             color: {{ site_settings.mobile_dropdown_font_color|default:'var(--default-text-color)' }} !important;
         }
-        .mobile-dropdown-content .btn, .mobile-dropdown-content .btn-secondary {
+
+        /* Режим КНОПОК */
+        .mobile-dropdown-content .btn,
+        .mobile-dropdown-content .btn-secondary,
+        .mobile-menu-mode-buttons a {
             background-color: rgba({{ site_settings.mobile_dropdown_button_bg_rgb }}, {{ site_settings.mobile_dropdown_button_opacity_css }}) !important;
             color: {{ site_settings.mobile_dropdown_button_text_color|default:site_settings.button_text_color|default:'#FFFFFF' }} !important;
             border-radius: {{ site_settings.mobile_dropdown_button_border_radius|default:site_settings.button_border_radius|default:5 }}px !important;
             border: none !important;
+            display: block;
+            margin-bottom: 8px;
+            text-align: center;
+            padding: 10px;
+            text-decoration: none !important;
+        }
+
+        /* Режим ТЕКСТА */
+        .mobile-menu-mode-text a {
+             display: block;
+             padding: 8px 0;
+             text-decoration: none;
+             border-bottom: none;
+             background-color: transparent !important;
+             color: {{ site_settings.mobile_dropdown_font_color|default:'var(--default-text-color)' }} !important;
+        }
+        .mobile-menu-mode-text a:hover {
+            text-decoration: underline !important;
+            opacity: 0.8;
+        }
+
+        /* --- МОБИЛЬНАЯ АДАПТАЦИЯ КАРТОЧЕК ТОВАРОВ --- */
+        @media (max-width: 992px) {
+            /* === БАЗОВЫЕ СТИЛИ ДЛЯ МОБИЛЬНОЙ КАРТОЧКИ === */
+            .product-card {
+                min-width: 0 !important; /* Разрешает сжатие карточки */
+                box-sizing: border-box !important;
+                display: flex !important;
+                flex-direction: column !important;
+                height: 100% !important;
+            }
+            .product-card-link {
+                display: flex;
+                flex-direction: column;
+                flex-grow: 1;
+            }
+            .product-image-wrapper {
+                margin: 0 0 8px 0 !important;
+                width: 100% !important;
+                aspect-ratio: 4/3;
+            }
+            .add-to-cart-form {
+                margin-top: auto !important; /* Прижимаем кнопку к низу */
+                padding: 0 !important;
+            }
+            .add-to-cart-btn-small {
+                width: 100% !important;
+                display: block !important;
+                white-space: nowrap; /* Текст в одну строку */
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            /* === 0. АДАПТИВНЫЙ РЕЖИМ (Как на десктопе, с авто-размером) === */
+            /* Пытается вместить столько, сколько влезет, но не меньше 120px */
+            .mobile-grid-col-0 .product-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) !important;
+                gap: 8px !important;
+            }
+            .mobile-grid-col-0 .product-card { padding: 6px !important; }
+            .mobile-grid-col-0 .product-title { font-size: 0.8rem !important; margin-bottom: 4px !important; line-height: 1.2 !important; -webkit-line-clamp: 2; height: 2.4em; }
+            .mobile-grid-col-0 .product-price { font-size: 0.9rem !important; }
+            .mobile-grid-col-0 .add-to-cart-btn-small { padding: 6px 0 !important; font-size: 0.8rem !important; }
+
+
+            /* === 1. ОДНА КОЛОНКА (Крупно) === */
+            .mobile-grid-col-1 .product-grid { grid-template-columns: 1fr !important; gap: 15px !important; }
+            .mobile-grid-col-1 .product-card { padding: 15px !important; }
+            .mobile-grid-col-1 .product-title { font-size: 1.1rem !important; margin-bottom: 10px !important; }
+            .mobile-grid-col-1 .product-price { font-size: 1.2rem !important; }
+            .mobile-grid-col-1 .add-to-cart-btn-small { padding: 10px 0 !important; font-size: 1rem !important; }
+
+
+            /* === 2. ДВЕ КОЛОНКИ (Средне - стандарт) === */
+            .mobile-grid-col-2 .product-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+            .mobile-grid-col-2 .product-card { padding: 10px !important; }
+            .mobile-grid-col-2 .product-title { font-size: 0.9rem !important; margin-bottom: 6px !important; line-height: 1.25 !important; height: 2.5em; }
+            .mobile-grid-col-2 .product-price { font-size: 1rem !important; }
+            .mobile-grid-col-2 .add-to-cart-btn-small { padding: 8px 0 !important; font-size: 0.9rem !important; }
+
+
+            /* === 3. ТРИ КОЛОНКИ (Мелко) === */
+            .mobile-grid-col-3 .product-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 6px !important; }
+            .mobile-grid-col-3 .product-card { padding: 5px !important; }
+            .mobile-grid-col-3 .product-title { font-size: 0.75rem !important; margin-bottom: 4px !important; line-height: 1.2 !important; height: 2.4em; }
+            .mobile-grid-col-3 .product-price { font-size: 0.85rem !important; }
+            .mobile-grid-col-3 .add-to-cart-btn-small { padding: 5px 0 !important; font-size: 0.75rem !important; }
+
+
+            /* === 4. ЧЕТЫРЕ КОЛОНКИ (Очень мелко - микро режим) === */
+            .mobile-grid-col-4 .product-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 4px !important; }
+            .mobile-grid-col-4 .product-card { padding: 3px !important; border-radius: 4px !important; }
+            .mobile-grid-col-4 .product-title { font-size: 0.65rem !important; margin-bottom: 2px !important; line-height: 1.1 !important; height: 2.2em; }
+            .mobile-grid-col-4 .product-price { font-size: 0.75rem !important; }
+            .mobile-grid-col-4 .add-to-cart-btn-small { padding: 3px 0 !important; font-size: 0.65rem !important; }
         }
     </style>
 </head>
-{# ===== НАЧАЛО ИЗМЕНЕНИЙ: Добавлен класс для анимации иконок ===== #}
-<body class="nav-style-{{ site_settings.navigation_style }} icon-anim-{{ site_settings.icon_animation_style|default:'scale' }} mobile-view-{{ site_settings.mobile_view_mode }} mobile-grid-col-{{ site_settings.mobile_product_grid }} mobile-header-{{ site_settings.mobile_header_style }}">
-{# ===== КОНЕЦ ИЗМЕНЕНИЙ ===== #}
+<body class="nav-style-{{ site_settings.navigation_style }} icon-anim-{{ site_settings.icon_animation_style|default:'scale' }} mobile-view-adaptive mobile-grid-col-{{ site_settings.mobile_product_grid }} mobile-header-{{ site_settings.mobile_header_style }}">
 
 <div class="site-wrapper">
     <header class="header">
@@ -133,15 +302,51 @@
                 <div class="mobile-dropdown-panel" id="mobile-panel">
                     <div class="mobile-dropdown-content" style="background: rgba({{ site_settings.mobile_dropdown_bg_rgb|default:'255, 255, 255' }}, {{ site_settings.mobile_dropdown_opacity_css|default:'0.95' }}); {% if site_settings.mobile_dropdown_opacity > 0 %}box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #eee;{% endif %}">
                         <div class="search-form-mobile-wrapper" id="search-wrapper"><form class="search-form-mobile" action="{% url 'shop:search_results' %}" method="get"><input type="text" name="q" placeholder="Поиск по товарам..."><button type="submit" class="btn-primary">Найти</button></form></div>
-                        <div class="category-nav-mobile-wrapper" id="category-wrapper"><div class="category-nav-mobile"><a href="{% url 'shop:product_list_all' %}" class="category-link-item">{{ site_settings.all_products_text|default:'Все товары' }}</a>{% for c in categories %}<a href="{{ c.get_absolute_url }}" class="category-link-item">{{ c.name }}</a>{% endfor %}</div></div>
-                        <div class="user-nav-mobile-wrapper" id="cabinet-wrapper"><nav class="user-nav-mobile">{% if user.is_authenticated %}<p class="user-greeting">Здравствуйте, {{ user.first_name|default:user.username }}!</p><a href="{% url 'shop:cabinet' %}" class="btn">Личный кабинет</a><form id="logout-form-mobile" action="{% url 'logout' %}" method="post" style="display: contents;">{% csrf_token %}<a href="#" onclick="document.getElementById('logout-form-mobile').submit(); return false;" class="btn btn-secondary">Выйти</a></form>{% else %}<a href="{% url 'login' %}" class="btn">Войти</a><a href="{% url 'users:register' %}" class="btn btn-secondary">Регистрация</a>{% endif %}</nav></div>
-                        <div class="cart-nav-mobile-wrapper" id="cart-wrapper"><div class="cart-summary-mobile">{% if cart %}<p>Товаров в корзине: <strong>{{ cart|length }}</strong></p><p>На сумму: <strong>{{ cart.get_total_price }} руб.</strong></p><a href="{% url 'cart:cart_detail' %}" class="btn btn-secondary">Перейти в корзину</a><a href="{% url 'orders:order_create' %}" class="btn">Оформить заказ</a>{% else %}<p>Ваша корзина пуста</p><a href="{% url 'shop:product_list_all' %}" class="btn">К покупкам</a>{% endif %}</div></div>
+
+                        <div class="category-nav-mobile-wrapper" id="category-wrapper">
+                            <div class="category-nav-mobile {% if site_settings.mobile_dropdown_view_mode == 'buttons' %}mobile-menu-mode-buttons{% else %}mobile-menu-mode-text{% endif %}">
+                                <a href="{% url 'shop:product_list_all' %}" class="category-link-item">{{ site_settings.all_products_text|default:'Все товары' }}</a>
+                                {% for c in categories %}
+                                    <a href="{{ c.get_absolute_url }}" class="category-link-item">{{ c.name }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="user-nav-mobile-wrapper" id="cabinet-wrapper">
+                            <nav class="user-nav-mobile {% if site_settings.mobile_dropdown_view_mode == 'buttons' %}mobile-menu-mode-buttons{% else %}mobile-menu-mode-text{% endif %}">
+                                {% if user.is_authenticated %}
+                                    <p class="user-greeting">Здравствуйте, {{ user.first_name|default:user.username }}!</p>
+                                    <a href="{% url 'shop:cabinet' %}" class="{% if site_settings.mobile_dropdown_view_mode == 'buttons' %}btn{% endif %}">Личный кабинет</a>
+                                    <form id="logout-form-mobile" action="{% url 'logout' %}" method="post" style="display: contents;">
+                                        {% csrf_token %}
+                                        <a href="#" onclick="document.getElementById('logout-form-mobile').submit(); return false;" class="{% if site_settings.mobile_dropdown_view_mode == 'buttons' %}btn btn-secondary{% endif %}">Выйти</a>
+                                    </form>
+                                {% else %}
+                                    <a href="{% url 'login' %}" class="{% if site_settings.mobile_dropdown_view_mode == 'buttons' %}btn{% endif %}">Войти</a>
+                                    <a href="{% url 'users:register' %}" class="{% if site_settings.mobile_dropdown_view_mode == 'buttons' %}btn btn-secondary{% endif %}">Регистрация</a>
+                                {% endif %}
+                            </nav>
+                        </div>
+
+                        <div class="cart-nav-mobile-wrapper" id="cart-wrapper">
+                            <div class="cart-summary-mobile {% if site_settings.mobile_dropdown_view_mode == 'buttons' %}mobile-menu-mode-buttons{% else %}mobile-menu-mode-text{% endif %}">
+                                {% if cart %}
+                                    <p>Товаров в корзине: <strong>{{ cart|length }}</strong></p>
+                                    <p>На сумму: <strong>{{ cart.get_total_price }} руб.</strong></p>
+                                    <a href="{% url 'cart:cart_detail' %}" class="{% if site_settings.mobile_dropdown_view_mode == 'buttons' %}btn btn-secondary{% endif %}">Перейти в корзину</a>
+                                    <a href="{% url 'orders:order_create' %}" class="{% if site_settings.mobile_dropdown_view_mode == 'buttons' %}btn{% endif %}">Оформить заказ</a>
+                                {% else %}
+                                    <p>Ваша корзина пуста</p>
+                                    <a href="{% url 'shop:product_list_all' %}" class="{% if site_settings.mobile_dropdown_view_mode == 'buttons' %}btn{% endif %}">К покупкам</a>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {% if site_settings.mobile_view_mode == 'adaptive' and site_settings.mobile_header_style == 'icons_plus_cat_full' %}
+        {% if site_settings.mobile_header_style == 'icons_plus_cat_full' %}
             <nav class="category-nav-header">
                 <a href="{% url 'shop:product_list_all' %}" class="category-link-item">{{ site_settings.all_products_text|default:'Все товары' }}</a>
                 {% for c in categories %}<a href="{{ c.get_absolute_url }}" class="category-link-item">{{ c.name }}</a>{% endfor %}
