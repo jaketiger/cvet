@@ -106,6 +106,8 @@
         h1, h2, h3, h4, h5, h6 {
             font-weight: var(--heading-font-weight);
             font-style: var(--heading-font-style);
+            overflow-wrap: break-word;
+            word-wrap: break-word;
         }
 
         .logo a {
@@ -154,7 +156,6 @@
             color: {{ site_settings.mobile_dropdown_font_color|default:'var(--default-text-color)' }} !important;
         }
 
-        /* Режим КНОПОК */
         .mobile-dropdown-content .btn,
         .mobile-dropdown-content .btn-secondary,
         .mobile-menu-mode-buttons a {
@@ -169,7 +170,6 @@
             text-decoration: none !important;
         }
 
-        /* Режим ТЕКСТА */
         .mobile-menu-mode-text a {
              display: block;
              padding: 8px 0;
@@ -183,23 +183,20 @@
             opacity: 0.8;
         }
 
-        /* --- ТИПОГРАФИКА ДЛЯ МОБИЛЬНЫХ --- */
+        /* --- МОБИЛЬНАЯ СЕТКА ТОВАРОВ И ТИПОГРАФИКА --- */
         @media (max-width: 992px) {
-            /* Адаптация заголовков с учетом настройки из админки */
+            /* Адаптация заголовков с учетом ползунка */
             .responsive-title {
-                /* Умножаем базовый размер 1.8rem на коэффициент из настроек */
                 font-size: calc(1.8rem * {{ site_settings.mobile_font_scale_css|default:'1' }}) !important;
                 line-height: 1.3 !important;
                 word-wrap: break-word;
             }
-
-            /* Если нужно уменьшить и другие h1, h2 */
             h1 { font-size: calc(1.8rem * {{ site_settings.mobile_font_scale_css|default:'1' }}); }
             h2 { font-size: calc(1.5rem * {{ site_settings.mobile_font_scale_css|default:'1' }}); }
 
             .logo a { font-size: 1.4rem !important; }
 
-            /* --- МОБИЛЬНАЯ СЕТКА ТОВАРОВ --- */
+            /* Общие стили для карточки */
             .product-card {
                 padding: 8px !important;
                 min-width: 0 !important;
@@ -211,33 +208,49 @@
             .product-card-link { display: flex; flex-direction: column; flex-grow: 1; }
             .product-image-wrapper { margin: 0 0 8px 0 !important; width: 100% !important; aspect-ratio: 4/3; }
             .add-to-cart-form { margin-top: auto !important; padding: 0 !important; }
-            .add-to-cart-btn-small { width: 100% !important; display: block !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-            .product-title { min-height: 2.4em !important; margin-bottom: 5px !important; line-height: 1.3 !important; }
 
-            .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) !important; gap: 8px !important; }
-            .mobile-grid-col-0 .product-card { padding: 6px !important; }
-            .mobile-grid-col-0 .product-title { font-size: 0.8rem !important; margin-bottom: 4px !important; line-height: 1.2 !important; height: 2.4em; }
-            .mobile-grid-col-0 .product-price { font-size: 0.9rem !important; }
-            .mobile-grid-col-0 .add-to-cart-btn-small { padding: 6px 0 !important; font-size: 0.8rem !important; }
+            /* Кнопка В корзину - всегда на всю ширину на моб */
+            .add-to-cart-btn-small {
+                width: 100% !important;
+                display: block !important;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
 
+            /* --- 0. РЕЖИМ "КАК НА ДЕСКТОПЕ" (АДАПТИВНЫЙ) --- */
+            .mobile-grid-col-0 .product-grid {
+                /* Снизили minmax до 85px, чтобы влезало 4 карточки на ~360px экранах */
+                grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)) !important;
+                gap: 5px !important;
+            }
+            .mobile-grid-col-0 .product-card { padding: 5px !important; }
+            .mobile-grid-col-0 .product-title { font-size: 0.7rem !important; margin-bottom: 4px !important; line-height: 1.2 !important; height: 2.4em; }
+            .mobile-grid-col-0 .product-price { font-size: 0.8rem !important; }
+            .mobile-grid-col-0 .add-to-cart-btn-small { padding: 4px 0 !important; font-size: 0.7rem !important; }
+
+            /* --- 1 КОЛОНКА --- */
             .mobile-grid-col-1 .product-grid { grid-template-columns: 1fr !important; gap: 15px !important; }
             .mobile-grid-col-1 .product-card { padding: 15px !important; }
             .mobile-grid-col-1 .product-title { font-size: 1.1rem !important; margin-bottom: 10px !important; }
             .mobile-grid-col-1 .product-price { font-size: 1.2rem !important; }
             .mobile-grid-col-1 .add-to-cart-btn-small { padding: 10px 0 !important; font-size: 1rem !important; }
 
+            /* --- 2 КОЛОНКИ --- */
             .mobile-grid-col-2 .product-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
             .mobile-grid-col-2 .product-card { padding: 10px !important; }
             .mobile-grid-col-2 .product-title { font-size: 0.9rem !important; margin-bottom: 6px !important; line-height: 1.25 !important; height: 2.5em; }
             .mobile-grid-col-2 .product-price { font-size: 1rem !important; }
             .mobile-grid-col-2 .add-to-cart-btn-small { padding: 8px 0 !important; font-size: 0.9rem !important; }
 
+            /* --- 3 КОЛОНКИ --- */
             .mobile-grid-col-3 .product-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 6px !important; }
             .mobile-grid-col-3 .product-card { padding: 5px !important; }
             .mobile-grid-col-3 .product-title { font-size: 0.75rem !important; margin-bottom: 4px !important; line-height: 1.2 !important; height: 2.4em; }
             .mobile-grid-col-3 .product-price { font-size: 0.85rem !important; }
             .mobile-grid-col-3 .add-to-cart-btn-small { padding: 5px 0 !important; font-size: 0.75rem !important; }
 
+            /* --- 4 КОЛОНКИ --- */
             .mobile-grid-col-4 .product-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 4px !important; }
             .mobile-grid-col-4 .product-card { padding: 3px !important; border-radius: 4px !important; }
             .mobile-grid-col-4 .product-title { font-size: 0.65rem !important; margin-bottom: 2px !important; line-height: 1.1 !important; height: 2.2em; }

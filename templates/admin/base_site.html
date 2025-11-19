@@ -5,45 +5,43 @@
 
 {% block extrahead %}
     {{ block.super }}
-    <!-- Включаем мобильную адаптацию для админки -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Этот тег заставляет мобильный браузер показывать нормальный интерфейс, а не микро-текст -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
-        /* Исправления для мобильной версии админки */
+        /* Небольшие улучшения для мобильных, чтобы интерфейс не разваливался,
+           но сохранял "графический вид" */
+
         @media (max-width: 767px) {
+            /* Делаем таблицы прокручиваемыми, чтобы не рвали дизайн */
+            .change-list .results {
+                overflow-x: auto;
+                width: 100%;
+                display: block;
+            }
+
             /* Шапка */
             #header {
-                display: flex;
-                flex-wrap: wrap;
-                align-items: center;
+                padding: 10px;
+                height: auto;
+                overflow: visible;
+            }
+
+            /* Кнопки действий */
+            .submit-row {
                 padding: 10px;
             }
-            #branding { margin-right: auto; }
-            #user-tools {
-                margin-top: 10px;
-                text-align: right;
-                width: 100%;
-            }
-
-            /* Таблицы */
-            .change-list .results { overflow-x: auto; }
-
-            /* Названия моделей */
-            .model-group th { white-space: normal !important; }
-
-            /* Кнопки */
             .submit-row input {
                 width: 100%;
-                margin-bottom: 10px !important;
+                margin-bottom: 10px;
             }
-            .object-tools li {
-                float: none;
-                display: block;
-                margin-bottom: 5px;
-            }
-            .object-tools a {
-                display: block;
-                text-align: center;
+
+            /* Поля ввода на всю ширину */
+            .form-row input[type=text],
+            .form-row input[type=password],
+            .form-row select {
+                width: 100%;
+                box-sizing: border-box;
             }
         }
     </style>
