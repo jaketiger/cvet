@@ -5,11 +5,46 @@
 
 {% block extrahead %}
     {{ block.super }}
+    <!-- Включаем мобильную адаптацию для админки -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
     <style>
+        /* Исправления для мобильной версии админки */
         @media (max-width: 767px) {
-            #header { display: flex; flex-wrap: wrap; align-items: center; }
+            /* Шапка */
+            #header {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                padding: 10px;
+            }
             #branding { margin-right: auto; }
+            #user-tools {
+                margin-top: 10px;
+                text-align: right;
+                width: 100%;
+            }
+
+            /* Таблицы */
+            .change-list .results { overflow-x: auto; }
+
+            /* Названия моделей */
+            .model-group th { white-space: normal !important; }
+
+            /* Кнопки */
+            .submit-row input {
+                width: 100%;
+                margin-bottom: 10px !important;
+            }
+            .object-tools li {
+                float: none;
+                display: block;
+                margin-bottom: 5px;
+            }
+            .object-tools a {
+                display: block;
+                text-align: center;
+            }
         }
     </style>
 {% endblock %}
