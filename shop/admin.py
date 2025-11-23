@@ -3,7 +3,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
-from .models import Category, Product, Profile, SiteSettings, FooterPage, ProductImage, Banner
+from .models import Category, Product, Profile, SiteSettings, FooterPage, ProductImage, Banner, Benefit
 from solo.admin import SingletonModelAdmin
 from adminsortable2.admin import SortableAdminMixin
 from django.utils.html import format_html
@@ -16,6 +16,7 @@ from django.conf import settings
 from django.http import FileResponse
 from django.shortcuts import redirect
 from .forms import SiteSettingsForm, BannerAdminForm
+from django.utils.safestring import mark_safe
 
 
 class ProfileInline(admin.StackedInline):
@@ -38,10 +39,12 @@ class BannerAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_display = ('title', 'image_preview', 'is_active', 'order')
     list_editable = ('is_active',)
     search_fields = ('title', 'subtitle')
-    fieldsets = (('Контент', {'fields': ('title', 'subtitle', 'button_text', 'link', 'content_position')}),
-                 ('Стилизация текста', {'fields': ('background_opacity', 'font_color', 'font_family')}),
-                 ('Изображение', {'fields': ('image', 'image_preview')}),
-                 ('Статус и порядок', {'fields': ('is_active',)}),)
+    fieldsets = (
+        ('Контент', {'fields': ('title', 'subtitle', 'button_text', 'link', 'content_position')}),
+        ('Стилизация текста', {'fields': ('background_opacity', 'font_color', 'font_family')}),
+        ('Изображение', {'fields': ('image', 'image_preview')}),
+        ('Статус и порядок', {'fields': ('is_active',)}),
+    )
     readonly_fields = ('image_preview',)
 
     def image_preview(self, obj):
@@ -73,19 +76,20 @@ class ProductImageInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['name', 'slug', 'image_preview_list', 'category_list', 'price', 'stock', 'available',
-                    'is_featured']
+    list_display = ['name', 'slug', 'price', 'stock', 'available', 'is_featured']
     list_filter = ['available', 'is_featured', 'created', 'updated']
     list_editable = ['price', 'stock', 'available', 'is_featured']
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ['name', 'slug']
     filter_horizontal = ('category',)
-    fieldsets = ((None, {'fields': ('name', 'slug', 'category')}),
-                 ('Основное изображение', {'fields': ('image', 'image_preview_detail')}),
-                 ('Блок "Состав" (под фото)', {'fields': ('composition_title', 'composition')}),
-                 ('Блок "Описание" (справа от фото)', {'fields': ('description_title', 'description')}),
-                 ('Цена и наличие', {'fields': ('price', 'stock')}),
-                 ('Статус', {'fields': ('available', 'is_featured')}),)
+    fieldsets = (
+        (None, {'fields': ('name', 'slug', 'category')}),
+        ('Основное изображение', {'fields': ('image', 'image_preview_detail')}),
+        ('Блок "Состав" (под фото)', {'fields': ('composition_title', 'composition')}),
+        ('Блок "Описание" (справа от фото)', {'fields': ('description_title', 'description')}),
+        ('Цена и наличие', {'fields': ('price', 'stock')}),
+        ('Статус', {'fields': ('available', 'is_featured')}),
+    )
     readonly_fields = ('image_preview_detail',)
     inlines = [ProductImageInline]
 
@@ -113,6 +117,24 @@ class FooterPageAdmin(SortableAdminMixin, admin.ModelAdmin):
     prepopulated_fields = {'slug': ('title',)}
 
 
+@admin.register(Benefit)
+class BenefitAdmin(SortableAdminMixin, admin.ModelAdmin):
+    list_display = ('title', 'icon_preview', 'is_active', 'order')
+    list_editable = ('is_active',)
+    fieldsets = (
+        (None, {'fields': ('title', 'description', 'is_active')}),
+        ('Иконка', {'fields': ('icon_svg', 'icon_preview'), 'description': 'Вставьте SVG код иконки.'}),
+    )
+    readonly_fields = ('icon_preview',)
+
+    def icon_preview(self, obj):
+        if obj.icon_svg:
+            return format_html('<div style="width: 30px; height: 30px; color: #333;">{}</div>', mark_safe(obj.icon_svg))
+        return "-"
+
+    icon_preview.short_description = "Иконка"
+
+
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(SingletonModelAdmin):
     form = SiteSettingsForm
@@ -120,15 +142,47 @@ class SiteSettingsAdmin(SingletonModelAdmin):
     fieldsets = (
         ('Основные настройки', {
             'classes': ('collapse',),
-            'description': "Ключевая информация о вашем магазине: название, контакты, email для уведомлений и стоимость доставки.",
+            'description': "Ключевая информация о вашем магазине.",
             'fields': (
-                'shop_name', 'contact_phone', 'admin_notification_emails',
-                'delivery_cost', 'background_image'
+                'shop_name',
+                ('contact_phone', 'contact_phone_secondary'),
+                ('pickup_address', 'working_hours'),
+                'map_embed_code',
+                ('contacts_page_title', 'contacts_address_title', 'contacts_hours_title', 'contacts_phone_title'),
+                'admin_notification_emails',
+                'delivery_cost', 'background_image',
+                ('site_sheet_bg_color', 'site_sheet_opacity', 'site_sheet_blur'),
             )
         }),
-        ('Настройки каталога и товара', {
+
+        # --- ГРУППА: РЕДАКТИРОВАНИЕ КАРТОЧКИ ТОВАРА ---
+        # ЭТОТ БЛОК УДАЛЕН ИЗ-ЗА УДАЛЕНИЯ ПОЛЕЙ ИЗ МОДЕЛИ
+        # ('Редактирование карточки товара (Фото и Кнопки)', {
+        #     'classes': ('collapse',),
+        #     'description': "Настройки отображения фото и элементов управления.",
+        #     'fields': (
+        #         'product_image_zoom_factor',
+        #         'product_button_size',
+        #     )
+        # }),
+        # -----------------------------------------------
+
+        ('Настройки поведения шапки (Header)', {
             'classes': ('collapse',),
-            'description': "Тексты по умолчанию для элементов каталога и страниц товаров.",
+            'description': "Управление фиксацией, прозрачностью и фоном.",
+            'fields': (
+                'desktop_header_behavior',
+                ('desktop_header_scroll_enabled', 'desktop_header_scroll_opacity', 'desktop_header_blur'),
+                ('desktop_category_scroll_enabled', 'desktop_categories_opacity', 'desktop_category_blur'),
+                ('desktop_categories_bg_mode', 'desktop_categories_bg_color'),
+                'mobile_header_behavior',
+                ('mobile_header_transparent_scroll', 'mobile_header_scroll_opacity', 'mobile_header_blur'),
+                ('mobile_header_bg_mode', 'mobile_header_bg_color_custom'),
+            )
+        }),
+        ('Настройки каталога и товара (Тексты)', {
+            'classes': ('collapse',),
+            'description': "Заголовки страниц каталога.",
             'fields': (
                 'all_products_text',
                 ('catalog_title', 'catalog_title_color'),
@@ -140,42 +194,40 @@ class SiteSettingsAdmin(SingletonModelAdmin):
         }),
         ('Настройки слайдера (баннеров)', {
             'classes': ('collapse',),
-            'description': "Управление поведением слайдера на главной странице.",
             'fields': (
                 ('slider_duration', 'slider_effect'),
             )
         }),
         ('Глобальное оформление сайта', {
             'classes': ('collapse',),
-            'description': "Здесь вы можете задать шрифты, размеры и цвета для основных элементов сайта.",
+            'description': "Шрифты и цвета всего сайта.",
             'fields': (
-                'default_font_family', 'default_font_size', 'default_text_color',
-                'logo_font_family', 'logo_font_size', 'logo_font_style', 'logo_color',
-                'icon_size', 'icon_color',
-                'category_font_family', 'category_font_size', 'category_font_style', 'category_text_color',
-                'footer_font_family', 'footer_font_size', 'footer_font_style', 'footer_text_color',
-                'product_title_font_family', 'product_title_font_size', 'product_title_font_style',
-                'product_title_text_color',
-                'product_header_font_family', 'product_header_font_size', 'product_header_font_style',
-                'product_header_text_color',
+                ('default_font_family', 'default_font_size', 'default_text_color'),
+                ('heading_font_family', 'heading_font_size', 'heading_font_style', 'accent_color'),
+                ('logo_font_family', 'logo_font_size', 'logo_font_style', 'logo_color'),
+                ('icon_size', 'icon_color', 'icon_animation_style'),
+                ('category_font_family', 'category_font_size', 'category_font_style', 'category_text_color'),
+                ('footer_font_family', 'footer_font_size', 'footer_font_style', 'footer_text_color'),
+                ('product_title_font_family', 'product_title_font_size', 'product_title_font_style',
+                 'product_title_text_color'),
+                ('product_header_font_family', 'product_header_font_size', 'product_header_font_style',
+                 'product_header_text_color'),
                 'navigation_style',
-                'icon_animation_style',
-                'heading_font_family', 'heading_font_style',
-                'accent_color',
             )
         }),
-        ('Тонкие настройки: Кнопки', {
+        ('Тонкие настройки: Кнопок', {
             'classes': ('collapse',),
-            'description': "Кастомизация внешнего вида всех кнопок на сайте.",
             'fields': (
-                'button_bg_color', 'button_text_color', 'button_hover_bg_color', 'add_to_cart_bg_color',
-                'add_to_cart_text_color', 'add_to_cart_hover_bg_color', 'button_border_radius',
-                'button_font_family', 'button_font_style',
+                'button_style_preset',
+                ('button_bg_color', 'button_accent_color'),
+                ('button_text_color', 'button_hover_bg_color'),
+                ('add_to_cart_bg_color', 'add_to_cart_text_color', 'add_to_cart_hover_bg_color'),
+                'button_border_radius',
+                ('button_font_family', 'button_font_style'),
             )
         }),
         ('Настройки мобильной версии', {
             'classes': ('collapse',),
-            'description': "Все, что связано с отображением сайта на смартфонах и планшетах.",
             'fields': (
                 'mobile_header_style', 'mobile_font_scale',
                 'mobile_product_grid',
@@ -184,8 +236,8 @@ class SiteSettingsAdmin(SingletonModelAdmin):
         }),
         ('Настройки выпадающих меню (моб. версия)', {
             'classes': ('collapse',),
-            'description': "Стилизация всплывающих окон (поиск, корзина, кабинет, категории) в мобильной версии.",
             'fields': (
+                'mobile_button_override_global',
                 'mobile_dropdown_view_mode',
                 ('mobile_dropdown_bg_color', 'mobile_dropdown_opacity'),
                 'mobile_dropdown_font_color',
@@ -195,16 +247,21 @@ class SiteSettingsAdmin(SingletonModelAdmin):
                 ('mobile_dropdown_button_border_radius', 'mobile_dropdown_button_opacity'),
             )
         }),
+        ('Стилизация статичных страниц', {
+            'classes': ('collapse',),
+            'fields': (
+                'static_page_title_color',
+                'static_page_subtitle_color',
+                'static_page_icon_color',
+                'static_page_link_color',
+                'static_page_link_hover_color',
+            )
+        }),
     )
 
     change_form_template = "admin/shop/sitesettings/change_form.html"
 
-    class Media:
-        js = ('admin/js/custom_admin.js',)
-
-    # АВТОМАТИЧЕСКОЕ ИСПРАВЛЕНИЕ ДАННЫХ ПРИ СОХРАНЕНИИ
     def save_model(self, request, obj, form, change):
-        # Если масштаб шрифта выходит за границы -50..50, сбрасываем его в 0
         if obj.mobile_font_scale is not None:
             if obj.mobile_font_scale > 50 or obj.mobile_font_scale < -50:
                 obj.mobile_font_scale = 0
@@ -225,62 +282,44 @@ class SiteSettingsAdmin(SingletonModelAdmin):
         extra_context['media_root_path'] = settings.MEDIA_ROOT
         return super().change_view(request, object_id, form_url, extra_context=extra_context)
 
-    # 1. Скачивание БД
     def download_backup_view(self, request):
         backup_dir = os.path.join(settings.BASE_DIR, 'backups')
         os.makedirs(backup_dir, exist_ok=True)
         backup_path = os.path.join(backup_dir, 'backup.dump')
         db = settings.DATABASES['default']
-
         command = ['pg_dump', '-U', db.get('USER'), '-h', db.get('HOST', 'localhost'), '-p', str(db.get('PORT', 5432)),
                    '--format=custom', '-f', backup_path, db.get('NAME')]
-
         env = os.environ.copy()
         if db.get('PASSWORD'): env['PGPASSWORD'] = db['PASSWORD']
-
         try:
             subprocess.run(command, env=env, check=True, capture_output=True, text=True)
         except (subprocess.CalledProcessError, FileNotFoundError) as e:
-            error_message = f"Ошибка создания бэкапа: {e}"
-            if isinstance(e, subprocess.CalledProcessError):
-                error_message = f"{error_message} | {e.stderr}"
-            self.message_user(request, error_message, level='error')
+            self.message_user(request, f"Ошибка создания бэкапа: {e}", level='error')
             return redirect(reverse('admin:shop_sitesettings_change', args=[SiteSettings.objects.get().pk]))
-
         return FileResponse(open(backup_path, 'rb'), as_attachment=True, filename='megacvet_backup_db.dump')
 
-    # 2. Скачивание Media
     def download_media_view(self, request):
         media_root = settings.MEDIA_ROOT
-        if not os.path.exists(media_root):
-            self.message_user(request, "Папка media не найдена.", level='error')
-            return redirect(reverse('admin:shop_sitesettings_change', args=[SiteSettings.objects.get().pk]))
-
         buffer = io.BytesIO()
         try:
             with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
                 for root, dirs, files in os.walk(media_root):
                     for file in files:
-                        file_path = os.path.join(root, file)
-                        archive_path = os.path.relpath(file_path, media_root)
-                        zip_file.write(file_path, archive_path)
-
+                        zip_file.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), media_root))
             buffer.seek(0)
             return FileResponse(buffer, as_attachment=True, filename="megacvet_backup_media.zip")
         except Exception as e:
             self.message_user(request, f"Ошибка архивации media: {e}", level='error')
             return redirect(reverse('admin:shop_sitesettings_change', args=[SiteSettings.objects.get().pk]))
 
-    # 3. Скачивание .env
     def download_env_view(self, request):
         env_path = os.path.join(settings.BASE_DIR, '.env')
         if os.path.exists(env_path):
             return FileResponse(open(env_path, 'rb'), as_attachment=True, filename='.env')
         else:
-            self.message_user(request, "Файл .env не найден в корне проекта.", level='error')
+            self.message_user(request, "Файл .env не найден.", level='error')
             return redirect(reverse('admin:shop_sitesettings_change', args=[SiteSettings.objects.get().pk]))
 
-    # 4. Скачивание Config
     def download_config_view(self, request):
         config_path = os.path.join(settings.BASE_DIR, 'ecosystem.config.js')
         if os.path.exists(config_path):

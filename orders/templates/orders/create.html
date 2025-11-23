@@ -12,18 +12,18 @@
     <form method="post" class="order-form">
         {% csrf_token %}
 
-        <!-- 1. СПИСОК ТОВАРОВ (КРАСИВЫЙ ВИД) -->
+        <!-- 1. СПИСОК ТОВАРОВ -->
         <div class="order-summary-card">
             <h3>Ваш заказ</h3>
             <div class="order-items-list">
                 {% for item in cart %}
                     <div class="order-item-row">
-                        <!-- Картинка товара -->
+                        <!-- Картинка -->
                         <div class="item-image">
                             <img src="{% if item.product.image_thumbnail %}{{ item.product.image_thumbnail.url }}{% else %}{% static 'shop/img/no_image.png' %}{% endif %}" alt="{{ item.product.name }}">
                         </div>
 
-                        <!-- Информация -->
+                        <!-- Инфо -->
                         <div class="item-details">
                             <div class="item-name">{{ item.product.name }}</div>
                             <div class="item-meta">
@@ -32,7 +32,7 @@
                             </div>
                         </div>
 
-                        <!-- Итоговая цена за позицию -->
+                        <!-- Цена -->
                         <div class="item-total-price">
                             {{ item.total_price }} ₽
                         </div>
@@ -40,7 +40,7 @@
                 {% endfor %}
             </div>
 
-            <!-- Итоговая сумма -->
+            <!-- Итого -->
             <div class="order-footer">
                 <div class="summary-row">
                     <span>Товары:</span>
@@ -61,20 +61,22 @@
         <div class="section-block">
             <h3>Способ получения</h3>
             <div class="delivery-options">
+                {% for radio in form.delivery_option %}
                 <label class="radio-card">
-                    <input type="radio" name="delivery_option" value="delivery" id="id_delivery_option_0" {% if form.delivery_option.value == 'delivery' or not form.delivery_option.value %}checked{% endif %}>
+                    {{ radio.tag }}
                     <div class="radio-content">
-                        <span class="radio-title">Доставка курьером</span>
-                        <span class="radio-desc">+{{ delivery_cost_js }} ₽</span>
+                        <span class="radio-title">{{ radio.choice_label }}</span>
+                        <!-- Добавляем описание цены динамически -->
+                        <span class="radio-desc">
+                            {% if radio.data.value == 'delivery' %}
+                                +{{ delivery_cost_js }} ₽
+                            {% else %}
+                                Бесплатно
+                            {% endif %}
+                        </span>
                     </div>
                 </label>
-                <label class="radio-card">
-                    <input type="radio" name="delivery_option" value="pickup" id="id_delivery_option_1" {% if form.delivery_option.value == 'pickup' %}checked{% endif %}>
-                    <div class="radio-content">
-                        <span class="radio-title">Самовывоз</span>
-                        <span class="radio-desc">Бесплатно</span>
-                    </div>
-                </label>
+                {% endfor %}
             </div>
         </div>
 
@@ -83,21 +85,17 @@
             <h3>Контактные данные</h3>
             <div class="form-row">
                 <div class="form-group half-width">
-                    <label for="{{ form.first_name.id_for_label }}">Имя</label>
-                    {{ form.first_name }}
+                    <label>Имя {{ form.first_name }}</label>
                 </div>
                 <div class="form-group half-width">
-                    <label for="{{ form.last_name.id_for_label }}">Фамилия</label>
-                    {{ form.last_name }}
+                    <label>Фамилия {{ form.last_name }}</label>
                 </div>
             </div>
             <div class="form-group">
-                <label for="{{ form.email.id_for_label }}">Email</label>
-                {{ form.email }}
+                <label>Email {{ form.email }}</label>
             </div>
             <div class="form-group">
-                <label for="{{ form.phone.id_for_label }}">Телефон</label>
-                {{ form.phone }}
+                <label>Телефон {{ form.phone }}</label>
             </div>
         </div>
 
@@ -105,17 +103,14 @@
         <div id="delivery-address-fields" class="section-block">
             <h3>Адрес доставки</h3>
             <div class="form-group">
-                <label for="{{ form.address.id_for_label }}">Улица, дом, квартира</label>
-                {{ form.address }}
+                <label>Улица, дом, квартира {{ form.address }}</label>
             </div>
             <div class="form-row">
                 <div class="form-group half-width">
-                    <label for="{{ form.postal_code.id_for_label }}">Индекс</label>
-                    {{ form.postal_code }}
+                    <label>Индекс {{ form.postal_code }}</label>
                 </div>
                 <div class="form-group half-width">
-                    <label for="{{ form.city.id_for_label }}">Город</label>
-                    {{ form.city }}
+                    <label>Город {{ form.city }}</label>
                 </div>
             </div>
         </div>
@@ -128,12 +123,18 @@
             <a href="{% url 'shop:contacts' %}" target="_blank" class="info-link">Посмотреть адрес и график работы →</a>
         </div>
 
-        <button type="submit" class="btn-submit">Подтвердить заказ</button>
+        <!-- КНОПКИ ДЕЙСТВИЯ -->
+        <div class="checkout-actions">
+            <a href="{% url 'cart:cart_detail' %}" class="btn btn-secondary btn-back">← Назад в корзину</a>
+            <button type="submit" class="btn btn-primary btn-submit">Подтвердить заказ</button>
+        </div>
+
     </form>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Используем строковый формат с заменой запятой, чтобы JS не ругался на float
     const deliveryCost = parseFloat("{{ delivery_cost_js|stringformat:'f' }}".replace(',', '.'));
     const cartTotal = parseFloat("{{ cart_total_js|stringformat:'f' }}".replace(',', '.'));
 
@@ -144,26 +145,39 @@ document.addEventListener('DOMContentLoaded', function() {
     const deliveryCostDisplay = document.getElementById('delivery-cost-display');
     const deliveryCostSummary = document.getElementById('delivery-cost-summary');
 
+    // ID поля адреса, который генерирует Django по умолчанию
+    const addressInput = document.getElementById('id_address');
+
     function updateOrderForm() {
-        const selectedOption = document.querySelector('input[name="delivery_option"]:checked').value;
+        // Ищем выбранную радиокнопку
+        const selectedRadio = document.querySelector('input[name="delivery_option"]:checked');
+        if (!selectedRadio) return;
+
+        const selectedOption = selectedRadio.value;
 
         if (selectedOption === 'delivery') {
-            deliveryAddressFields.style.display = 'block';
-            pickupInfo.style.display = 'none';
-            deliveryCostSummary.style.display = 'flex';
-            deliveryCostDisplay.textContent = deliveryCost.toFixed(2);
-            totalCostDisplay.textContent = (cartTotal + deliveryCost).toFixed(2);
-            document.getElementById('{{ form.address.id_for_label }}').required = true;
+            if (deliveryAddressFields) deliveryAddressFields.style.display = 'block';
+            if (pickupInfo) pickupInfo.style.display = 'none';
+            if (deliveryCostSummary) deliveryCostSummary.style.display = 'flex';
+
+            if (deliveryCostDisplay) deliveryCostDisplay.textContent = deliveryCost.toFixed(2);
+            if (totalCostDisplay) totalCostDisplay.textContent = (cartTotal + deliveryCost).toFixed(2);
+
+            if (addressInput) addressInput.required = true;
         } else {
-            deliveryAddressFields.style.display = 'none';
-            pickupInfo.style.display = 'block';
-            deliveryCostSummary.style.display = 'none';
-            totalCostDisplay.textContent = cartTotal.toFixed(2);
-            document.getElementById('{{ form.address.id_for_label }}').required = false;
+            if (deliveryAddressFields) deliveryAddressFields.style.display = 'none';
+            if (pickupInfo) pickupInfo.style.display = 'block';
+            if (deliveryCostSummary) deliveryCostSummary.style.display = 'none';
+
+            if (totalCostDisplay) totalCostDisplay.textContent = cartTotal.toFixed(2);
+
+            if (addressInput) addressInput.required = false;
         }
     }
 
     deliveryOptionRadios.forEach(radio => radio.addEventListener('change', updateOrderForm));
+
+    // Запускаем при загрузке страницы
     updateOrderForm();
 });
 </script>
@@ -173,19 +187,12 @@ document.addEventListener('DOMContentLoaded', function() {
         max-width: 800px;
         margin: 0 auto;
         padding-bottom: 40px;
-        font-family: var(--body-font-family);
-        color: var(--main-text-color);
     }
 
     h1 { text-align: center; margin-bottom: 30px; }
-    h3 {
-        margin-top: 0; margin-bottom: 20px;
-        font-size: 1.2rem; border-bottom: 1px solid #eee;
-        padding-bottom: 10px; font-family: var(--heading-font-family);
-    }
+    h3 { margin-bottom: 20px; font-size: 1.2rem; border-bottom: 1px solid #eee; padding-bottom: 10px; }
 
-    /* --- СТИЛИ СПИСКА ТОВАРОВ --- */
-    .order-summary-card {
+    .order-summary-card, .section-block {
         background: #fff;
         border: 1px solid #e0e0e0;
         border-radius: 12px;
@@ -194,117 +201,86 @@ document.addEventListener('DOMContentLoaded', function() {
         box-shadow: 0 2px 10px rgba(0,0,0,0.03);
     }
 
-    .order-item-row {
-        display: flex;
-        align-items: center;
-        padding: 15px 0;
-        border-bottom: 1px solid #f0f0f0;
-        gap: 15px;
-    }
+    .order-item-row { display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #f0f0f0; gap: 15px; }
     .order-item-row:last-child { border-bottom: none; }
-
-    .item-image {
-        width: 60px; height: 60px;
-        flex-shrink: 0;
-        border-radius: 6px;
-        overflow: hidden;
-        background: #f9f9f9;
-    }
+    .item-image { width: 60px; height: 60px; border-radius: 6px; overflow: hidden; flex-shrink: 0; }
     .item-image img { width: 100%; height: 100%; object-fit: cover; }
-
     .item-details { flex-grow: 1; }
-    .item-name { font-weight: bold; font-size: 1rem; margin-bottom: 4px; }
-    .item-meta { font-size: 0.9rem; color: #666; }
-    .item-quantity { background: #eee; padding: 2px 6px; border-radius: 4px; margin-right: 5px; font-weight: bold; color: #333; }
+    .item-name { font-weight: bold; }
+    .item-total-price { font-weight: bold; color: var(--accent-color); white-space: nowrap; }
 
-    .item-total-price {
-        font-weight: bold;
-        font-size: 1.1rem;
-        color: var(--accent-color);
-        white-space: nowrap;
-    }
-
-    .order-footer {
-        margin-top: 20px;
-        padding-top: 15px;
-        border-top: 2px solid #f0f0f0;
-    }
-    .summary-row {
-        display: flex; justify-content: space-between;
-        margin-bottom: 8px; font-size: 1rem; color: #555;
-    }
-    .summary-row.total-row {
-        font-size: 1.3rem;
-        font-weight: bold;
-        color: #000;
-        margin-top: 15px;
-        border-top: 1px dashed #ddd;
-        padding-top: 15px;
-    }
+    .order-footer { margin-top: 20px; padding-top: 15px; border-top: 2px solid #f0f0f0; }
+    .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 1rem; }
+    .total-row { font-size: 1.3rem; font-weight: bold; margin-top: 15px; border-top: 1px dashed #ddd; padding-top: 15px; }
     .final-price { color: var(--accent-color); }
 
-
-    /* --- ФОРМЫ --- */
-    .section-block {
-        margin-bottom: 30px;
-        background: #fff;
-        padding: 20px;
-        border-radius: 12px;
-        border: 1px solid #eee;
-    }
-
     .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; }
-    .form-group input {
-        width: 100%; padding: 12px;
-        border: 1px solid #ccc; border-radius: 6px;
-        font-size: 16px; box-sizing: border-box;
-        transition: border-color 0.3s;
-    }
+    .form-group label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 5px; }
+    .form-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
     .form-group input:focus { border-color: var(--accent-color); outline: none; }
 
     .form-row { display: flex; gap: 20px; }
     .half-width { flex: 1; }
 
-    /* --- РАДИО КНОПКИ --- */
+    /* Радио кнопки */
     .delivery-options { display: flex; gap: 15px; flex-wrap: wrap; }
     .radio-card {
         flex: 1; display: flex; align-items: center;
-        border: 1px solid #ddd; border-radius: 8px;
-        padding: 15px; cursor: pointer; transition: all 0.2s;
-        min-width: 240px; background: #fff;
+        border: 1px solid #ddd; border-radius: 8px; padding: 15px;
+        cursor: pointer; transition: all 0.2s; min-width: 240px; background: #fff;
     }
     .radio-card:hover { border-color: var(--accent-color); background: #fffafa; }
     .radio-card input { margin-right: 15px; accent-color: var(--accent-color); transform: scale(1.3); }
     .radio-content { display: flex; flex-direction: column; }
-    .radio-title { font-weight: bold; font-size: 1rem; }
-    .radio-desc { font-size: 0.85rem; color: #666; margin-top: 2px; }
+    .radio-title { font-weight: bold; }
+    .radio-desc { font-size: 0.85rem; color: #666; }
 
-    /* --- ИНФО И КНОПКА --- */
     .info-box { background-color: #e3f2fd; padding: 20px; border-radius: 8px; color: #0d47a1; border: 1px solid #bbdefb; }
     .info-link { color: #0d47a1; font-weight: bold; text-decoration: underline; }
 
+    /* КНОПКИ ДЕЙСТВИЯ */
+    .checkout-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 30px;
+        gap: 20px;
+    }
+
     .btn-submit {
-        width: 100%;
-        background-color: var(--accent-color);
-        color: white;
-        padding: 18px;
-        font-size: 1.2rem;
+        padding: 15px 30px;
+        font-size: 1.1rem;
         font-weight: bold;
-        border: none;
         border-radius: 8px;
         cursor: pointer;
-        margin-top: 10px;
-        transition: opacity 0.3s;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        flex-grow: 1; /* Занимает доступное место, но не всё */
+        max-width: 300px; /* Ограничение ширины на ПК */
+        text-align: center;
     }
-    .btn-submit:hover { opacity: 0.9; transform: translateY(-2px); }
 
+    .btn-back {
+        text-decoration: none;
+        padding: 15px 20px;
+        font-size: 1rem;
+        border-radius: 8px;
+    }
+
+    /* АДАПТИВ ДЛЯ МОБИЛЬНЫХ */
     @media (max-width: 600px) {
         .form-row { flex-direction: column; gap: 0; }
         .delivery-options { flex-direction: column; }
-        .item-image { width: 50px; height: 50px; }
-        .item-name { font-size: 0.95rem; }
+
+        /* Кнопки друг над другом, "Подтвердить" сверху */
+        .checkout-actions {
+            flex-direction: column-reverse;
+            gap: 15px;
+        }
+        .btn-submit, .btn-back {
+            width: 100%;
+            max-width: none;
+            text-align: center;
+            padding: 15px;
+        }
     }
 </style>
 {% endblock %}

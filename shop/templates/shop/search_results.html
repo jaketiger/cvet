@@ -8,8 +8,8 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1 style="margin-bottom: 20px;">
+<div class="search-results-container">
+    <h1>
         {% if query %}
             Результаты поиска для "{{ query }}"
         {% else %}
@@ -18,7 +18,7 @@
     </h1>
 
     {% if query %}
-        <div style="background: #e7f3ff; padding: 15px; border-radius: 8px; margin-bottom: 30px;">
+        <div class="search-info-block">
             Найдено товаров: {{ products|length }}
         </div>
     {% endif %}
@@ -31,9 +31,9 @@
         </div>
     {% else %}
         {% if query %}
-            <div style="text-align: center; padding: 40px 20px;">
+            <div class="search-no-results">
                 <h3>По вашему запросу ничего не найдено</h3>
-                <p style="color: #666;">Попробуйте изменить формулировку или поищите в полном <a href="{% url 'shop:product_list_all' %}">каталоге</a>.</p>
+                <p>Попробуйте изменить формулировку или поищите в полном <a href="{% url 'shop:product_list_all' %}">каталоге</a>.</p>
             </div>
         {% endif %}
     {% endif %}

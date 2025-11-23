@@ -1,10 +1,48 @@
 <!-- shop/templates/shop/footer_page_detail.html -->
-
 {% extends "base.html" %}
 
 {% block title %}{{ page.get_page_title }}{% endblock %}
 
 {% block content %}
-    <h1>{{ page.get_page_title }}</h1>
-    <p>{{ page.content|linebreaksbr }}</p>
+<div class="static-page-container">
+    <h1 class="static-page-title">{{ page.get_page_title }}</h1>
+    <div class="static-page-content">
+        {{ page.content|linebreaks }}
+    </div>
+</div>
+
+<style>
+    :root {
+        --static-title-color: {{ site_settings.static_page_title_color|default:'var(--heading-font-family)' }};
+    }
+    .static-page-container {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    }
+    .static-page-title {
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 2rem;
+        color: var(--static-title-color);
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    .static-page-content {
+        line-height: 1.8;
+        font-size: 1.1em;
+    }
+    .static-page-content p {
+        margin-bottom: 1.5em;
+    }
+    @media (max-width: 768px) {
+        .static-page-container {
+            padding: 1.5rem;
+            margin: 1rem;
+        }
+    }
+</style>
 {% endblock %}

@@ -8,31 +8,31 @@
     <p><strong>Статус:</strong> {{ order.get_status_display }}</p>
 
     <!-- Блок с деталями заказа -->
-    <div style="text-align: left; margin-top: 30px; background-color: #f9f9f9; padding: 20px; border-radius: 5px;">
+    <div class="order-details-block">
         <h3>Детали заказа:</h3>
 
-        <table style="width: 100%; border-collapse: collapse;">
+        <table class="order-details-table">
             <thead>
                 <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Товар</th>
-                    <th style="border: 1px solid #ddd; padding: 8px;">Количество</th>
-                    <th style="border: 1px solid #ddd; padding: 8px;">Цена</th>
+                    <th>Товар</th>
+                    <th>Количество</th>
+                    <th>Цена</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item in order.items.all %}
                     <tr>
-                        <td style="border: 1px solid #ddd; padding: 8px;">{{ item.product.name }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">{{ item.quantity }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">{{ item.get_cost }} руб.</td>
+                        <td>{{ item.product.name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.get_cost }} руб.</td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
 
-        <div style="text-align: right; margin-top: 20px;">
-            <p style="margin: 5px 0;">Стоимость доставки: {{ order.delivery_cost }} руб.</p>
-            <h4 style="margin-top: 10px;">Итого к оплате: {{ order.get_total_cost }} руб.</h4>
+        <div class="order-summary-footer">
+            <p>Стоимость доставки: {{ order.delivery_cost }} руб.</p>
+            <h4>Итого к оплате: {{ order.get_total_cost }} руб.</h4>
         </div>
 
         <hr>
@@ -58,49 +58,12 @@
             <p>Вы можете отменить этот заказ. Все товары из него будут возвращены в вашу корзину, после чего вы сможете отредактировать ее и оформить новый заказ.</p>
             <form action="{% url 'shop:cancel_order' order.id %}" method="post" style="margin-top: 15px;">
                 {% csrf_token %}
-                <!-- Кнопка "Отменить" с новыми классами -->
                 <button type="submit" class="btn btn-danger" onclick="return confirm('Вы уверены, что хотите отменить этот заказ?')">Отменить заказ</button>
             </form>
         </div>
     {% endif %}
 
     <!-- Ссылка "Назад" в виде кнопки -->
-    <a href="{% url 'shop:cabinet' %}" class="btn btn-secondary" style="margin-top: 30px;">← Назад в личный кабинет</a>
+    <a href="{% url 'shop:cabinet' %}" class="btn btn-secondary back-to-cabinet-btn">← Назад в личный кабинет</a>
 </div>
-
-<style>
-    /* --- СТИЛИ ДЛЯ КНОПОК, СКОПИРОВАННЫЕ ИЗ CABINET.HTML ДЛЯ ЕДИНООБРАЗИЯ --- */
-
-    /* Базовый стиль: размер, отступы, шрифт */
-    .btn {
-        display: inline-block;
-        padding: 10px 15px;
-        border: none;
-        border-radius: 5px;
-        text-decoration: none;
-        color: white;
-        font-size: 16px; /* Можно сделать чуть побольше на этой странице */
-        font-family: inherit;
-        cursor: pointer;
-        text-align: center;
-        margin: 5px 0;
-        vertical-align: middle;
-    }
-
-    /* Красная кнопка (опасное действие) */
-    .btn-danger {
-        background-color: #dc3545;
-    }
-    .btn-danger:hover {
-        background-color: #c82333;
-    }
-
-    /* Серая кнопка (второстепенное действие) */
-    .btn-secondary {
-        background-color: #6c757d;
-    }
-    .btn-secondary:hover {
-        background-color: #5a6268;
-    }
-</style>
 {% endblock %}

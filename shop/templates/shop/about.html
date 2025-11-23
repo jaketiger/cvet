@@ -1,9 +1,12 @@
 <!-- shop/templates/shop/about.html -->
 
 {% extends "base.html" %}
-{% block title %}О нас{% endblock %}
+{% block title %}О нас - {{ site_settings.shop_name }}{% endblock %}
 {% block content %}
-    <h1>О нашем магазине</h1>
-    <!-- linebreaksbr будет уважать переносы строк, которые вы делаете в админке -->
-    <p>{{ settings.about_text|linebreaksbr }}</p>
+    <div class="static-page-container">
+        <h1 class="static-page-title">О нашем магазине</h1>
+        <div class="static-page-content">
+            <p>{{ site_settings.about_text|linebreaksbr }}</p>
+        </div>
+    </div>
 {% endblock %}

@@ -2,7 +2,7 @@
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.http import require_POST
-from .models import Category, Product, SiteSettings, FooterPage, Banner
+from .models import Category, Product, SiteSettings, FooterPage, Banner, Benefit  # <-- Добавлен импорт Benefit
 from django.contrib.auth.decorators import login_required
 from cart.forms import CartAddProductForm
 from django.http import JsonResponse
@@ -13,14 +13,14 @@ from orders.models import Order
 from cart.cart import Cart
 from django_q.tasks import async_task
 from django.db.models import Func
-from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank,  SearchHeadline
+from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank, SearchHeadline
 
 
 def search_results(request):
     query = request.GET.get('q', '').strip()
     products = Product.objects.none()
     if query:
-        # ▼▼▼ ИЗМЕНЕНИЕ: Заменяем старые имена полей на новые (description, composition) ▼▼▼
+        # Используем поиск по векторам (требует Postgres)
         search_vector = SearchVector('name', 'description', 'composition', config='russian')
         search_query = SearchQuery(query, config='russian')
         products = (
@@ -34,7 +34,7 @@ def search_results(request):
                     config='russian'
                 ),
                 highlighted_description=SearchHeadline(
-                    'description',  # Ищем и подсвечиваем в основном поле "Описание"
+                    'description',
                     search_query,
                     start_sel='<mark>',
                     stop_sel='</mark>',
@@ -42,7 +42,6 @@ def search_results(request):
                 ),
             ).filter(available=True).filter(rank__gte=0.05).order_by('-rank')
         )
-        # ▲▲▲ КОНЕЦ ИЗМЕНЕНИЯ ▲▲▲
     return render(request, 'shop/search_results.html', {'query': query, 'products': products})
 
 
@@ -68,8 +67,17 @@ def product_list_by_category(request, category_slug):
 
 def product_detail(request, id, slug):
     product = get_object_or_404(Product, id=id, slug=slug, available=True)
+
+    # Загружаем активные преимущества для отображения в карточке
+    benefits = Benefit.objects.filter(is_active=True).order_by('order')
+
     cart_product_form = CartAddProductForm()
-    return render(request, 'shop/product_detail.html', {'product': product, 'cart_product_form': cart_product_form})
+
+    return render(request, 'shop/product_detail.html', {
+        'product': product,
+        'cart_product_form': cart_product_form,
+        'benefits': benefits  # <-- Передаем в контекст
+    })
 
 
 @login_required
@@ -84,10 +92,12 @@ def profile_edit(request):
         user_form = UserEditForm(instance=request.user, data=request.POST)
         profile_form = ProfileEditForm(instance=request.user.profile, data=request.POST)
         if user_form.is_valid() and profile_form.is_valid():
-            user_form.save(); profile_form.save()
+            user_form.save();
+            profile_form.save()
             messages.success(request, 'Ваш профиль был успешно обновлен!')
             return redirect('shop:cabinet')
-        else: messages.error(request, 'Пожалуйста, исправьте ошибки в форме.')
+        else:
+            messages.error(request, 'Пожалуйста, исправьте ошибки в форме.')
     else:
         user_form = UserEditForm(instance=request.user)
         profile_form = ProfileEditForm(instance=request.user.profile)
@@ -95,7 +105,9 @@ def profile_edit(request):
 
 
 def contact_page(request):
-    return render(request, 'shop/contacts.html')
+    # ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ page_config, ЧТОБЫ ОНА СОВПАДАЛА С ШАБЛОНОМ
+    page_config = SiteSettings.get_solo()
+    return render(request, 'shop/contacts.html', {'page_config': page_config})
 
 
 def footer_page_detail(request, slug):
@@ -118,10 +130,12 @@ def cancel_order(request, order_id):
         for item in order.items.all():
             product = item.product
             if product: cart.add(product=product, quantity=item.quantity, update_quantity=True)
-        order.status = 'cancelled'; order.save()
+        order.status = 'cancelled';
+        order.save()
         base_url = f"{request.scheme}://{request.get_host()}"
         async_task('orders.utils.send_cancellation_email_task', order_id=order.id, base_url=base_url)
-        messages.success(request, f'Заказ #{order.id} был отменен. Товары возвращены в вашу корзину для редактирования.')
+        messages.success(request,
+                         f'Заказ #{order.id} был отменен. Товары возвращены в вашу корзину для редактирования.')
     else:
         messages.error(request, f'Этот заказ уже нельзя отменить.')
     return redirect('shop:cabinet')
@@ -137,3 +151,4 @@ def get_product_price(request):
         except Product.DoesNotExist:
             return JsonResponse({'error': 'Product not found'}, status=404)
     return JsonResponse({'error': 'No product_id provided'}, status=400)
+

@@ -17,19 +17,28 @@ class Cart:
             cart = self.session[settings.CART_SESSION_ID] = {}
         self.cart = cart
 
-    def add(self, product, quantity=1, update_quantity=False):
+    def add(self, product, quantity=1, update_quantity=False, postcard_text=None):
         """
         Добавить товар в корзину или обновить его количество.
+        postcard_text: Текст бесплатной открытки (опционально).
         """
         product_id = str(product.id)
         if product_id not in self.cart:
-            self.cart[product_id] = {'quantity': 0,
-                                     'price': str(product.price)}
+            self.cart[product_id] = {
+                'quantity': 0,
+                'price': str(product.price),
+                'postcard_text': ''  # Инициализируем поле
+            }
 
         if update_quantity:
             self.cart[product_id]['quantity'] = quantity
         else:
             self.cart[product_id]['quantity'] += quantity
+
+        # Сохраняем текст открытки, если он был передан
+        if postcard_text is not None:
+            self.cart[product_id]['postcard_text'] = postcard_text
+
         self.save()
 
     def save(self):

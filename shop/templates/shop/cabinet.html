@@ -33,7 +33,7 @@
                         <th>Сумма</th>
                         <th>Статус</th>
                         <th>Оплата</th>
-                        <th>Действия</th>
+                        <th style="text-align: right;">Действия</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -53,15 +53,21 @@
                                 {% endif %}
                             </td>
                             <td class="order-actions">
-                                <a href="{% url 'shop:order_detail' order.id %}" class="btn btn-secondary">Просмотр</a>
-                                {% if order.can_be_cancelled %}
-                                    <form action="{% url 'shop:cancel_order' order.id %}" method="post" style="display: inline-block;">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Вы уверены, что хотите отменить заказ #{{ order.id }}?')">
-                                            Отменить
-                                        </button>
-                                    </form>
-                                {% endif %}
+                                <div class="cabinet-actions-row">
+                                    <a href="{% url 'shop:order_detail' order.id %}" class="btn btn-secondary action-btn">Просмотр</a>
+
+                                    {% if order.can_be_cancelled %}
+                                        <form action="{% url 'shop:cancel_order' order.id %}" method="post" style="display: inline-block; margin: 0;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger remove-btn action-btn" onclick="return confirm('Вы уверены, что хотите отменить заказ #{{ order.id }}?')">
+                                                Отменить
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        {# Пустой блок, если нужен был плейсхолдер #}
+                                        {# <div class="action-btn-placeholder"></div> #}
+                                    {% endif %}
+                                </div>
                             </td>
                         </tr>
                     {% endfor %}
@@ -70,7 +76,7 @@
         </div>
     {% else %}
         <p>У вас еще нет ни одного заказа.</p>
-        <a href="{% url "shop:product_list_all" %}" class="btn btn-primary">Перейти к покупкам</a>
+        <a href="{% url 'shop:product_list_all' %}" class="btn btn-primary">Перейти к покупкам</a>
     {% endif %}
 </div>
 {% endblock %}

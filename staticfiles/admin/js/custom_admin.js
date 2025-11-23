@@ -1,45 +1,68 @@
-// static/admin/js/custom_admin.js
+/* static/admin/js/custom_admin.js */
 
-// Убедимся, что jQuery, который использует админка, загружен
-if (typeof django !== 'undefined' && typeof django.jQuery !== 'undefined') {
-    (function($) {
-        $(document).ready(function() {
+(function($) {
+    $(document).ready(function() {
+        // Уникальный ключ для этой страницы
+        var storageKey = 'django_admin_state_' + window.location.pathname;
 
-            // --- ЛОГИКА ДЛЯ КНОПКИ "ОЧИСТИТЬ" У ЦВЕТА ---
-            $('.clear-color-btn').on('click', function(e) {
-                e.preventDefault();
-                // Находим соседнее поле цвета и очищаем его значение
-                $(this).prev('input[type="color"]').val('');
-            });
+        // --- ФУНКЦИЯ ВОССТАНОВЛЕНИЯ ---
+        function restoreState() {
+            var savedState = [];
+            try {
+                savedState = JSON.parse(localStorage.getItem(storageKey)) || [];
+            } catch (e) {}
 
-            // --- ЛОГИКА ДЛЯ ПОЛЗУНКОВ (СЛАЙДЕРОВ) ---
-            $('input[type="range"]').each(function() {
-                var slider = $(this);
-                // Создаем элемент для отображения значения
-                var valueDisplay = $('<span class="range-value"></span>').text(slider.val());
-                // Вставляем его после слайдера
-                slider.after(valueDisplay);
+            // Проходим по всем свернутым блокам
+            $('fieldset.collapse').each(function(index) {
+                // Если индекс этого блока есть в сохраненном массиве (значит он был открыт)
+                if (savedState.includes(index)) {
+                    // Вариант 1: Просто убираем класс (быстро)
+                    $(this).removeClass('collapsed');
 
-                // Обновляем значение при движении ползунка
-                slider.on('input', function() {
-                    valueDisplay.text($(this).val());
-                });
-            });
-
-            // Добавляем немного стилей для красоты
-            $('<style>')
-                .prop('type', 'text/css')
-                .html(`
-                    .form-row .range-value {
-                        margin-left: 10px;
-                        font-weight: bold;
-                        font-size: 1.1em;
-                        color: #555;
-                        min-width: 30px; /* Чтобы цифры не прыгали */
-                        display: inline-block;
+                    // Вариант 2: Симулируем клик по ссылке "Показать", если Django её уже создал
+                    // Это обновляет текст ссылки на "Скрыть"
+                    var toggleLink = $(this).find('a.collapse-toggle');
+                    if (toggleLink.length > 0 && toggleLink.text().toLowerCase().indexOf('show') !== -1) {
+                         toggleLink.trigger('click');
                     }
-                `)
-                .appendTo('head');
+                }
+            });
+        }
+
+        // Запускаем восстановление сразу
+        restoreState();
+
+        // И еще раз через 200мс, на случай если скрипты Django отработали с задержкой
+        setTimeout(restoreState, 200);
+
+
+        // --- ФУНКЦИЯ СОХРАНЕНИЯ ---
+        // Срабатывает при отправке любой формы на странице (в т.ч. "Сохранить и продолжить")
+        $('form').on('submit', function() {
+            var openFieldsets = [];
+
+            $('fieldset.collapse').each(function(index) {
+                // Если у блока НЕТ класса collapsed, значит он открыт. Запоминаем его индекс.
+                if (!$(this).hasClass('collapsed')) {
+                    openFieldsets.push(index);
+                }
+            });
+
+            localStorage.setItem(storageKey, JSON.stringify(openFieldsets));
         });
-    })(django.jQuery);
-}
+
+        // Также сохраняем при клике на вкладку (для удобства, если ушли со страницы без сохранения)
+        $('fieldset.collapse h2').on('click', function() {
+             setTimeout(function(){
+                var openFieldsets = [];
+                $('fieldset.collapse').each(function(index) {
+                    if (!$(this).hasClass('collapsed')) {
+                        openFieldsets.push(index);
+                    }
+                });
+                localStorage.setItem(storageKey, JSON.stringify(openFieldsets));
+             }, 300);
+        });
+
+    });
+})(django.jQuery);

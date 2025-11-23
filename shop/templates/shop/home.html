@@ -37,7 +37,6 @@
     </div>
     {% endif %}
 
-    <!-- Добавлен класс responsive-title -->
     <h2 class="responsive-title" style="
         text-align: center;
         margin: 40px 0;
@@ -59,14 +58,56 @@
 {% endblock %}
 
 {% block extra_scripts %}
-    <script>
-      const swiper = new Swiper('.swiper-container', {
-        autoplay: { delay: {{ site_settings.slider_duration|default:5 }} * 1000, disableOnInteraction: false, },
-        effect: '{{ site_settings.slider_effect|default:"slide" }}',
-        loop: true,
-        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev', },
-        pagination: { el: '.swiper-pagination', clickable: true, },
-        cubeEffect: { shadow: true, slideShadows: true, shadowOffset: 20, shadowScale: 0.94, },
-      });
-    </script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof Swiper !== 'undefined') {
+            const effectName = '{{ site_settings.slider_effect|default:"slide" }}';
+
+            // Базовые настройки для всех слайдеров
+            let swiperOptions = {
+                autoplay: {
+                    delay: {{ site_settings.slider_duration|default:5 }} * 1000,
+                    disableOnInteraction: false,
+                },
+                loop: true,
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true,
+                },
+                grabCursor: true,
+                effect: effectName.startsWith('creative') ? 'creative' : effectName,
+            };
+
+            // Применяем специфичные настройки для каждого эффекта
+            if (effectName === 'cube') {
+                swiperOptions.cubeEffect = { shadow: true, slideShadows: true, shadowOffset: 20, shadowScale: 0.94 };
+            }
+            else if (effectName === 'coverflow') {
+                swiperOptions.slidesPerView = 'auto';
+                swiperOptions.centeredSlides = true;
+                swiperOptions.coverflowEffect = { rotate: 50, stretch: 0, depth: 100, modifier: 1, slideShadows: true };
+            }
+            else if (effectName === 'cards') {
+                swiperOptions.cardsEffect = { slideShadows: true, perSlideRotate: 2, perSlideOffset: 8 };
+                swiperOptions.loop = false; // Эффект карточек плохо работает с зацикливанием
+            }
+            // Креативные эффекты
+            else if (effectName === 'creative_one') { // Перспектива
+                swiperOptions.creativeEffect = { prev: { shadow: true, translate: [0, 0, -400] }, next: { translate: ['100%', 0, 0] } };
+            }
+            else if (effectName === 'creative_two') { // Сдвиг справа
+                swiperOptions.creativeEffect = { prev: { shadow: true, origin: 'left center', rotate: [0, 90, 0] }, next: { origin: 'right center', rotate: [0, -90, 0] } };
+            }
+            else if (effectName === 'creative_three') { // Вращение
+                swiperOptions.creativeEffect = { prev: { shadow: true, translate: ['-20%', 0, -1], rotate: [0, 0, -20] }, next: { translate: ['100%', 0, 0], rotate: [0, 0, 20] } };
+            }
+
+            const swiper = new Swiper('.swiper-container', swiperOptions);
+        }
+    });
+</script>
 {% endblock %}

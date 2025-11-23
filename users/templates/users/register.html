@@ -20,26 +20,34 @@
         {% endif %}
 
         <div class="form-group">
-            <label for="{{ form.email.id_for_label }}">Адрес email:</label>
-            {{ form.email }}
+            <label>
+                Адрес email:
+                {{ form.email }}
+            </label>
             {% if form.email.errors %}<div class="form-error">{{ form.email.errors }}</div>{% endif %}
         </div>
 
         <div class="form-group">
-            <label for="{{ form.first_name.id_for_label }}">Ваше имя:</label>
-            {{ form.first_name }}
+            <label>
+                Ваше имя:
+                {{ form.first_name }}
+            </label>
             {% if form.first_name.errors %}<div class="form-error">{{ form.first_name.errors }}</div>{% endif %}
         </div>
 
         <div class="form-row">
             <div class="form-group">
-                <label for="{{ form.password.id_for_label }}">Пароль:</label>
-                {{ form.password }}
+                <label>
+                    Пароль:
+                    {{ form.password }}
+                </label>
                 {% if form.password.errors %}<div class="form-error">{{ form.password.errors }}</div>{% endif %}
             </div>
             <div class="form-group">
-                <label for="{{ form.password2.id_for_label }}">Повторите пароль:</label>
-                {{ form.password2 }}
+                <label>
+                    Повторите пароль:
+                    {{ form.password2 }}
+                </label>
                 {% if form.password2.errors %}<div class="form-error">{{ form.password2.errors }}</div>{% endif %}
             </div>
         </div>
@@ -53,4 +61,18 @@
         <p>Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
     </div>
 </div>
+
+<style>
+    /* Добавляем небольшие стили для корректного отображения вложенных инпутов */
+    .styled-form label {
+        display: block;
+        font-weight: bold;
+        font-size: 0.9em;
+    }
+    .styled-form input {
+        margin-top: 5px; /* Отступ между текстом метки и полем */
+        display: block;
+        width: 100%;
+    }
+</style>
 {% endblock %}

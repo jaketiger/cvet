@@ -6,87 +6,224 @@
 {% block title %}{{ product.name }} - {{ site_settings.shop_name }}{% endblock %}
 
 {% block content %}
-    <div class="product-detail-container">
-        <!-- ЛЕВАЯ КОЛОНКА: Фото и Состав -->
-        <div class="product-left-column">
-            <div class="product-gallery">
-                <div class="main-image">
-                    {% if product.image %}
-                        <img id="main-product-image" src="{{ product.image.url }}" alt="{{ product.name }}">
-                    {% else %}
-                        <img id="main-product-image" src="{% static 'shop/img/no_image.png' %}" alt="Изображение отсутствует">
-                    {% endif %}
-                </div>
-                {% with all_images=product.images.all %}
-                    {% if product.image or all_images %}
-                        <div class="thumbnails">
-                            {% if product.image %}
-                                <img src="{{ product.image_thumbnail.url }}" alt="Превью {{ product.name }}" class="thumbnail active" onclick="changeMainImage('{{ product.image.url }}', this)">
-                            {% endif %}
-                            {% for img in all_images %}
-                                <img src="{{ img.image_thumbnail.url }}" alt="{{ img.alt_text|default:'Превью товара' }}" class="thumbnail" onclick="changeMainImage('{{ img.image.url }}', this)">
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                {% endwith %}
-            </div>
+<div class="product-detail-page">
+    <div class="product-detail-grid">
 
-            {% if product.composition %}
-            <div class="product-composition-section">
-                <h3>{{ product.composition_title|default:site_settings.default_composition_title }}:</h3>
-                <p>{{ product.composition|linebreaksbr }}</p>
+        <!-- ========================== -->
+        <!-- ===== ЛЕВАЯ КОЛОНКА: ГАЛЕРЕЯ ===== -->
+        <!-- ========================== -->
+        <div class="product-gallery-new">
+            <div class="main-image-container" id="main-image-zoom-container">
+                <img id="main-product-image"
+                     src="{% if product.image %}{{ product.image.url }}{% else %}{% static 'shop/img/no_image.png' %}{% endif %}"
+                     alt="{{ product.name }}">
             </div>
-            {% endif %}
+            {% with all_images=product.images.all %}
+                {% if product.image or all_images %}
+                <div class="thumbnails-new">
+                    {% if product.image %}
+                        <img src="{{ product.image_thumbnail.url }}"
+                             alt="Превью {{ product.name }}"
+                             class="thumbnail-new active"
+                             data-full-src="{{ product.image.url }}"
+                             onclick="changeMainImage(this)">
+                    {% endif %}
+                    {% for img in all_images %}
+                        <img src="{{ img.image_thumbnail.url }}"
+                             alt="{{ img.alt_text|default:'Превью товара' }}"
+                             class="thumbnail-new"
+                             data-full-src="{{ img.image.url }}"
+                             onclick="changeMainImage(this)">
+                    {% endfor %}
+                </div>
+                {% endif %}
+            {% endwith %}
         </div>
 
-        <!-- ПРАВАЯ КОЛОНКА: Название, Цена, Описание и Кнопка -->
-        <div class="product-right-column">
-            <!-- Добавлен класс responsive-title -->
-            <h1 class="responsive-title">{{ product.name }}</h1>
-            <p class="price">{{ product.price }} руб.</p>
+        <!-- ==================================== -->
+        <!-- ===== ПРАВАЯ КОЛОНКА: ИНФОРМАЦИЯ ===== -->
+        <!-- ==================================== -->
+        <div class="product-info-new">
+            <h1 class="product-title-new">{{ product.name }}</h1>
+            <div class="price-new">{{ product.price }} руб.</div>
 
-            {% if product.description %}
-            <div class="product-description-section">
-                <h3>{{ product.description_title|default:site_settings.default_description_title }}:</h3>
-                <p>{{ product.description|linebreaksbr }}</p>
-            </div>
-            {% endif %}
-
-            <div class="product-actions-box">
+            <div class="actions-new">
                 {% if product.stock > 0 and product.available %}
-                    <p class="stock-status in-stock">
-                        <strong>Наличие:</strong> В наличии
-                    </p>
+
+                    <!-- СТАТУС НАЛИЧИЯ -->
+                    <p class="stock-status in-stock" style="color: #28a745; font-weight: bold; margin-bottom: 10px;">✓ В наличии</p>
+
                     <form class="add-to-cart-form-detail" action="{% url 'cart:cart_add' product.id %}" method="post">
                         {% csrf_token %}
-                        <div class="form-group">
-                            {{ cart_product_form.quantity.label_tag }}
+
+                        <!-- СЕЛЕКТОР КОЛИЧЕСТВА С КНОПКАМИ -->
+                        <div class="quantity-selector">
+                            <button type="button" class="qty-btn minus" onclick="updateQty(-1)">−</button>
                             {{ cart_product_form.quantity }}
+                            <button type="button" class="qty-btn plus" onclick="updateQty(1)">+</button>
                         </div>
-                        <button type="submit" class="add-to-cart-btn">Добавить в корзину</button>
+
+                        <button type="submit" class="add-to-cart-btn-new">
+                            <span class="btn-text">Добавить в корзину</span>
+                            <span class="btn-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                            </span>
+                        </button>
                     </form>
+
                 {% else %}
-                    <p class="stock-status out-of-stock">
-                        <strong>Наличие:</strong> Нет в наличии
-                    </p>
-                    <button class="add-to-cart-btn" disabled>Нет в наличии</button>
+                    <p class="stock-status out-of-stock" style="color: #dc3545; font-weight: bold;">✖ Нет в наличии</p>
                 {% endif %}
             </div>
+
+            <!-- АККОРДЕОНЫ -->
+            <div class="accordion-new">
+                {% if product.composition %}
+                <div class="accordion-item">
+                    <button class="accordion-header">
+                        <span>{{ product.composition_title|default:site_settings.default_composition_title }}</span>
+                        <svg class="accordion-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div class="accordion-content">
+                        <p>{{ product.composition|linebreaksbr }}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if product.description %}
+                <div class="accordion-item">
+                    <button class="accordion-header">
+                        <span>{{ product.description_title|default:site_settings.default_description_title }}</span>
+                        <svg class="accordion-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div class="accordion-content">
+                        <p>{{ product.description|linebreaksbr }}</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- ПРЕИМУЩЕСТВА -->
+            <div class="benefits-block">
+                {% for benefit in benefits %}
+                    <div class="benefit-item" {% if benefit.description %}title="{{ benefit.description }}"{% endif %}>
+                        {{ benefit.icon_svg|safe }}
+                        <span>{{ benefit.title }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <a href="{% url 'shop:product_list_all' %}" class="back-link-new">Вернуться в каталог</a>
         </div>
     </div>
+</div>
 
-    <a href="{% url 'shop:product_list_all' %}" class="back-link">← Вернуться в каталог</a>
+<!-- СТИЛИ ДЛЯ КНОПОК +/- (Можно вынести в main.css, но пусть будут тут для гарантии) -->
+<style>
+    .qty-btn {
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        font-weight: bold;
+        cursor: pointer;
+        padding: 0 15px;
+        color: #333;
+        height: 100%;
+    }
+    .qty-btn:hover {
+        color: var(--accent-color, #e53935);
+        background-color: #f0f0f0;
+    }
+    /* Убираем стрелочки у инпута */
+    .quantity-selector input[type=number]::-webkit-inner-spin-button,
+    .quantity-selector input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+</style>
 {% endblock %}
 
 {% block extra_scripts %}
-    <script>
-        function changeMainImage(newSrc, clickedThumbnail) {
-            document.getElementById('main-product-image').src = newSrc;
-            const thumbnails = document.querySelectorAll('.thumbnail');
-            thumbnails.forEach(thumb => {
-                thumb.classList.remove('active');
-            });
-            clickedThumbnail.classList.add('active');
+<script>
+    // 1. ЛОГИКА КНОПОК +/-
+    function updateQty(change) {
+        const input = document.querySelector('.quantity-selector input');
+        if (!input) return;
+
+        let newVal = parseInt(input.value) + change;
+        if (newVal < 1) newVal = 1;
+        // Можно добавить проверку на макс. кол-во (stock), если нужно
+
+        input.value = newVal;
+    }
+
+    // 2. Галерея и лупа
+    const mainImage = document.getElementById('main-product-image');
+    const zoomContainer = document.getElementById('main-image-zoom-container');
+
+    function changeMainImage(thumbnail) {
+        const fullSrc = thumbnail.getAttribute('data-full-src');
+        if (mainImage.src !== fullSrc) {
+            mainImage.style.opacity = 0;
+            setTimeout(() => {
+                mainImage.src = fullSrc;
+                mainImage.style.opacity = 1;
+            }, 200);
         }
-    </script>
+
+        document.querySelectorAll('.thumbnail-new').forEach(t => t.classList.remove('active'));
+        thumbnail.classList.add('active');
+    }
+
+    if (zoomContainer) {
+        zoomContainer.addEventListener('mousemove', function(e) {
+            const rect = zoomContainer.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width * 100;
+            const y = (e.clientY - rect.top) / rect.height * 100;
+            mainImage.style.transformOrigin = `${x}% ${y}%`;
+        });
+        zoomContainer.addEventListener('mouseleave', function() {
+            mainImage.style.transformOrigin = 'center center';
+        });
+    }
+
+    // 3. Аккордеон
+    const accordionItems = document.querySelectorAll('.accordion-item');
+    accordionItems.forEach(item => {
+        const header = item.querySelector('.accordion-header');
+        const content = item.querySelector('.accordion-content');
+        header.addEventListener('click', (e) => {
+            e.preventDefault(); // Предотвращаем возможный сабмит формы, если баг вернется
+            if (item.classList.contains('open')) {
+                item.classList.remove('open');
+                content.style.maxHeight = '0';
+            } else {
+                item.classList.add('open');
+                content.style.maxHeight = content.scrollHeight + 'px';
+            }
+        });
+        // Инициализация открытых
+        if (item.classList.contains('open')) {
+            content.style.maxHeight = content.scrollHeight + 'px';
+        }
+    });
+
+    // 4. Анимация кнопки
+    const addToCartForm = document.querySelector('.add-to-cart-form-detail');
+    if (addToCartForm) {
+        addToCartForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = this.querySelector('.add-to-cart-btn-new');
+
+            if (btn.classList.contains('added')) return;
+
+            btn.classList.add('added');
+            btn.querySelector('.btn-text').textContent = 'Добавлено!';
+
+            setTimeout(() => {
+                this.submit();
+            }, 500);
+        });
+    }
+</script>
 {% endblock %}

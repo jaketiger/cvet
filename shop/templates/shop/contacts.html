@@ -1,24 +1,177 @@
-<!-- /shop/templates/shop/contacts.html -->
-
+<!-- shop/templates/shop/contacts.html -->
 {% extends "base.html" %}
 
-{% block title %}Контакты - MegaCvet{% endblock %}
+{% block title %}{{ site_settings.contacts_page_title|default:'Контакты' }} - {{ site_settings.shop_name }}{% endblock %}
 
 {% block content %}
-<div class="container" style="padding-top: 2rem;">
-    <h1>Контактная информация</h1>
-    <hr>
+<div class="static-page-container">
+    <h1 class="static-page-title">{{ site_settings.contacts_page_title|default:'Контактная информация' }}</h1>
 
-    <h3>Адрес для самовывоза:</h3>
-    <!-- linebreaksbr нужен, если вы в админке введете адрес в несколько строк -->
-    <p>{{ settings.pickup_address|linebreaksbr }}</p>
+    <!-- Карта теперь отображается вверху, перед контактными данными -->
+    {% if site_settings.map_embed_code %}
+    <div class="map-container">
+        {{ site_settings.map_embed_code|safe }}
+    </div>
+    {% endif %}
 
-    <h3>График работы:</h3>
-    <p>{{ settings.working_hours }}</p>
+    <div class="contact-grid">
 
-    <h3>Телефон для связи:</h3>
-    <p>{{ settings.contact_phone }}</p>
+        <!-- 1. Карточка с Адресом -->
+        {% if site_settings.pickup_address %}
+        <div class="contact-card">
+            <div class="contact-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            </div>
+            <div class="contact-card-content">
+                <h3 class="contact-card-title">{{ site_settings.contacts_address_title|default:'Адрес для самовывоза:' }}</h3>
+                <div class="contact-card-text">{{ site_settings.pickup_address|linebreaksbr }}</div>
+            </div>
+        </div>
+        {% endif %}
 
-    <!-- Сюда можно добавить карту, если захотите -->
+        <!-- 2. Карточка с Телефонами -->
+        {% if site_settings.contact_phone or site_settings.contact_phone_secondary %}
+        <div class="contact-card">
+            <div class="contact-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            </div>
+            <div class="contact-card-content">
+                <h3 class="contact-card-title">{{ site_settings.contacts_phone_title|default:'Телефон для связи:' }}</h3>
+                <div class="contact-phone-list">
+                    {% if site_settings.contact_phone %}
+                        <a href="tel:{{ site_settings.contact_phone|cut:' ' }}" class="contact-phone-link">{{ site_settings.contact_phone }}</a>
+                    {% endif %}
+                    {% if site_settings.contact_phone_secondary %}
+                        <a href="tel:{{ site_settings.contact_phone_secondary|cut:' ' }}" class="contact-phone-link">{{ site_settings.contact_phone_secondary }}</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 3. Карточка с Графиком работы -->
+        {% if site_settings.working_hours %}
+        <div class="contact-card">
+            <div class="contact-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
+            <div class="contact-card-content">
+                <h3 class="contact-card-title">{{ site_settings.contacts_hours_title|default:'График работы:' }}</h3>
+                <div class="contact-card-text">{{ site_settings.working_hours|linebreaksbr }}</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
 </div>
+
+<style>
+    :root {
+        --static-title-color: {{ site_settings.static_page_title_color|default:'var(--heading-font-family)' }};
+        --static-subtitle-color: {{ site_settings.static_page_subtitle_color|default:'var(--accent-color)' }};
+        --static-icon-color: {{ site_settings.static_page_icon_color|default:'var(--accent-color)' }};
+        --static-link-color: {{ site_settings.static_page_link_color|default:'var(--main-text-color)' }};
+        --static-link-hover-color: {{ site_settings.static_page_link_hover_color|default:'var(--accent-color)' }};
+    }
+    .static-page-container {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    }
+    .static-page-title {
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 2rem;
+        color: var(--static-title-color);
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    .map-container {
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        line-height: 0;
+    }
+    .map-container iframe {
+        width: 100%;
+        height: 450px;
+        border: none !important;
+    }
+    .contact-grid {
+        display: grid;
+        gap: 1.5rem; /* Немного уменьшил отступ для компактности */
+    }
+    .contact-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        background-color: #f9fafb;
+        border-radius: 8px;
+        border: 1px solid #f0f0f0;
+    }
+    .contact-card-icon {
+        flex-shrink: 0;
+        color: var(--static-icon-color);
+        margin-top: 5px; /* Небольшой сдвиг иконки вниз для лучшего выравнивания */
+    }
+    .contact-card-icon svg {
+        width: 28px;
+        height: 28px;
+    }
+    .contact-card-content {
+        flex-grow: 1;
+    }
+    .contact-card-title {
+        margin-top: 0;
+        margin-bottom: 0.75rem;
+        font-size: 1.25em;
+        color: var(--static-subtitle-color);
+    }
+    .contact-card-text {
+        font-size: 1em;
+        line-height: 1.7;
+        color: var(--main-text-color);
+    }
+    .contact-phone-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .contact-phone-link {
+        font-size: 1.2em;
+        font-weight: 600;
+        text-decoration: none;
+        color: var(--static-link-color);
+        transition: color 0.2s ease;
+    }
+    .contact-phone-link:hover {
+        color: var(--static-link-hover-color);
+    }
+    .static-page-content {
+        line-height: 1.8;
+        font-size: 1.1em;
+    }
+    .static-page-content p {
+        margin-bottom: 1.5em;
+    }
+    @media (max-width: 768px) {
+        .static-page-container {
+            padding: 1.5rem;
+            margin: 1rem;
+        }
+        .contact-card {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .map-container iframe {
+            height: 300px;
+        }
+    }
+</style>
 {% endblock %}
