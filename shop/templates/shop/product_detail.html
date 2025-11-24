@@ -9,9 +9,7 @@
 <div class="product-detail-page">
     <div class="product-detail-grid">
 
-        <!-- ========================== -->
-        <!-- ===== ЛЕВАЯ КОЛОНКА: ГАЛЕРЕЯ ===== -->
-        <!-- ========================== -->
+        <!-- ЛЕВАЯ КОЛОНКА: ГАЛЕРЕЯ -->
         <div class="product-gallery-new">
             <div class="main-image-container" id="main-image-zoom-container">
                 <img id="main-product-image"
@@ -40,9 +38,7 @@
             {% endwith %}
         </div>
 
-        <!-- ==================================== -->
-        <!-- ===== ПРАВАЯ КОЛОНКА: ИНФОРМАЦИЯ ===== -->
-        <!-- ==================================== -->
+        <!-- ПРАВАЯ КОЛОНКА: ИНФОРМАЦИЯ -->
         <div class="product-info-new">
             <h1 class="product-title-new">{{ product.name }}</h1>
             <div class="price-new">{{ product.price }} руб.</div>
@@ -50,13 +46,14 @@
             <div class="actions-new">
                 {% if product.stock > 0 and product.available %}
 
-                    <!-- СТАТУС НАЛИЧИЯ -->
-                    <p class="stock-status in-stock" style="color: #28a745; font-weight: bold; margin-bottom: 10px;">✓ В наличии</p>
+                    <!-- Статус В НАЛИЧИИ -->
+                    <p class="stock-status in-stock">✓ В наличии</p>
 
+                    <!-- Форма добавления в корзину -->
                     <form class="add-to-cart-form-detail" action="{% url 'cart:cart_add' product.id %}" method="post">
                         {% csrf_token %}
 
-                        <!-- СЕЛЕКТОР КОЛИЧЕСТВА С КНОПКАМИ -->
+                        <!-- Выбор количества -->
                         <div class="quantity-selector">
                             <button type="button" class="qty-btn minus" onclick="updateQty(-1)">−</button>
                             {{ cart_product_form.quantity }}
@@ -72,18 +69,19 @@
                     </form>
 
                 {% else %}
-                    <p class="stock-status out-of-stock" style="color: #dc3545; font-weight: bold;">✖ Нет в наличии</p>
+                    <!-- Статус НЕТ В НАЛИЧИИ -->
+                    <p class="stock-status out-of-stock">✖ Нет в наличии</p>
                 {% endif %}
             </div>
 
-            <!-- АККОРДЕОНЫ -->
+            <!-- Аккордеон -->
             <div class="accordion-new">
                 {% if product.composition %}
                 <div class="accordion-item">
-                    <button class="accordion-header">
+                    <div class="accordion-header">
                         <span>{{ product.composition_title|default:site_settings.default_composition_title }}</span>
                         <svg class="accordion-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                    </button>
+                    </div>
                     <div class="accordion-content">
                         <p>{{ product.composition|linebreaksbr }}</p>
                     </div>
@@ -92,10 +90,10 @@
 
                 {% if product.description %}
                 <div class="accordion-item">
-                    <button class="accordion-header">
+                    <div class="accordion-header">
                         <span>{{ product.description_title|default:site_settings.default_description_title }}</span>
                         <svg class="accordion-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                    </button>
+                    </div>
                     <div class="accordion-content">
                         <p>{{ product.description|linebreaksbr }}</p>
                     </div>
@@ -103,10 +101,10 @@
                 {% endif %}
             </div>
 
-            <!-- ПРЕИМУЩЕСТВА -->
+            <!-- Преимущества -->
             <div class="benefits-block">
                 {% for benefit in benefits %}
-                    <div class="benefit-item" {% if benefit.description %}title="{{ benefit.description }}"{% endif %}>
+                    <div class="benefit-item">
                         {{ benefit.icon_svg|safe }}
                         <span>{{ benefit.title }}</span>
                     </div>
@@ -117,47 +115,21 @@
         </div>
     </div>
 </div>
-
-<!-- СТИЛИ ДЛЯ КНОПОК +/- (Можно вынести в main.css, но пусть будут тут для гарантии) -->
-<style>
-    .qty-btn {
-        background: none;
-        border: none;
-        font-size: 1.2rem;
-        font-weight: bold;
-        cursor: pointer;
-        padding: 0 15px;
-        color: #333;
-        height: 100%;
-    }
-    .qty-btn:hover {
-        color: var(--accent-color, #e53935);
-        background-color: #f0f0f0;
-    }
-    /* Убираем стрелочки у инпута */
-    .quantity-selector input[type=number]::-webkit-inner-spin-button,
-    .quantity-selector input[type=number]::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-    }
-</style>
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
-    // 1. ЛОГИКА КНОПОК +/-
+    // 1. Логика кнопок +/- (меняет значение в инпуте)
     function updateQty(change) {
         const input = document.querySelector('.quantity-selector input');
         if (!input) return;
-
-        let newVal = parseInt(input.value) + change;
+        let newVal = parseInt(input.value) || 1;
+        newVal += change;
         if (newVal < 1) newVal = 1;
-        // Можно добавить проверку на макс. кол-во (stock), если нужно
-
         input.value = newVal;
     }
 
-    // 2. Галерея и лупа
+    // 2. Зум фото
     const mainImage = document.getElementById('main-product-image');
     const zoomContainer = document.getElementById('main-image-zoom-container');
 
@@ -170,7 +142,6 @@
                 mainImage.style.opacity = 1;
             }, 200);
         }
-
         document.querySelectorAll('.thumbnail-new').forEach(t => t.classList.remove('active'));
         thumbnail.classList.add('active');
     }
@@ -192,8 +163,7 @@
     accordionItems.forEach(item => {
         const header = item.querySelector('.accordion-header');
         const content = item.querySelector('.accordion-content');
-        header.addEventListener('click', (e) => {
-            e.preventDefault(); // Предотвращаем возможный сабмит формы, если баг вернется
+        header.addEventListener('click', () => {
             if (item.classList.contains('open')) {
                 item.classList.remove('open');
                 content.style.maxHeight = '0';
@@ -202,27 +172,24 @@
                 content.style.maxHeight = content.scrollHeight + 'px';
             }
         });
-        // Инициализация открытых
-        if (item.classList.contains('open')) {
-            content.style.maxHeight = content.scrollHeight + 'px';
-        }
     });
 
-    // 4. Анимация кнопки
+    // 4. Анимация кнопки добавления
     const addToCartForm = document.querySelector('.add-to-cart-form-detail');
     if (addToCartForm) {
         addToCartForm.addEventListener('submit', function(e) {
-            e.preventDefault();
+            // Глобальный обработчик из base.html сделает AJAX,
+            // здесь только визуальный эффект
             const btn = this.querySelector('.add-to-cart-btn-new');
-
-            if (btn.classList.contains('added')) return;
-
-            btn.classList.add('added');
-            btn.querySelector('.btn-text').textContent = 'Добавлено!';
-
-            setTimeout(() => {
-                this.submit();
-            }, 500);
+            if (!btn.classList.contains('added')) {
+                const originalText = btn.querySelector('.btn-text').innerText;
+                btn.classList.add('added');
+                btn.querySelector('.btn-text').innerText = 'Добавлено!';
+                setTimeout(() => {
+                    btn.classList.remove('added');
+                    btn.querySelector('.btn-text').innerText = originalText;
+                }, 2000);
+            }
         });
     }
 </script>

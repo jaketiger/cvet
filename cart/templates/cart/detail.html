@@ -15,8 +15,8 @@
                 <tr>
                     <th class="product-col">Товар</th>
                     <th>Количество</th>
-                    <th>Цена за шт.</th>
-                    <th>Общая стоимость</th>
+                    <th>Цена</th>
+                    <th>Всего</th>
                     <th></th>
                 </tr>
             </thead>
@@ -25,7 +25,7 @@
                     {% with product=item.product %}
                     <tr class="cart-item {% if item.is_stock_sufficient == False %}stock-error-row{% endif %}">
 
-                        <!-- ТОВАР -->
+                        <!-- 1. Товар -->
                         <td data-label="Товар:" class="product-col">
                             <div class="product-info-cell">
                                 <a href="{{ product.get_absolute_url }}" class="product-image-link">
@@ -43,39 +43,34 @@
                             </div>
                         </td>
 
-                        <!-- КОЛИЧЕСТВО -->
+                        <!-- 2. Количество -->
                         <td data-label="Количество:">
-                            <!-- Форма обновления количества -->
                             <form action="{% url 'cart:cart_add' product.id %}" method="post" class="quantity-form">
                                 {% csrf_token %}
                                 <input type="hidden" name="variant_id" value="{{ item.variant_id|default_if_none:'' }}">
                                 {{ item.update_quantity_form.update }}
+                                <!-- Сохраняем текст открытки, чтобы не стерся -->
+                                <input type="hidden" name="postcard_text" value="{{ item.postcard_text|default:'' }}">
 
-                                <!-- СЕЛЕКТОР С КНОПКАМИ (Глобальные стили из main.css) -->
+                                <!-- Блок с кнопками -->
                                 <div class="quantity-selector">
-                                    <!-- Кнопка МИНУС -->
                                     <button type="button" class="qty-btn minus" onclick="updateCartQty(this, -1)">−</button>
-
-                                    <!-- Поле ввода (Django form field) -->
                                     {{ item.update_quantity_form.quantity }}
-
-                                    <!-- Кнопка ПЛЮС -->
                                     <button type="button" class="qty-btn plus" onclick="updateCartQty(this, 1)">+</button>
                                 </div>
                             </form>
                         </td>
 
-                        <td data-label="Цена за шт.:">{{ item.price }} ₽</td>
-                        <td data-label="Общая стоимость:">{{ item.total_price }} ₽</td>
+                        <!-- 3. Цены -->
+                        <td data-label="Цена:">{{ item.price }} ₽</td>
+                        <td data-label="Всего:">{{ item.total_price }} ₽</td>
 
+                        <!-- 4. Удалить -->
                         <td class="remove-col" data-label="">
                            <form action="{% url 'cart:cart_remove' product.id %}" method="post">
                                 {% csrf_token %}
                                 <input type="hidden" name="variant_id" value="{{ item.variant_id|default_if_none:'' }}">
-                                <button type="submit" class="remove-btn">
-                                    <span class="desktop-text">✕</span>
-                                    <span class="mobile-icon">✕ Удалить</span>
-                                </button>
+                                <button type="submit" class="remove-btn" title="Удалить">✕</button>
                             </form>
                         </td>
                     </tr>
@@ -103,34 +98,30 @@
     {% else %}
     <div class="cart-empty">
         <h3>Ваша корзина пуста</h3>
-        <p>Самое время добавить в нее что-нибудь прекрасное!</p>
         <a href="{% url 'shop:product_list_all' %}" class="btn">Перейти в каталог</a>
     </div>
     {% endif %}
 </div>
 
 <style>
-    /* Локальные стили только для корзины */
+    /* Локальные стили для выравнивания */
     .quantity-form {
         display: flex;
         align-items: center;
         gap: 10px;
     }
-
     .stock-error-msg { color: #dc3545; font-weight: bold; font-size: 0.85em; margin-top: 5px; background: #ffe6e6; padding: 2px 6px; border-radius: 4px; display: inline-block; }
     .stock-error-row { background-color: #fff5f5; }
     .remove-btn { background: transparent; color: #999; border: 1px solid #ddd; border-radius: 50%; width: 30px; height: 30px; padding: 0; font-size: 14px; cursor: pointer; }
     .remove-btn:hover { background: #dc3545; color: white; border-color: #dc3545; }
 
-    /* Мобильная адаптация выравнивания */
     @media (max-width: 768px) {
-        .quantity-form { justify-content: flex-start; }
+        .quantity-form { justify-content: flex-start; } /* Слева на мобильном */
     }
 </style>
 
 <script>
     // Функция обновления количества в корзине
-    // При нажатии +/- сразу отправляет форму на сервер
     function updateCartQty(btn, change) {
         const wrapper = btn.closest('.quantity-selector');
         const input = wrapper.querySelector('input');
@@ -139,12 +130,12 @@
         let val = parseInt(input.value) || 1;
         val += change;
 
-        if (val < 1) val = 1; // Не даем уйти в минус
-        // if (val > 999) val = 999; // Можно ограничить макс
+        if (val < 1) val = 1;
+        // if (val > 999) val = 999;
 
         input.value = val;
 
-        // ВАЖНО: Отправляем форму, чтобы обновилась корзина и цены
+        // Отправляем форму на сервер для пересчета
         form.submit();
     }
 </script>
