@@ -415,16 +415,17 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- AJAX Script -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Ищем формы обоих типов: и в списке, и в детальной карточке
+        // Ищем формы добавления в корзину
         const cartForms = document.querySelectorAll('.add-to-cart-form, .add-to-cart-form-detail');
 
         cartForms.forEach(form => {
             form.addEventListener('submit', function(e) {
-                e.preventDefault(); // ОСТАНОВИТЬ переход на страницу JSON
+                e.preventDefault(); // Останавливаем перезагрузку
 
-                // Ищем кнопку внутри текущей формы (она может называться по-разному)
                 const btn = this.querySelector('button[type="submit"]');
-                // Сохраняем старый текст или HTML кнопки
+
+                // Сохраняем оригинальный контент кнопки, чтобы потом вернуть (если нужно)
+                // Но у нас CSS классы, так что это для страховки
                 const originalContent = btn.innerHTML;
 
                 fetch(this.action, {
@@ -437,32 +438,37 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // 1. Обновляем счетчик в шапке
-                        const cartCounter = document.querySelector('.cart .user-nav-text');
-                        if (cartCounter) {
-                            cartCounter.innerText = data.cart_len + ' на ' + data.total_price + ' руб.';
+                        // === 1. ОБНОВЛЕНИЕ ДЕСКТОПНОЙ ШАПКИ ===
+                        const desktopCartText = document.querySelector('.cart .user-nav-text');
+                        if (desktopCartText) {
+                            desktopCartText.innerText = data.cart_len + ' на ' + data.total_price + ' руб.';
                         }
 
-                        // 2. Визуальный эффект на кнопке
-                        btn.classList.add('added'); // Можно использовать для CSS анимаций
-                        // Если внутри кнопки есть текст, меняем его
-                        const textSpan = btn.querySelector('.btn-text, .desktop-text');
-                        if (textSpan) {
-                            textSpan.innerText = '✓ Добавлено';
-                        } else {
-                            // Если структура сложная, просто меняем текст кнопки временно
-                             btn.innerText = '✓';
+                        // === 2. ОБНОВЛЕНИЕ МОБИЛЬНОЙ ИКОНКИ ===
+                        const mobileCartText = document.querySelector('#cart-toggle .user-nav-text');
+                        if (mobileCartText) {
+                            // Пишем кол-во товаров вместо слова "Корзина"
+                            mobileCartText.innerText = data.cart_len + ' шт.';
                         }
 
-                        // Меняем цвет на зеленый временно
-                        const oldColor = btn.style.backgroundColor;
-                        btn.style.backgroundColor = '#28a745';
+                        // === 3. ОБНОВЛЕНИЕ МОБИЛЬНОГО ВЫПАДАЮЩЕГО МЕНЮ ===
+                        const mobileSummary = document.querySelector('.cart-summary-mobile');
+                        if (mobileSummary) {
+                            // Переписываем содержимое блока итогов
+                            mobileSummary.innerHTML = `
+                                <p>Товаров в корзине: <strong>${data.cart_len}</strong></p>
+                                <p>На сумму: <strong>${data.total_price} руб.</strong></p>
+                                <a href="{% url 'cart:cart_detail' %}" class="btn btn-secondary" style="width: 100%; box-sizing: border-box; text-align: center; display: block; margin-bottom: 8px;">Перейти в корзину</a>
+                                <a href="{% url 'orders:order_create' %}" class="btn" style="width: 100%; box-sizing: border-box; text-align: center; display: block;">Оформить заказ</a>
+                            `;
+                        }
 
-                        // 3. Возврат в исходное состояние через 2 сек
+                        // === 4. АНИМАЦИЯ КНОПКИ ===
+                        btn.classList.add('added');
+
+                        // Через 2 секунды убираем класс "added", чтобы галочка исчезла
                         setTimeout(() => {
                             btn.classList.remove('added');
-                            btn.style.backgroundColor = oldColor;
-                            btn.innerHTML = originalContent; // Возвращаем иконки и текст как были
                         }, 2000);
                     }
                 })
