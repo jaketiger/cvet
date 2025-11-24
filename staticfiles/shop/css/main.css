@@ -1,5 +1,5 @@
 /* static/shop/css/main.css */
-/* FORCE UPDATE v28 - ORIGINAL FILE + MOBILE FIXES ONLY */
+/* FORCE UPDATE v22 - SMALLER MOBILE BANNER ARROWS + ALL PREVIOUS FIXES */
 
 /*
 =================================================================
@@ -41,7 +41,7 @@ a:active, button:active, .product-card:active { transform: scale(0.98); opacity:
 
 /*
 =================================================================
-=== 2. СТИЛИ НАВИГАЦИИ (ИЗОЛИРОВАННЫЕ ОТ КНОПОК) ===
+=== 2. СТИЛИ НАВИГАЦИИ ===
 =================================================================
 */
 .user-navigation a:not(.btn),
@@ -55,7 +55,6 @@ a:active, button:active, .product-card:active { transform: scale(0.98); opacity:
     border-radius: 5px;
     transition: all 0.3s ease;
     z-index: 1;
-    /* overflow: hidden; <--- [ИЗМЕНЕНИЕ] Убрали, чтобы работало подчеркивание */
 }
 .user-navigation a:not(.btn):hover,
 .category-nav-desktop a:not(.btn):hover,
@@ -107,7 +106,7 @@ a:active, button:active, .product-card:active { transform: scale(0.98); opacity:
     color: var(--accent-color, #e53935);
 }
 
-/* Волна [ИЗМЕНЕНИЕ: Снизу вверх + overflow] */
+/* ВОЛНА */
 .nav-style-wave .user-navigation a:not(.btn),
 .nav-style-wave .category-nav-desktop a:not(.btn),
 .nav-style-wave .footer-links a:not(.btn) {
@@ -116,21 +115,23 @@ a:active, button:active, .product-card:active { transform: scale(0.98); opacity:
 .nav-style-wave .user-navigation a:not(.btn)::before,
 .nav-style-wave .category-nav-desktop a:not(.btn)::before,
 .nav-style-wave .footer-links a:not(.btn)::before {
-    content: ''; position: absolute; bottom: 0; left: 0;
-    width: 100%; height: 0%; /* Старт с 0 */
+    content: ''; position: absolute;
+    bottom: 0; left: 0;
+    width: 100%;
+    height: 0%; /* Высота 0 */
     background-color: var(--accent-color, #e53935);
-    transition: height 0.3s ease-out; /* Анимация высоты */
+    transition: height 0.3s ease-out;
     z-index: -1;
 }
 .nav-style-wave .user-navigation a:not(.btn):hover::before,
 .nav-style-wave .category-nav-desktop a:not(.btn):hover::before,
 .nav-style-wave .footer-links a:not(.btn):hover::before {
-    height: 100%; /* Заполняем */
+    height: 100%; /* Заполняем вверх */
 }
 .nav-style-wave .user-navigation a:not(.btn):hover,
 .nav-style-wave .category-nav-desktop a:not(.btn):hover,
 .nav-style-wave .footer-links a:not(.btn):hover {
-    color: var(--main-text-color, #333); /* Можно поменять на #fff для контраста */
+    color: var(--main-text-color, #333);
 }
 
 /*
@@ -184,13 +185,15 @@ a:active, button:active, .product-card:active { transform: scale(0.98); opacity:
 .icon-anim-rotate .user-nav-link:hover svg, .icon-anim-rotate .logo a:hover .logo-icon, .icon-anim-rotate .benefit-item:hover svg { transform: rotate(15deg); }
 .icon-anim-bounce .user-nav-link:hover svg, .icon-anim-bounce .logo a:hover .logo-icon, .icon-anim-bounce .benefit-item:hover svg { transform: translateY(-4px); }
 
-.btn, button, input[type="submit"],
+/* КНОПКИ (Исключаем accordion-header) */
+.btn, button:not(.accordion-header), input[type="submit"],
 a.btn-primary, a.btn-secondary, a.btn-danger,
 .btn-submit, .remove-btn,
 .mobile-menu-mode-buttons a,
 .mobile-dropdown-content .btn,
 .mobile-dropdown-content .btn-secondary,
-.mobile-dropdown-content button[type="submit"] {
+.mobile-dropdown-content button[type="submit"],
+.add-to-cart-btn, .add-to-cart-btn-new, .add-to-cart-btn-small {
     border: none;
     border-radius: var(--button-border-radius, 4px);
     font-family: var(--button-font-family, sans-serif);
@@ -208,14 +211,11 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     overflow: hidden;
     z-index: 1;
     line-height: 1.2;
-}
-
-.btn, button, input[type="submit"], a.btn-primary, .btn-submit, .add-to-cart-btn,
-.mobile-menu-mode-buttons a, .mobile-dropdown-content .btn, .mobile-dropdown-content button[type="submit"] {
     background-color: var(--button-bg-color, #333);
     color: var(--button-text-color, #fff);
 }
-.btn:hover, button:hover, input[type="submit"]:hover, a.btn-primary:hover, .btn-submit:hover, .add-to-cart-btn:hover, .mobile-menu-mode-buttons a:hover {
+
+.btn:hover, button:not(.accordion-header):hover, input[type="submit"]:hover, a.btn-primary:hover, .btn-submit:hover, .add-to-cart-btn:hover, .mobile-menu-mode-buttons a:hover {
     background-color: var(--button-hover-bg-color, #000);
     transform: translateY(-2px);
 }
@@ -237,305 +237,56 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
 }
 .btn:disabled, button:disabled, input[type="submit"]:disabled { background-color: #ccc; cursor: not-allowed; opacity: 0.7; transform: none; }
 
-.btn-preset-pill .btn,
-.btn-preset-pill button,
-.btn-preset-pill input[type="submit"],
-.btn-preset-pill a.btn-primary,
-.btn-preset-pill .btn-secondary,
-.btn-preset-pill .btn-danger,
-.btn-preset-pill .btn-submit,
-.btn-preset-pill .remove-btn,
-.btn-preset-pill .mobile-menu-mode-buttons a,
-.btn-preset-pill .mobile-dropdown-content .btn {
-    border-radius: 50px;
-}
-
-.btn-preset-soft .btn,
-.btn-preset-soft button,
-.btn-preset-soft input[type="submit"],
-.btn-preset-soft a.btn-primary,
-.btn-preset-soft .btn-submit,
-.btn-preset-soft .mobile-menu-mode-buttons a,
-.btn-preset-soft .mobile-dropdown-content .btn {
-    background-color: #f0f0f3;
-    color: #333;
-    box-shadow: 5px 5px 10px #d1d9e6, -5px -5px 10px #ffffff;
-    border-radius: 10px;
-}
-.btn-preset-soft .btn-secondary {
-    background-color: #e0e0e0;
-    color: #555;
-    box-shadow: 5px 5px 10px #bebebe, -5px -5px 10px #ffffff;
-}
-.btn-preset-soft .btn-danger, .btn-preset-soft .remove-btn {
-    background-color: #ffccd5;
-    color: #d32f2f;
-    box-shadow: 5px 5px 10px #e6b3bc, -5px -5px 10px #fff;
-}
-.btn-preset-soft .btn:hover, .btn-preset-soft button:hover, .btn-preset-soft a:hover {
-    transform: translateY(-2px);
-    box-shadow: 2px 2px 5px #d1d9e6, -2px -2px 5px #ffffff;
-}
-
-.btn-preset-gradient .btn,
-.btn-preset-gradient button,
-.btn-preset-gradient input[type="submit"],
-.btn-preset-gradient a.btn-primary,
-.btn-preset-gradient .btn-secondary,
-.btn-preset-gradient .btn-danger,
-.btn-preset-gradient .btn-submit,
-.btn-preset-gradient .remove-btn,
-.btn-preset-gradient .mobile-menu-mode-buttons a,
-.btn-preset-gradient .mobile-dropdown-content .btn {
-    background: transparent;
-    color: white;
-    z-index: 1;
-    border: none;
-}
-.btn-preset-gradient .btn::before,
-.btn-preset-gradient button::before,
-.btn-preset-gradient input[type="submit"]::before,
-.btn-preset-gradient a.btn-primary::before,
-.btn-preset-gradient .btn-secondary::before,
-.btn-preset-gradient .btn-danger::before,
-.btn-preset-gradient .btn-submit::before,
-.btn-preset-gradient .remove-btn::before,
-.btn-preset-gradient .mobile-menu-mode-buttons a::before,
-.btn-preset-gradient .mobile-dropdown-content .btn::before {
-    content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-    background-size: 200% 200%;
-    z-index: -1; transition: opacity 0.3s ease;
-    background: linear-gradient(45deg, var(--button-bg-color, #333), var(--button-accent-color, #e53935));
-}
-.btn-preset-gradient .btn-secondary::before {
-    background: linear-gradient(45deg, #6c757d, #495057);
-}
-.btn-preset-gradient .btn-danger::before, .btn-preset-gradient .remove-btn::before {
-    background: linear-gradient(45deg, #dc3545, #a71d2a);
-}
-.btn-preset-gradient .btn:hover::before, .btn-preset-gradient button:hover::before, .btn-preset-gradient a:hover::before {
-    background: linear-gradient(45deg, var(--button-accent-color, #e53935), var(--button-bg-color, #333));
-}
-.btn-preset-gradient .btn-secondary:hover::before {
-    background: linear-gradient(45deg, #495057, #6c757d);
-}
-.btn-preset-gradient .btn-danger:hover::before {
-    background: linear-gradient(45deg, #a71d2a, #dc3545);
-}
-
-.btn-preset-glass_frosted .btn,
-.btn-preset-glass_frosted button,
-.btn-preset-glass_frosted input[type="submit"],
-.btn-preset-glass_frosted a.btn-primary,
-.btn-preset-glass_frosted .btn-submit,
-.btn-preset-glass_frosted .add-to-cart-btn,
-.btn-preset-glass_frosted .mobile-menu-mode-buttons a,
-.btn-preset-glass_frosted .mobile-dropdown-content .btn {
-    background: rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    color: #333;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    font-weight: 700;
-}
-.btn-preset-glass_frosted .btn-secondary {
-    background: rgba(0, 0, 0, 0.15);
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    color: #fff;
-}
-.btn-preset-glass_frosted .btn-danger, .btn-preset-glass_frosted .remove-btn {
-    background: rgba(220, 53, 69, 0.25);
-    border: 1px solid rgba(220, 53, 69, 0.5);
-    color: #a71d2a;
-}
-.btn-preset-glass_frosted .btn:hover, .btn-preset-glass_frosted button:hover, .btn-preset-glass_frosted a:hover {
-    background: rgba(255, 255, 255, 0.4);
-    color: var(--button-accent-color, #e53935);
-}
+/* --- ВСЕ ВАШИ ПРЕСЕТЫ (ВОССТАНОВЛЕНЫ) --- */
+.btn-preset-pill .btn, .btn-preset-pill button:not(.accordion-header), .btn-preset-pill input[type="submit"], .btn-preset-pill a.btn-primary, .btn-preset-pill .btn-secondary, .btn-preset-pill .btn-danger, .btn-preset-pill .btn-submit, .btn-preset-pill .remove-btn, .btn-preset-pill .mobile-menu-mode-buttons a, .btn-preset-pill .mobile-dropdown-content .btn { border-radius: 50px; }
+.btn-preset-soft .btn, .btn-preset-soft button:not(.accordion-header), .btn-preset-soft input[type="submit"], .btn-preset-soft a.btn-primary, .btn-preset-soft .btn-submit, .btn-preset-soft .mobile-menu-mode-buttons a, .btn-preset-soft .mobile-dropdown-content .btn { background-color: #f0f0f3; color: #333; box-shadow: 5px 5px 10px #d1d9e6, -5px -5px 10px #ffffff; border-radius: 10px; }
+.btn-preset-soft .btn-secondary { background-color: #e0e0e0; color: #555; box-shadow: 5px 5px 10px #bebebe, -5px -5px 10px #ffffff; }
+.btn-preset-soft .btn-danger, .btn-preset-soft .remove-btn { background-color: #ffccd5; color: #d32f2f; box-shadow: 5px 5px 10px #e6b3bc, -5px -5px 10px #fff; }
+.btn-preset-soft .btn:hover, .btn-preset-soft button:not(.accordion-header):hover, .btn-preset-soft a:hover { transform: translateY(-2px); box-shadow: 2px 2px 5px #d1d9e6, -2px -2px 5px #ffffff; }
+.btn-preset-gradient .btn, .btn-preset-gradient button:not(.accordion-header), .btn-preset-gradient input[type="submit"], .btn-preset-gradient a.btn-primary, .btn-preset-gradient .btn-secondary, .btn-preset-gradient .btn-danger, .btn-preset-gradient .btn-submit, .btn-preset-gradient .remove-btn, .btn-preset-gradient .mobile-menu-mode-buttons a, .btn-preset-gradient .mobile-dropdown-content .btn { background: transparent; color: white; z-index: 1; border: none; }
+.btn-preset-gradient .btn::before, .btn-preset-gradient button:not(.accordion-header)::before, .btn-preset-gradient input[type="submit"]::before, .btn-preset-gradient a.btn-primary::before, .btn-preset-gradient .btn-secondary::before, .btn-preset-gradient .btn-danger::before, .btn-preset-gradient .btn-submit::before, .btn-preset-gradient .remove-btn::before, .btn-preset-gradient .mobile-menu-mode-buttons a::before, .btn-preset-gradient .mobile-dropdown-content .btn::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-size: 200% 200%; z-index: -1; transition: opacity 0.3s ease; background: linear-gradient(45deg, var(--button-bg-color, #333), var(--button-accent-color, #e53935)); }
+.btn-preset-gradient .btn-secondary::before { background: linear-gradient(45deg, #6c757d, #495057); }
+.btn-preset-gradient .btn-danger::before, .btn-preset-gradient .remove-btn::before { background: linear-gradient(45deg, #dc3545, #a71d2a); }
+.btn-preset-gradient .btn:hover::before, .btn-preset-gradient button:not(.accordion-header):hover::before, .btn-preset-gradient a:hover::before { background: linear-gradient(45deg, var(--button-accent-color, #e53935), var(--button-bg-color, #333)); }
+.btn-preset-gradient .btn-secondary:hover::before { background: linear-gradient(45deg, #495057, #6c757d); }
+.btn-preset-gradient .btn-danger:hover::before { background: linear-gradient(45deg, #a71d2a, #dc3545); }
+.btn-preset-glass_frosted .btn, .btn-preset-glass_frosted button:not(.accordion-header), .btn-preset-glass_frosted input[type="submit"], .btn-preset-glass_frosted a.btn-primary, .btn-preset-glass_frosted .btn-submit, .btn-preset-glass_frosted .add-to-cart-btn, .btn-preset-glass_frosted .mobile-menu-mode-buttons a, .btn-preset-glass_frosted .mobile-dropdown-content .btn { background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); color: #333; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-weight: 700; }
+.btn-preset-glass_frosted .btn-secondary { background: rgba(0, 0, 0, 0.15); border: 1px solid rgba(0, 0, 0, 0.2); color: #fff; }
+.btn-preset-glass_frosted .btn-danger, .btn-preset-glass_frosted .remove-btn { background: rgba(220, 53, 69, 0.25); border: 1px solid rgba(220, 53, 69, 0.5); color: #a71d2a; }
+.btn-preset-glass_frosted .btn:hover, .btn-preset-glass_frosted button:not(.accordion-header):hover, .btn-preset-glass_frosted a:hover { background: rgba(255, 255, 255, 0.4); color: var(--button-accent-color, #e53935); }
 .btn-preset-glass_frosted .btn-secondary:hover { background: rgba(0, 0, 0, 0.3); }
 .btn-preset-glass_frosted .btn-danger:hover { background: rgba(220, 53, 69, 0.4); }
-
 @keyframes neonPulse { 0% { box-shadow: 0 0 5px var(--button-accent-color, #e53935), inset 0 0 5px var(--button-accent-color, #e53935); } 50% { box-shadow: 0 0 20px var(--button-accent-color, #e53935), inset 0 0 10px var(--button-accent-color, #e53935); } 100% { box-shadow: 0 0 5px var(--button-accent-color, #e53935), inset 0 0 5px var(--button-accent-color, #e53935); } }
 @keyframes neonPulseGray { 0% { box-shadow: 0 0 5px #888, inset 0 0 5px #888; } 50% { box-shadow: 0 0 15px #888, inset 0 0 8px #888; } 100% { box-shadow: 0 0 5px #888, inset 0 0 5px #888; } }
 @keyframes neonPulseRed { 0% { box-shadow: 0 0 5px #dc3545; } 50% { box-shadow: 0 0 15px #dc3545; } 100% { box-shadow: 0 0 5px #dc3545; } }
-.btn-preset-neon_pulse .btn,
-.btn-preset-neon_pulse button,
-.btn-preset-neon_pulse input[type="submit"],
-.btn-preset-neon_pulse .add-to-cart-btn-new,
-.btn-preset-neon_pulse a.btn-primary,
-.btn-preset-neon_pulse .btn-submit,
-.btn-preset-neon_pulse .mobile-menu-mode-buttons a,
-.btn-preset-neon_pulse .mobile-dropdown-content .btn {
-    background-color: #111;
-    color: var(--button-accent-color, #e53935);
-    border: 2px solid var(--button-accent-color, #e53935);
-    box-shadow: 0 0 8px var(--button-accent-color, #e53935);
-    text-shadow: 0 0 5px var(--button-accent-color, #e53935);
-    text-transform: uppercase; letter-spacing: 1px;
-    transition: all 0.3s ease;
-}
-.btn-preset-neon_pulse .btn-secondary {
-    background-color: #111;
-    color: #ccc;
-    border: 2px solid #ccc;
-    box-shadow: 0 0 5px #ccc;
-    text-shadow: 0 0 3px #ccc;
-}
-.btn-preset-neon_pulse .btn-danger, .btn-preset-neon_pulse .remove-btn {
-    background-color: #111;
-    color: #dc3545;
-    border: 2px solid #dc3545;
-    box-shadow: 0 0 5px #dc3545;
-    text-shadow: 0 0 3px #dc3545;
-}
-.btn-preset-neon_pulse .btn:hover, .btn-preset-neon_pulse button:hover, .btn-preset-neon_pulse a:hover, .btn-preset-neon_pulse .add-to-cart-btn-new:hover {
-    background-color: var(--button-accent-color, #e53935);
-    color: #000; text-shadow: none;
-    animation: neonPulse 1.5s infinite alternate;
-}
-.btn-preset-neon_pulse .btn-secondary:hover {
-    background-color: #ccc; color: #000; animation: neonPulseGray 1.5s infinite alternate;
-}
-.btn-preset-neon_pulse .btn-danger:hover {
-    background-color: #dc3545; color: #000; animation: neonPulseRed 1.5s infinite alternate;
-}
-
-.btn-preset-brutal .btn,
-.btn-preset-brutal button,
-.btn-preset-brutal input[type="submit"],
-.btn-preset-brutal .add-to-cart-btn-new,
-.btn-preset-brutal a.btn-primary,
-.btn-preset-brutal .btn-secondary,
-.btn-preset-brutal .btn-danger,
-.btn-preset-brutal .remove-btn,
-.btn-preset-brutal .btn-submit,
-.btn-preset-brutal .mobile-menu-mode-buttons a,
-.btn-preset-brutal .mobile-dropdown-content .btn {
-    border: 3px solid #000;
-    border-radius: 0;
-    box-shadow: 4px 4px 0 #000;
-    font-weight: 900; text-transform: uppercase;
-    transition: all 0.1s;
-}
-.btn-preset-brutal .btn, .btn-preset-brutal .btn-submit, .btn-preset-brutal .mobile-menu-mode-buttons a, .btn-preset-brutal .add-to-cart-btn-new {
-    background-color: #fff; color: #000;
-}
-.btn-preset-brutal .btn-secondary {
-    background-color: #e9ecef; color: #000;
-}
-.btn-preset-brutal .btn-danger, .btn-preset-brutal .remove-btn {
-    background-color: #ffebee; color: #c62828;
-}
-.btn-preset-brutal .btn:hover, .btn-preset-brutal button:hover, .btn-preset-brutal a:hover, .btn-preset-brutal .add-to-cart-btn-new:hover {
-    transform: translate(2px, 2px);
-    box-shadow: 2px 2px 0 #000;
-    background-color: var(--button-accent-color, #e53935); color: #fff;
-}
+.btn-preset-neon_pulse .btn, .btn-preset-neon_pulse button:not(.accordion-header), .btn-preset-neon_pulse input[type="submit"], .btn-preset-neon_pulse .add-to-cart-btn-new, .btn-preset-neon_pulse a.btn-primary, .btn-preset-neon_pulse .btn-submit, .btn-preset-neon_pulse .mobile-menu-mode-buttons a, .btn-preset-neon_pulse .mobile-dropdown-content .btn { background-color: #111; color: var(--button-accent-color, #e53935); border: 2px solid var(--button-accent-color, #e53935); box-shadow: 0 0 8px var(--button-accent-color, #e53935); text-shadow: 0 0 5px var(--button-accent-color, #e53935); text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; }
+.btn-preset-neon_pulse .btn-secondary { background-color: #111; color: #ccc; border: 2px solid #ccc; box-shadow: 0 0 5px #ccc; text-shadow: 0 0 3px #ccc; }
+.btn-preset-neon_pulse .btn-danger, .btn-preset-neon_pulse .remove-btn { background-color: #111; color: #dc3545; border: 2px solid #dc3545; box-shadow: 0 0 5px #dc3545; text-shadow: 0 0 3px #dc3545; }
+.btn-preset-neon_pulse .btn:hover, .btn-preset-neon_pulse button:not(.accordion-header):hover, .btn-preset-neon_pulse a:hover, .btn-preset-neon_pulse .add-to-cart-btn-new:hover { background-color: var(--button-accent-color, #e53935); color: #000; text-shadow: none; animation: neonPulse 1.5s infinite alternate; }
+.btn-preset-neon_pulse .btn-secondary:hover { background-color: #ccc; color: #000; animation: neonPulseGray 1.5s infinite alternate; }
+.btn-preset-neon_pulse .btn-danger:hover { background-color: #dc3545; color: #000; animation: neonPulseRed 1.5s infinite alternate; }
+.btn-preset-brutal .btn, .btn-preset-brutal button:not(.accordion-header), .btn-preset-brutal input[type="submit"], .btn-preset-brutal .add-to-cart-btn-new, .btn-preset-brutal a.btn-primary, .btn-preset-brutal .btn-secondary, .btn-preset-brutal .btn-danger, .btn-preset-brutal .remove-btn, .btn-preset-brutal .btn-submit, .btn-preset-brutal .mobile-menu-mode-buttons a, .btn-preset-brutal .mobile-dropdown-content .btn { border: 3px solid #000; border-radius: 0; box-shadow: 4px 4px 0 #000; font-weight: 900; text-transform: uppercase; transition: all 0.1s; }
+.btn-preset-brutal .btn, .btn-preset-brutal .btn-submit, .btn-preset-brutal .mobile-menu-mode-buttons a, .btn-preset-brutal .add-to-cart-btn-new { background-color: #fff; color: #000; }
+.btn-preset-brutal .btn-secondary { background-color: #e9ecef; color: #000; }
+.btn-preset-brutal .btn-danger, .btn-preset-brutal .remove-btn { background-color: #ffebee; color: #c62828; }
+.btn-preset-brutal .btn:hover, .btn-preset-brutal button:not(.accordion-header):hover, .btn-preset-brutal a:hover, .btn-preset-brutal .add-to-cart-btn-new:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #000; background-color: var(--button-accent-color, #e53935); color: #fff; }
 .btn-preset-brutal .btn-secondary:hover { background-color: #ced4da; }
 .btn-preset-brutal .btn-danger:hover { background-color: #ef5350; color: #fff; }
-
-/* --- 7. Pushable 3D (3D Нажатие) --- */
-.btn-preset-pushable_3d .btn,
-.btn-preset-pushable_3d button,
-.btn-preset-pushable_3d input[type="submit"],
-.btn-preset-pushable_3d a.btn,
-.btn-preset-pushable_3d .add-to-cart-btn-small,
-.btn-preset-pushable_3d .product-card button,
-.btn-preset-pushable_3d .add-to-cart-btn-new {
-    border: none;
-    border-radius: 8px;
-    box-shadow: 0 4px 0 0 #333; /* Тень, создающая объем */
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
-}
-.btn-preset-pushable_3d .btn:active,
-.btn-preset-pushable_3d button:active,
-.btn-preset-pushable_3d input[type="submit"]:active,
-.btn-preset-pushable_3d a.btn:active,
-.btn-preset-pushable_3d .add-to-cart-btn-small:active,
-.btn-preset-pushable_3d .product-card button:active,
-.btn-preset-pushable_3d .add-to-cart-btn-new:active {
-    transform: translateY(4px); /* Сдвиг вниз при нажатии */
-    box-shadow: 0 0px 0 0 #333; /* Тень убирается */
-}
+.btn-preset-pushable_3d .btn, .btn-preset-pushable_3d button:not(.accordion-header), .btn-preset-pushable_3d input[type="submit"], .btn-preset-pushable_3d a.btn, .btn-preset-pushable_3d .add-to-cart-btn-small, .btn-preset-pushable_3d .product-card button, .btn-preset-pushable_3d .add-to-cart-btn-new { border: none; border-radius: 8px; box-shadow: 0 4px 0 0 #333; transition: transform 0.1s ease, box-shadow 0.1s ease; }
+.btn-preset-pushable_3d .btn:active, .btn-preset-pushable_3d button:not(.accordion-header):active, .btn-preset-pushable_3d input[type="submit"]:active, .btn-preset-pushable_3d a.btn:active, .btn-preset-pushable_3d .add-to-cart-btn-small:active, .btn-preset-pushable_3d .product-card button:active, .btn-preset-pushable_3d .add-to-cart-btn-new:active { transform: translateY(4px); box-shadow: 0 0px 0 0 #333; }
 .btn-preset-pushable_3d .btn-secondary { box-shadow: 0 4px 0 0 #495057; }
 .btn-preset-pushable_3d .btn-secondary:active { box-shadow: 0 0px 0 0 #495057; }
 .btn-preset-pushable_3d .btn-danger, .btn-preset-pushable_3d .remove-btn { box-shadow: 0 4px 0 0 #a71d2a; }
 .btn-preset-pushable_3d .btn-danger:active, .btn-preset-pushable_3d .remove-btn:active { box-shadow: 0 0px 0 0 #a71d2a; }
-
-/* --- 8. Shine Hover (Блеск) --- */
-.btn-preset-shine_hover .btn,
-.btn-preset-shine_hover button,
-.btn-preset-shine_hover input[type="submit"],
-.btn-preset-shine_hover a.btn,
-.btn-preset-shine_hover .add-to-cart-btn-small,
-.btn-preset-shine_hover .product-card button,
-.btn-preset-shine_hover .add-to-cart-btn-new {
-    overflow: hidden; /* Обязательно для работы псевдо-элемента */
-}
-.btn-preset-shine_hover .btn::before,
-.btn-preset-shine_hover button::before,
-.btn-preset-shine_hover input[type="submit"]::before,
-.btn-preset-shine_hover a.btn::before,
-.btn-preset-shine_hover .add-to-cart-btn-small::before,
-.btn-preset-shine_hover .product-card button::before,
-.btn-preset-shine_hover .add-to-cart-btn-new::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 50%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-    transform: skewX(-25deg);
-    transition: left 0.6s ease;
-}
-.btn-preset-shine_hover .btn:hover::before,
-.btn-preset-shine_hover button:hover::before,
-.btn-preset-shine_hover input[type="submit"]:hover::before,
-.btn-preset-shine_hover a.btn:hover::before,
-.btn-preset-shine_hover .add-to-cart-btn-small:hover::before,
-.btn-preset-shine_hover .product-card button:hover::before,
-.btn-preset-shine_hover .add-to-cart-btn-new:hover::before {
-    left: 125%; /* Движение блика */
-}
-
-/* --- 9. Outline Fill (Контур) --- */
-.btn-preset-outline_fill .btn,
-.btn-preset-outline_fill button,
-.btn-preset-outline_fill input[type="submit"],
-.btn-preset-outline_fill a.btn,
-.btn-preset-outline_fill .add-to-cart-btn-small,
-.btn-preset-outline_fill .product-card button,
-.btn-preset-outline_fill .add-to-cart-btn-new {
-    background-color: transparent;
-    border: 2px solid var(--button-bg-color, #333);
-    color: var(--button-bg-color, #333);
-    transition: color 0.3s ease, background-color 0.3s ease;
-}
-.btn-preset-outline_fill .btn:hover,
-.btn-preset-outline_fill button:hover,
-.btn-preset-outline_fill input[type="submit"]:hover,
-.btn-preset-outline_fill a.btn:hover,
-.btn-preset-outline_fill .add-to-cart-btn-small:hover,
-.btn-preset-outline_fill .product-card button:hover,
-.btn-preset-outline_fill .add-to-cart-btn-new:hover {
-    background-color: var(--button-bg-color, #333);
-    color: var(--button-text-color, #fff);
-}
-.btn-preset-outline_fill .btn-secondary {
-    border-color: #6c757d; color: #6c757d;
-}
-.btn-preset-outline_fill .btn-secondary:hover {
-    background-color: #6c757d; color: #fff;
-}
-.btn-preset-outline_fill .btn-danger, .btn-preset-outline_fill .remove-btn {
-    border-color: #dc3545; color: #dc3545;
-}
-.btn-preset-outline_fill .btn-danger:hover, .btn-preset-outline_fill .remove-btn:hover {
-    background-color: #dc3545; color: #fff;
-}
-
-/* --- КОНЕЦ ДОПОЛНИТЕЛЬНЫХ ПРЕСЕТОВ --- */
+.btn-preset-shine_hover .btn, .btn-preset-shine_hover button:not(.accordion-header), .btn-preset-shine_hover input[type="submit"], .btn-preset-shine_hover a.btn, .btn-preset-shine_hover .add-to-cart-btn-small, .btn-preset-shine_hover .product-card button, .btn-preset-shine_hover .add-to-cart-btn-new { overflow: hidden; }
+.btn-preset-shine_hover .btn::before, .btn-preset-shine_hover button:not(.accordion-header)::before, .btn-preset-shine_hover input[type="submit"]::before, .btn-preset-shine_hover a.btn::before, .btn-preset-shine_hover .add-to-cart-btn-small::before, .btn-preset-shine_hover .product-card button::before, .btn-preset-shine_hover .add-to-cart-btn-new::before { content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent); transform: skewX(-25deg); transition: left 0.6s ease; }
+.btn-preset-shine_hover .btn:hover::before, .btn-preset-shine_hover button:not(.accordion-header):hover::before, .btn-preset-shine_hover input[type="submit"]:hover::before, .btn-preset-shine_hover a.btn:hover::before, .btn-preset-shine_hover .add-to-cart-btn-small:hover::before, .btn-preset-shine_hover .product-card button:hover::before, .btn-preset-shine_hover .add-to-cart-btn-new:hover::before { left: 125%; }
+.btn-preset-outline_fill .btn, .btn-preset-outline_fill button:not(.accordion-header), .btn-preset-outline_fill input[type="submit"], .btn-preset-outline_fill a.btn, .btn-preset-outline_fill .add-to-cart-btn-small, .btn-preset-outline_fill .product-card button, .btn-preset-outline_fill .add-to-cart-btn-new { background-color: transparent; border: 2px solid var(--button-bg-color, #333); color: var(--button-bg-color, #333); transition: color 0.3s ease, background-color 0.3s ease; }
+.btn-preset-outline_fill .btn:hover, .btn-preset-outline_fill button:not(.accordion-header):hover, .btn-preset-outline_fill input[type="submit"]:hover, .btn-preset-outline_fill a.btn:hover, .btn-preset-outline_fill .add-to-cart-btn-small:hover, .btn-preset-outline_fill .product-card button:hover, .btn-preset-outline_fill .add-to-cart-btn-new:hover { background-color: var(--button-bg-color, #333); color: var(--button-text-color, #fff); }
+.btn-preset-outline_fill .btn-secondary { border-color: #6c757d; color: #6c757d; }
+.btn-preset-outline_fill .btn-secondary:hover { background-color: #6c757d; color: #fff; }
+.btn-preset-outline_fill .btn-danger, .btn-preset-outline_fill .remove-btn { border-color: #dc3545; color: #dc3545; }
+.btn-preset-outline_fill .btn-danger:hover, .btn-preset-outline_fill .remove-btn:hover { background-color: #dc3545; color: #fff; }
 
 
 .add-to-cart-btn-small { width: 100%; padding: 8px; font-size: 0.9em; }
@@ -569,7 +320,7 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
 .product-description-section { line-height: 1.6; margin-bottom: 25px; }
 .product-actions-box { background-color: #f9f9f9; border: 1px solid #eee; border-radius: 8px; padding: 20px; margin-top: 20px; }
 
-/* [ИЗМЕНЕНИЕ] Наличие товара */
+/* [ВОССТАНОВЛЕНО] Наличие товара */
 .stock-status { font-size: 1.1em; margin-bottom: 15px; font-weight: bold; }
 .in-stock { color: #4CAF50; }
 .out-of-stock { color: #e53535; }
@@ -650,34 +401,150 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
 
 .mobile-view-desktop_icons .user-navigation .user-nav-text { display: none !important; }
 
-/* [ИЗМЕНЕНИЕ] СТИЛИ ДЛЯ ВЫБОРА КОЛИЧЕСТВА (ТОНКИЙ СТИЛЬ, БЕЗ РАМОК) */
+/* --- МОБИЛЬНЫЙ БАННЕР (ФИКС ОТСТУПОВ И СТРЕЛОК) --- */
+@media (max-width: 992px) {
+    .swiper-container { height: auto !important; min-height: auto !important; aspect-ratio: 16 / 9; }
+    .swiper-slide-image { position: absolute; top: 0; left: 0; height: 100% !important; }
+    .slide-content h1 { font-size: 1.5em; }
+    .slide-content p { font-size: 1em; }
+    .slide-content { padding: 15px; }
+
+    /* Уменьшаем стрелки */
+    .swiper-button-next, .swiper-button-prev { width: 30px !important; height: 30px !important; }
+    .swiper-button-next:after, .swiper-button-prev:after { font-size: 14px !important; }
+}
+
+
+/*
+=================================================================
+=== СТИЛИ ДЛЯ СТРАНИЦЫ ДЕТАЛЕЙ ТОВАРА (product_detail.html) ===
+=================================================================
+*/
+
+/* 1. Основной макет */
+.product-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 15px; /* Для отступов на краях, если site-wrapper не справляется */
+}
+.product-gallery-new {
+    grid-column: 1 / 7;
+}
+.product-info-new {
+    grid-column: 7 / 13;
+    padding: 1rem 0; /* Убрал лишний padding, если site-wrapper уже дает */
+}
+
+/* 2. Галерея */
+.main-image-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12); /* Более выраженная тень */
+    margin-bottom: 1rem;
+    cursor: zoom-in;
+}
+.main-image-container img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+.main-image-container:hover img {
+    transform: scale(1.5); /* Фиксированный коэффициент масштабирования */
+}
+.thumbnails-new {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: flex-start; /* Выравнивание по левому краю */
+}
+.thumbnail-new {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* Мягкая тень */
+}
+.thumbnail-new:hover {
+    border-color: #ccc;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.thumbnail-new.active {
+    border-color: var(--accent-color, #e53935);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Более выраженная тень для активной */
+    transform: translateY(-1px); /* Меньше сдвиг для активной */
+}
+
+/* 3. Правая колонка: Информация */
+.product-title-new {
+    font-size: 2.5rem;
+    margin-top: 0;
+    margin-bottom: 0.75rem; /* Немного увеличен отступ */
+    line-height: 1.2;
+    color: var(--product-title-text-color, #222);
+    font-family: var(--product-title-font-family, sans-serif);
+    font-weight: var(--product-title-font-weight);
+    font-style: var(--product-title-font-style);
+}
+.price-new {
+    font-size: 2.2rem; /* Немного крупнее */
+    font-weight: 700;
+    color: var(--accent-color, #e53935);
+    margin-bottom: 2.5rem; /* Увеличен отступ */
+}
+
+/* 4. Кнопки и селектор количества */
+.actions-new {
+    margin-bottom: 2.5rem; /* Увеличен отступ */
+}
+.add-to-cart-form-detail {
+    display: flex;
+    align-items: center; /* Выравнивание элементов по центру */
+    gap: 1rem;
+}
 .quantity-selector {
     display: inline-flex;
     align-items: center;
     background: transparent !important;
     border: none !important; /* Убираем внешнюю рамку */
-    gap: 5px; /* Расстояние между элементами */
+    gap: 5px; /* Расстояние между кнопками и цифрой */
 }
-/* Поле с цифрой */
+
+/* Поле с цифрой: убираем рамку, делаем фон */
 .quantity-selector input {
     width: 45px !important;
     text-align: center;
-    border: none !important; /* Убираем рамку */
-    background: #f5f5f5;     /* Легкий фон */
+    border: none !important; /* Убираем рамку у цифры */
+    background: #f5f5f5;     /* Легкий серый фон (или white) */
     border-radius: 6px;
     font-weight: bold;
     font-size: 1.1em;
     padding: 8px 0;
-    -moz-appearance: textfield;
+    -moz-appearance: textfield; /* Убираем стрелки браузера */
 }
+/* Убираем стрелки браузера (Chrome/Safari) */
 .quantity-selector input::-webkit-outer-spin-button,
-.quantity-selector input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.quantity-selector input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
 /* Кнопки Плюс и Минус */
 .qty-btn {
     width: 36px;
     height: 36px;
     border: none;
-    background: #e0e0e0;
+    background: #e0e0e0; /* Цвет кнопки */
     border-radius: 6px;
     font-size: 1.2rem;
     font-weight: bold;
@@ -689,7 +556,157 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     padding: 0;
     transition: background 0.2s;
 }
-.qty-btn:hover { background: #d6d6d6; }
+.qty-btn:hover {
+    background: #d6d6d6;
+}
+
+/* --- МОБИЛЬНАЯ КОРРЕКЦИЯ --- */
+@media (max-width: 992px) {
+    /* Гарантируем, что на мобильном поле не растянется */
+    .quantity-selector {
+        width: auto !important;
+        justify-content: center;
+    }
+}
+
+.add-to-cart-btn-new {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding: 0.8rem 1.5rem; /* Адаптивный padding */
+    font-size: 1.1em; /* Увеличенный шрифт */
+    min-height: 50px; /* Минимальная высота для кнопки */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* Мягкая тень */
+}
+.add-to-cart-btn-new .btn-text {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.add-to-cart-btn-new .btn-icon {
+    position: absolute;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    color: var(--button-text-color, #fff);
+}
+.add-to-cart-btn-new.added .btn-text {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+.add-to-cart-btn-new.added .btn-icon {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 5. Аккордеон */
+.accordion-new {
+    border-top: 1px solid #eee;
+    margin-bottom: 2.5rem; /* Увеличен отступ */
+}
+.accordion-item {
+    border-bottom: 1px solid #eee;
+}
+.accordion-header {
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 0;
+    font-size: 1.1em;
+    font-weight: 600;
+    font-family: var(--product-header-font-family, sans-serif);
+    color: var(--product-header-text-color, #333);
+    transition: color 0.3s ease; /* Плавный переход цвета */
+}
+.accordion-header:hover {
+    color: var(--accent-color, #e53935); /* Цвет при наведении */
+}
+.accordion-icon {
+    transition: transform 0.3s ease;
+    color: var(--accent-color, #e53935); /* Цвет иконки аккордеона */
+    width: 22px; height: 22px; /* Чуть крупнее */
+}
+.accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+    padding: 0 0.5rem;
+    line-height: 1.7; /* Для лучшей читаемости */
+    color: var(--main-text-color);
+}
+.accordion-content p {
+    margin: 0;
+    padding-bottom: 1.25rem;
+}
+.accordion-item.open .accordion-header {
+    color: var(--accent-color, #e53935);
+}
+.accordion-item.open .accordion-icon {
+    transform: rotate(180deg);
+}
+
+/* 6. Блок преимуществ */
+.benefits-block {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.2rem; /* Увеличил отступ */
+    padding: 1.5rem 0; /* Увеличил padding */
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 2.5rem; /* Увеличил отступ */
+}
+.benefit-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem; /* Увеличил отступ */
+    font-size: 1em; /* Чуть крупнее текст */
+    color: var(--main-text-color); /* Основной цвет текста */
+    transition: color 0.2s ease, transform 0.2s ease;
+    cursor: default; /* чтобы показать, что это не интерактивный элемент, если нет описания */
+}
+.benefit-item:hover {
+    color: var(--accent-color); /* Цвет при наведении */
+    transform: translateX(5px); /* Легкий сдвиг вправо при наведении */
+}
+.benefit-item svg {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    color: var(--accent-color, #e53935);
+    transition: transform 0.3s ease, color 0.2s ease;
+}
+.benefit-item:hover svg {
+    color: var(--product-header-text-color, #333); /* Цвет иконки при наведении */
+    /* Анимация иконки из SiteSettings, уже добавлена в .icon-anim-... классы */
+}
+
+.back-link-new {
+    display: inline-flex; /* Чтобы выглядела как кнопка/ссылка */
+    align-items: center;
+    gap: 0.5rem;
+    color: #777;
+    text-decoration: none;
+    transition: color 0.2s ease, transform 0.2s ease;
+    font-size: 1em;
+}
+.back-link-new:hover {
+    color: var(--accent-color, #e53935);
+    transform: translateX(-5px);
+}
+.back-link-new::before {
+    content: "←";
+    display: inline-block;
+    margin-right: 5px;
+    font-size: 1.2em;
+    line-height: 1;
+}
+
+
 
 
 @media (max-width: 992px) {
@@ -723,74 +740,91 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     .cart-summary-mobile p { margin: 0; font-size: 1.1em; }
     .user-nav-mobile .btn, .cart-summary-mobile .btn { width: 100%; box-sizing: border-box; text-align: center; }
 
-    /* [ИЗМЕНЕНИЕ] БАННЕР: Авто-высота, маленькие стрелки */
-    .swiper-container { height: auto !important; min-height: auto !important; aspect-ratio: 16 / 9; }
-    .swiper-slide-image { position: absolute; top: 0; left: 0; height: 100% !important; }
-    .swiper-button-next, .swiper-button-prev { width: 30px !important; height: 30px !important; }
-    .swiper-button-next:after, .swiper-button-prev:after { font-size: 14px !important; }
-    .slide-content h1 { font-size: 1.5em; } .slide-content p { font-size: 1em; } .slide-content { padding: 15px; }
+    /* ========================================================= */
+    /* === ИСПРАВЛЕННАЯ КАРТОЧКА ТОВАРА (MOBILE) === */
+    /* ========================================================= */
 
-    /* [ИЗМЕНЕНИЕ] МОБИЛЬНАЯ КАРТОЧКА */
+    /* 1. Контейнер без отступов, закругленный */
     .mobile-grid-col-0 .product-card {
         padding: 0 !important;
         border-radius: 8px !important;
         overflow: hidden !important;
-        display: flex !important; flex-direction: column !important;
+        display: flex !important;
+        flex-direction: column !important;
         background: #fff; border: 1px solid #eee;
     }
+
+    /* 2. Ссылка внутри без отступов */
     .mobile-grid-col-0 .product-card-link {
-        padding: 0 !important; display: flex; flex-direction: column; flex-grow: 1;
+        padding: 0 !important;
+        display: flex; flex-direction: column; flex-grow: 1;
     }
-    /* Фото на всю ширину */
+
+    /* 3. ФОТО: Квадратное, на всю ширину, все углы скруглены */
     .mobile-grid-col-0 .product-image-wrapper {
-        margin: 0 !important; width: 100% !important; aspect-ratio: 1 / 1 !important;
-        border-radius: 8px !important;
+        margin: 0 !important;
+        width: 100% !important;
+        aspect-ratio: 1 / 1 !important;
+        border-radius: 8px !important; /* Закругляем саму обертку фото */
     }
+
     .mobile-grid-col-0 .product-image {
-        width: 100% !important; height: 100% !important; object-fit: cover !important;
-        border-radius: 8px !important;
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        border-radius: 8px !important; /* И саму картинку */
     }
-    /* Текст */
+
+    /* 4. ТЕКСТ: Компактный */
     .mobile-grid-col-0 .product-title {
         font-size: 0.85rem !important;
         margin: 6px 6px 2px 6px !important;
-        line-height: 1.2 !important; min-height: 2.4em;
-        text-align: center; white-space: normal !important;
+        line-height: 1.2 !important;
+        min-height: 2.4em;
+        text-align: center;
+        white-space: normal !important;
     }
+
     .mobile-grid-col-0 .product-price {
-        font-size: 0.95rem !important; font-weight: bold;
-        margin: 0 6px 6px 6px !important; text-align: center;
+        font-size: 0.95rem !important;
+        font-weight: bold;
+        margin: 0 6px 6px 6px !important;
+        text-align: center;
     }
-    /* Кнопка широкая */
+
+    /* 5. КНОПКА: Широкая */
     .mobile-grid-col-0 .add-to-cart-form {
-        padding: 0 4px 8px 4px !important; margin-top: auto;
+        padding: 0 4px 8px 4px !important;
+        margin-top: auto;
     }
+
     .mobile-grid-col-0 .add-to-cart-btn-small {
-        width: 100% !important; display: block !important;
-        padding: 8px 0 !important; font-size: 0.85rem !important; margin-top: 0;
+        width: 100% !important;
+        display: block !important;
+        padding: 8px 0 !important;
+        font-size: 0.85rem !important;
+        margin-top: 0;
+        /* ЦВЕТА НЕ ПЕРЕОПРЕДЕЛЯЕМ */
     }
 
-    /* [ИЗМЕНЕНИЕ] СЕТКА */
-    @media (min-width: 590px) { .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 12px !important; } }
-    @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important; } }
-    @media (max-width: 389px) { .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; } }
+    /* ========================================================= */
+    /* === СЕТКА ПО РАЗМЕРАМ (АДАПТИВНАЯ) === */
+    /* ========================================================= */
+    /* 1. Планшеты (от 590px до 992px) -> 4 колонки */
+    @media (min-width: 590px) {
+        .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 12px !important; }
+    }
+    /* 2. Большие телефоны (390px - 589px) -> 3 колонки */
+    @media (min-width: 390px) and (max-width: 589px) {
+        .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important; }
+        .mobile-grid-col-0 .product-title { font-size: 0.85rem !important; }
+    }
+    /* 3. Узкие телефоны (меньше 390px) -> 2 колонки */
+    @media (max-width: 389px) {
+        .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+    }
 
-    /* [ИЗМЕНЕНИЕ] ТАБЛИЦЫ В БЛОКИ */
-    .cart-table thead, .orders-table thead { display: none; }
-    .cart-table tr, .orders-table tr { display: block; margin-bottom: 15px; background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    .cart-table td, .orders-table td { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border: none; border-bottom: 1px solid #eee; text-align: right; }
-    .cart-table td:last-child { border: none; }
-    .cart-table td::before, .orders-table td::before { content: attr(data-label); float: left; font-weight: bold; color: #555; font-size: 0.9em; }
-    .cart-table .product-col { display: block; text-align: left; }
-    .cart-table .product-col::before { display: none; }
-    .cabinet-actions-row { width: 100%; justify-content: space-between; margin-top: 10px; }
-    .action-btn { flex: 1; max-width: 48%; }
-
-    /* Аккордеон в мобайле */
-    .accordion-header { padding: 1rem 0; font-size: 1em; background: none !important; border: none !important; }
-    .accordion-content p { padding-bottom: 1rem; }
-    .quantity-selector { width: auto !important; justify-content: center; } /* Центрируем */
-
+    /* Остальные режимы (фиксированные из админки) */
     .mobile-grid-col-1 .product-grid { grid-template-columns: 1fr !important; gap: 15px !important; }
     .mobile-grid-col-1 .product-card { padding: 15px !important; }
     .mobile-grid-col-1 .product-title { font-size: 1.1rem !important; margin-bottom: 10px !important; }
@@ -811,6 +845,94 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     .mobile-grid-col-4 .product-title { font-size: 0.65rem !important; margin-bottom: 2px !important; line-height: 1.1 !important; height: 2.2em; }
     .mobile-grid-col-4 .product-price { font-size: 0.75rem !important; }
     .mobile-grid-col-4 .add-to-cart-btn-small { padding: 3px 0 !important; font-size: 0.65rem !important; }
+
+    /* =============================================== */
+    /* === [ИСПРАВЛЕНО] АДАПТИВ ДЕТАЛЬНОЙ СТРАНИЦЫ === */
+    /* =============================================== */
+    .product-detail-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    .product-gallery-new, .product-info-new { width: 100%; }
+
+    .product-title-new {
+        font-size: calc(1.5rem * var(--mobile-font-scale-css, 1));
+        margin-bottom: 0.5rem;
+    }
+    .price-new {
+        font-size: calc(1.5rem * var(--mobile-font-scale-css, 1));
+        margin-bottom: 1.5rem;
+    }
+
+    .thumbnails-new { overflow-x: auto; padding-bottom: 5px; }
+    .add-to-cart-form-detail { flex-direction: column; gap: 10px; }
+
+    .quantity-selector, .add-to-cart-btn-new {
+        width: 100%;
+    }
+    .benefits-block { grid-template-columns: 1fr; }
+
+
+    /*
+    =================================================================
+    === [ИСПРАВЛЕНО] АДАПТАЦИЯ ТАБЛИЦ (КОРЗИНА И ЗАКАЗЫ) ===
+    =================================================================
+    */
+    /* Скрываем заголовки таблицы */
+    .cart-table thead, .orders-table thead { display: none; }
+
+    /* Каждая строка таблицы -> карточка */
+    .cart-table tr, .orders-table tr {
+        display: block;
+        margin-bottom: 15px;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Ячейка -> строка с флексом */
+    .cart-table td, .orders-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: right;
+        padding: 8px 0;
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .cart-table td:last-child, .orders-table td:last-child { border-bottom: none; }
+
+    /* Добавляем подписи из data-label */
+    .cart-table td::before, .orders-table td::before {
+        content: attr(data-label);
+        float: left;
+        font-weight: bold;
+        color: #555;
+        font-size: 0.9em;
+        margin-right: 10px;
+    }
+
+    /* Колонка с фото (без подписи, блок) */
+    .cart-table .product-col, .orders-table .product-col {
+        display: block;
+        text-align: left;
+    }
+    .cart-table .product-col::before { display: none; }
+
+    /* Кнопки кабинета на мобильном */
+    .cabinet-actions-row {
+        width: 100%;
+        justify-content: space-between;
+        margin-top: 10px;
+    }
+    .action-btn {
+        flex: 1;
+        max-width: 48%;
+    }
 }
 
 /*
@@ -900,6 +1022,7 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     background-color: #f9f9f9;
     padding: 20px;
     border-radius: 5px;
+    margin-bottom: 20px;
 }
 .order-details-table { /* Таблица внутри блока деталей */
     width: 100%;
@@ -1073,3 +1196,91 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     font-weight: bold;
 }
 /* --- КОНЕЦ ЛОКАЛЬНЫХ СТИЛЕЙ SEARCH_RESULTS.HTML --- */
+
+/* --- АДАПТАЦИЯ ТАБЛИЦ ДЛЯ МОБИЛЬНЫХ --- */
+@media (max-width: 768px) {
+    /* Скрываем шапку таблицы */
+    .cart-table thead, .orders-table thead { display: none; }
+
+    /* Строка -> Карточка */
+    .cart-table tr, .orders-table tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: #fff;
+        padding: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Ячейка -> Строка с названием и значением */
+    .cart-table td, .orders-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border: none;
+        border-bottom: 1px solid #eee;
+        text-align: right;
+    }
+    .cart-table td:last-child, .orders-table td:last-child { border-bottom: none; }
+
+    /* Добавляем заголовки перед значением */
+    .cart-table td::before, .orders-table td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        float: left;
+        color: #555;
+        font-size: 0.9em;
+    }
+
+    /* Исключение для первой колонки (Фото товара) */
+    .cart-table .product-col, .orders-table .product-col { display: block; text-align: left; }
+    .cart-table .product-col::before { display: none; }
+
+    /* Кнопки в личном кабинете */
+    .cabinet-actions-row { width: 100%; justify-content: space-between; margin-top: 10px; }
+    .action-btn { flex: 1; max-width: 48%; }
+}
+
+/* --- СТИЛИ ДЛЯ ИКОНОК ПРЕИМУЩЕСТВ --- */
+
+.benefits-block {
+    display: grid;
+    /* Адаптивная сетка: если мало места - 1 колонка, если много - авто */
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    padding: 1.5rem 0;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 20px;
+}
+
+.benefit-item {
+    display: flex;
+    align-items: center; /* Выравнивание по вертикали */
+    gap: 10px; /* Отступ между иконкой и текстом */
+    font-size: 0.95em;
+    line-height: 1.2;
+    color: var(--main-text-color);
+}
+
+/* САМОЕ ГЛАВНОЕ: Ограничиваем размер иконки */
+.benefit-item svg {
+    width: 32px !important;  /* Фиксированная ширина */
+    height: 32px !important; /* Фиксированная высота */
+    flex-shrink: 0; /* Запрещаем сжиматься */
+    color: var(--accent-color); /* Цвет из настроек */
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+    .benefits-block {
+        grid-template-columns: 1fr; /* Одна колонка на телефоне */
+        gap: 15px;
+    }
+    .benefit-item svg {
+        width: 28px !important; /* Чуть меньше на телефоне */
+        height: 28px !important;
+    }
+}
