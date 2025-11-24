@@ -1243,44 +1243,5 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     .action-btn { flex: 1; max-width: 48%; }
 }
 
-/* --- СТИЛИ ДЛЯ ИКОНОК ПРЕИМУЩЕСТВ --- */
 
-.benefits-block {
-    display: grid;
-    /* Адаптивная сетка: если мало места - 1 колонка, если много - авто */
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 1rem;
-    padding: 1.5rem 0;
-    border-top: 1px solid #eee;
-    border-bottom: 1px solid #eee;
-    margin-bottom: 20px;
-}
 
-.benefit-item {
-    display: flex;
-    align-items: center; /* Выравнивание по вертикали */
-    gap: 10px; /* Отступ между иконкой и текстом */
-    font-size: 0.95em;
-    line-height: 1.2;
-    color: var(--main-text-color);
-}
-
-/* САМОЕ ГЛАВНОЕ: Ограничиваем размер иконки */
-.benefit-item svg {
-    width: 32px !important;  /* Фиксированная ширина */
-    height: 32px !important; /* Фиксированная высота */
-    flex-shrink: 0; /* Запрещаем сжиматься */
-    color: var(--accent-color); /* Цвет из настроек */
-}
-
-/* Мобильная адаптация */
-@media (max-width: 768px) {
-    .benefits-block {
-        grid-template-columns: 1fr; /* Одна колонка на телефоне */
-        gap: 15px;
-    }
-    .benefit-item svg {
-        width: 28px !important; /* Чуть меньше на телефоне */
-        height: 28px !important;
-    }
-}

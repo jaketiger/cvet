@@ -1,15 +1,15 @@
 # orders/models.py
 
 from django.db import models
-from shop.models import Product
+from shop.models import Product, Postcard  # <-- Импорт Postcard
 from django.contrib.auth.models import User
-from decimal import Decimal # <-- Добавляем импорт
+from decimal import Decimal
+
 
 class Order(models.Model):
     STATUS_CHOICES = [
         ('created', 'Оформлен'),
         ('processing', 'В обработке'),
-       # ('client_changed', 'Изменен клиентом'),
         ('shipped', 'Отправлен'),
         ('delivered', 'Доставлен'),
         ('cancelled', 'Отменен'),
@@ -20,7 +20,8 @@ class Order(models.Model):
     DELIVERY_CHOICES = [('delivery', 'Доставка'), ('pickup', 'Самовывоз')]
     delivery_option = models.CharField("Способ получения", max_length=10, choices=DELIVERY_CHOICES, default='delivery')
     delivery_cost = models.DecimalField("Стоимость доставки", max_digits=10, decimal_places=2, default=0.00)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders', verbose_name="Пользователь")
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders',
+                             verbose_name="Пользователь")
     first_name = models.CharField(max_length=50, verbose_name="Имя")
     last_name = models.CharField(max_length=50, verbose_name="Фамилия")
     email = models.EmailField(verbose_name="Email")
@@ -32,30 +33,38 @@ class Order(models.Model):
     updated = models.DateTimeField(auto_now=True, verbose_name="Обновлен")
     paid = models.BooleanField(default=False, verbose_name="Оплачен")
 
+    # --- НОВЫЕ ПОЛЯ ДЛЯ ОТКРЫТКИ ---
+    postcard = models.ForeignKey(Postcard, on_delete=models.SET_NULL, null=True, blank=True,
+                                 related_name='orders_with_card', verbose_name="Открытка")
+    postcard_text = models.TextField("Текст открытки", blank=True)
+    custom_postcard_image = models.ImageField("Своё фото открытки", upload_to='orders/postcards/', blank=True)
+
     class Meta:
         ordering = ['-created']
-        indexes = [models.Index(fields=['-created']),]
+        indexes = [models.Index(fields=['-created']), ]
         verbose_name = 'Заказ'
         verbose_name_plural = 'Заказы'
 
     def __str__(self):
         return f'Заказ #{self.id}'
 
-        # --- НОВЫЙ МЕТОД ДЛЯ ПРОВЕРКИ ---
-
     @property
     def can_be_cancelled(self):
-        """Проверяет, можно ли отменить заказ."""
         return self.status in ['created', 'processing']
 
     def get_items_cost(self):
         return sum(item.get_cost() for item in self.items.all())
 
     def get_total_cost(self):
-        return self.get_items_cost() + self.delivery_cost
+        # Базовая стоимость (товары + доставка)
+        total = self.get_items_cost() + self.delivery_cost
+        # Если выбрана платная открытка, добавляем её стоимость
+        if self.postcard and self.postcard.price > 0:
+            total += self.postcard.price
+        return total
+
 
 class OrderItem(models.Model):
-    # ... (этот класс остается без изменений) ...
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE, verbose_name="Заказ")
     product = models.ForeignKey(Product, related_name='order_items', on_delete=models.CASCADE, verbose_name="Товар")
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена")
@@ -69,10 +78,6 @@ class OrderItem(models.Model):
         return str(self.id)
 
     def get_cost(self):
-        """
-        Надежный метод расчета стоимости.
-        Если цена или количество отсутствуют, возвращает 0.
-        """
         if self.price is None or self.quantity is None:
             return Decimal('0.00')
         return self.price * self.quantity

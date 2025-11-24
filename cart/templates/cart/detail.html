@@ -49,8 +49,6 @@
                                 {% csrf_token %}
                                 <input type="hidden" name="variant_id" value="{{ item.variant_id|default_if_none:'' }}">
                                 {{ item.update_quantity_form.update }}
-                                <!-- Сохраняем текст открытки, чтобы не стерся -->
-                                <input type="hidden" name="postcard_text" value="{{ item.postcard_text|default:'' }}">
 
                                 <!-- Блок с кнопками -->
                                 <div class="quantity-selector">
@@ -78,7 +76,7 @@
                 {% endfor %}
             </tbody>
         </table>
-    </div>
+    </div> <!-- Закрываем cart-wrapper ЗДЕСЬ -->
 
     <div class="cart-summary">
         <h2>Итого: {{ cart.get_total_price }} ₽</h2>
@@ -101,7 +99,7 @@
         <a href="{% url 'shop:product_list_all' %}" class="btn">Перейти в каталог</a>
     </div>
     {% endif %}
-</div>
+</div> <!-- Закрываем cart-container -->
 
 <style>
     /* Локальные стили для выравнивания */
@@ -131,11 +129,8 @@
         val += change;
 
         if (val < 1) val = 1;
-        // if (val > 999) val = 999;
 
         input.value = val;
-
-        // Отправляем форму на сервер для пересчета
         form.submit();
     }
 </script>

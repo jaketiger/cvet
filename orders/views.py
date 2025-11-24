@@ -9,7 +9,7 @@ from django_q.tasks import async_task
 from .models import Order, OrderItem
 from .forms import OrderCreateForm
 from cart.cart import Cart
-from shop.models import Profile, SiteSettings, Product
+from shop.models import Profile, SiteSettings, Product, Postcard  # <-- Добавил Postcard
 
 
 @transaction.atomic
@@ -23,29 +23,32 @@ def order_create(request):
     profile, created = Profile.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
-        form = OrderCreateForm(request.POST)
+        # Добавили request.FILES для загрузки картинок
+        form = OrderCreateForm(request.POST, request.FILES)
         if form.is_valid():
 
-            # Сначала проверяем наличие всех товаров на складе перед созданием заказа
+            # Проверка наличия
             for item in cart:
                 product = item['product']
                 if product.stock < item['quantity']:
-                    # Если какого-то товара не хватает, прерываем заказ и выводим ошибку
-                    error_message = f"Извините, товара '{product.name}' на складе осталось только {product.stock} шт. Пожалуйста, измените количество в корзине."
+                    error_message = f"Извините, товара '{product.name}' на складе осталось только {product.stock} шт."
                     form.add_error(None, error_message)
+                    # Нужно передать postcards обратно в шаблон при ошибке
+                    postcards = Postcard.objects.filter(is_active=True)
                     return render(request, 'orders/create.html', {
                         'cart': cart,
                         'form': form,
+                        'postcards': postcards,
                         'delivery_cost_js': site_settings.delivery_cost,
                         'cart_total_js': cart.get_total_price()
                     })
 
-            # Если проверка прошла успешно, создаем заказ
             order = form.save(commit=False)
             order.user = request.user
 
             if form.cleaned_data['delivery_option'] == 'delivery':
                 order.delivery_cost = site_settings.delivery_cost
+                # Обновляем профиль
                 profile.phone = form.cleaned_data['phone']
                 profile.address = form.cleaned_data['address']
                 profile.postal_code = form.cleaned_data['postal_code']
@@ -56,11 +59,10 @@ def order_create(request):
 
             order.save()
 
-            # Создаем список товаров для массового обновления остатков
+            # Обновление остатков
             products_to_update = []
             for item in cart:
                 product = item['product']
-                # Уменьшаем количество товара
                 product.stock -= item['quantity']
                 products_to_update.append(product)
 
@@ -69,9 +71,7 @@ def order_create(request):
                                          price=item['price'],
                                          quantity=item['quantity'])
 
-            # Массово обновляем остатки всех товаров одним запросом к БД
             Product.objects.bulk_update(products_to_update, ['stock'])
-
             cart.clear()
 
             base_url = f"{request.scheme}://{request.get_host()}"
@@ -95,9 +95,13 @@ def order_create(request):
         }
         form = OrderCreateForm(initial=initial_data)
 
+    # Получаем открытки для шаблона
+    postcards = Postcard.objects.filter(is_active=True)
+
     return render(request, 'orders/create.html', {
         'cart': cart,
         'form': form,
+        'postcards': postcards,  # <-- Передаем открытки
         'delivery_cost_js': site_settings.delivery_cost,
         'cart_total_js': cart.get_total_price()
     })

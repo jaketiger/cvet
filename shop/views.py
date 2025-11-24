@@ -124,21 +124,27 @@ def order_detail(request, order_id):
 @login_required
 @require_POST
 def cancel_order(request, order_id):
-    cart = Cart(request)
+    # Получаем заказ
     order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    # Проверяем, можно ли отменить
     if order.can_be_cancelled:
+        # Возвращаем товары на склад
         for item in order.items.all():
             product = item.product
-            if product: cart.add(product=product, quantity=item.quantity, update_quantity=True)
-        order.status = 'cancelled';
+            product.stock += item.quantity  # Возвращаем количество!
+            product.save()
+
+        # Меняем статус
+        order.status = 'cancelled'
         order.save()
-        base_url = f"{request.scheme}://{request.get_host()}"
-        async_task('orders.utils.send_cancellation_email_task', order_id=order.id, base_url=base_url)
-        messages.success(request,
-                         f'Заказ #{order.id} был отменен. Товары возвращены в вашу корзину для редактирования.')
+
+        messages.success(request, f'Заказ #{order.id} успешно отменен.')
     else:
-        messages.error(request, f'Этот заказ уже нельзя отменить.')
-    return redirect('shop:cabinet')
+        messages.error(request, 'Этот заказ уже нельзя отменить (он уже отправлен или доставлен).')
+
+    # Возвращаем пользователя на страницу этого же заказа
+    return redirect('shop:order_detail', order_id=order.id)
 
 
 @staff_member_required

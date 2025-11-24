@@ -9,7 +9,7 @@
 <div class="checkout-container">
     <h1>Оформление заказа</h1>
 
-    <form method="post" class="order-form">
+    <form method="post" class="order-form" enctype="multipart/form-data">
         {% csrf_token %}
 
         <!-- 1. СПИСОК ТОВАРОВ -->
@@ -18,12 +18,9 @@
             <div class="order-items-list">
                 {% for item in cart %}
                     <div class="order-item-row">
-                        <!-- Картинка -->
                         <div class="item-image">
                             <img src="{% if item.product.image_thumbnail %}{{ item.product.image_thumbnail.url }}{% else %}{% static 'shop/img/no_image.png' %}{% endif %}" alt="{{ item.product.name }}">
                         </div>
-
-                        <!-- Инфо -->
                         <div class="item-details">
                             <div class="item-name">{{ item.product.name }}</div>
                             <div class="item-meta">
@@ -31,11 +28,7 @@
                                 <span class="item-price-single">× {{ item.price }} ₽</span>
                             </div>
                         </div>
-
-                        <!-- Цена -->
-                        <div class="item-total-price">
-                            {{ item.total_price }} ₽
-                        </div>
+                        <div class="item-total-price">{{ item.total_price }} ₽</div>
                     </div>
                 {% endfor %}
             </div>
@@ -50,6 +43,7 @@
                     <span>Доставка:</span>
                     <span><span id="delivery-cost-display">0.00</span> ₽</span>
                 </div>
+                <!-- Общая сумма (ID для JS) -->
                 <div class="summary-row total-row">
                     <span>Итого к оплате:</span>
                     <span class="final-price"><span id="total-cost-display"></span> ₽</span>
@@ -62,11 +56,10 @@
             <h3>Способ получения</h3>
             <div class="delivery-options">
                 {% for radio in form.delivery_option %}
-                <label class="radio-card">
+                <label class="radio-card delivery-radio">
                     {{ radio.tag }}
                     <div class="radio-content">
                         <span class="radio-title">{{ radio.choice_label }}</span>
-                        <!-- Добавляем описание цены динамически -->
                         <span class="radio-desc">
                             {% if radio.data.value == 'delivery' %}
                                 +{{ delivery_cost_js }} ₽
@@ -80,129 +73,198 @@
             </div>
         </div>
 
-        <!-- 3. КОНТАКТЫ -->
+        <!-- 3. ОТКРЫТКА (НОВЫЙ БЛОК) -->
+        <div class="section-block">
+            <h3>Открытка к заказу</h3>
+
+            <!-- Вкладки -->
+            <div class="postcard-tabs">
+                <button type="button" class="postcard-tab active" onclick="switchTab('gallery')">Выбрать из галереи</button>
+                <button type="button" class="postcard-tab" onclick="switchTab('upload')">Загрузить свою</button>
+            </div>
+
+            <!-- Вкладка Галерея -->
+            <div id="tab-gallery" class="postcard-section">
+                <div class="postcards-grid">
+                    <!-- Опция "Без открытки" -->
+                    <label class="postcard-item selected">
+                        <input type="radio" name="postcard" value="" checked onchange="updateTotal()">
+                        <div class="postcard-img-box no-card"><span>🚫</span></div>
+                        <div class="postcard-info">
+                            <span class="pc-title">Без открытки</span>
+                        </div>
+                    </label>
+
+                    <!-- Открытки из БД -->
+                    {% for card in postcards %}
+                    <label class="postcard-item">
+                        <input type="radio" name="postcard" value="{{ card.id }}" data-price="{{ card.price }}" onchange="updateTotal()">
+                        <div class="postcard-img-box">
+                            <img src="{{ card.image.url }}" alt="{{ card.title }}">
+                        </div>
+                        <div class="postcard-info">
+                            <span class="pc-title">{{ card.title }}</span>
+                            {% if card.price > 0 %}
+                                <span class="pc-price badge-premium">{{ card.price|floatformat:0 }} ₽</span>
+                            {% else %}
+                                <span class="pc-price badge-free">Бесплатно</span>
+                            {% endif %}
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Вкладка Загрузка -->
+            <div id="tab-upload" class="postcard-section" style="display: none;">
+                <div class="upload-box">
+                    <p>Загрузите своё изображение, и мы распечатаем его на открытке.</p>
+                    {{ form.custom_postcard_image }}
+                </div>
+            </div>
+
+            <!-- Текст поздравления -->
+            <div class="form-group" style="margin-top: 20px;">
+                <label>Текст поздравления (напечатаем на обороте):</label>
+                {{ form.postcard_text }}
+            </div>
+        </div>
+
+        <!-- 4. КОНТАКТЫ -->
         <div class="section-block">
             <h3>Контактные данные</h3>
             <div class="form-row">
-                <div class="form-group half-width">
-                    <label>Имя {{ form.first_name }}</label>
-                </div>
-                <div class="form-group half-width">
-                    <label>Фамилия {{ form.last_name }}</label>
-                </div>
+                <div class="form-group half-width"><label>Имя {{ form.first_name }}</label></div>
+                <div class="form-group half-width"><label>Фамилия {{ form.last_name }}</label></div>
             </div>
-            <div class="form-group">
-                <label>Email {{ form.email }}</label>
-            </div>
-            <div class="form-group">
-                <label>Телефон {{ form.phone }}</label>
-            </div>
+            <div class="form-group"><label>Email {{ form.email }}</label></div>
+            <div class="form-group"><label>Телефон {{ form.phone }}</label></div>
         </div>
 
-        <!-- 4. АДРЕС (СКРЫВАЕМЫЙ) -->
+        <!-- 5. АДРЕС -->
         <div id="delivery-address-fields" class="section-block">
             <h3>Адрес доставки</h3>
-            <div class="form-group">
-                <label>Улица, дом, квартира {{ form.address }}</label>
-            </div>
+            <div class="form-group"><label>Улица, дом, квартира {{ form.address }}</label></div>
             <div class="form-row">
-                <div class="form-group half-width">
-                    <label>Индекс {{ form.postal_code }}</label>
-                </div>
-                <div class="form-group half-width">
-                    <label>Город {{ form.city }}</label>
-                </div>
+                <div class="form-group half-width"><label>Индекс {{ form.postal_code }}</label></div>
+                <div class="form-group half-width"><label>Город {{ form.city }}</label></div>
             </div>
         </div>
 
-        <!-- 5. ИНФО О САМОВЫВОЗЕ -->
+        <!-- Самовывоз инфо -->
         <div id="pickup-info" class="info-box" style="display: none;">
             <h4>📍 Самовывоз</h4>
             <p>Вы сможете забрать заказ в нашем магазине после подтверждения менеджером.</p>
-            <p>Оплата производится на месте.</p>
-            <a href="{% url 'shop:contacts' %}" target="_blank" class="info-link">Посмотреть адрес и график работы →</a>
+            <a href="{% url 'shop:contacts' %}" target="_blank" class="info-link">Адрес и график работы →</a>
         </div>
 
-        <!-- КНОПКИ ДЕЙСТВИЯ -->
+        <!-- КНОПКИ -->
         <div class="checkout-actions">
             <a href="{% url 'cart:cart_detail' %}" class="btn btn-secondary btn-back">← Назад в корзину</a>
             <button type="submit" class="btn btn-primary btn-submit">Подтвердить заказ</button>
         </div>
-
     </form>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Используем строковый формат с заменой запятой, чтобы JS не ругался на float
+    // 1. Данные о ценах
     const deliveryCost = parseFloat("{{ delivery_cost_js|stringformat:'f' }}".replace(',', '.'));
     const cartTotal = parseFloat("{{ cart_total_js|stringformat:'f' }}".replace(',', '.'));
 
-    const deliveryOptionRadios = document.querySelectorAll('input[name="delivery_option"]');
-    const deliveryAddressFields = document.getElementById('delivery-address-fields');
-    const pickupInfo = document.getElementById('pickup-info');
-    const totalCostDisplay = document.getElementById('total-cost-display');
-    const deliveryCostDisplay = document.getElementById('delivery-cost-display');
-    const deliveryCostSummary = document.getElementById('delivery-cost-summary');
+    // 2. Элементы DOM
+    const deliveryRadios = document.querySelectorAll('input[name="delivery_option"]');
+    const postcardRadios = document.querySelectorAll('input[name="postcard"]');
 
-    // ID поля адреса, который генерирует Django по умолчанию
+    const totalDisplay = document.getElementById('total-cost-display');
+    const deliveryDisplay = document.getElementById('delivery-cost-display');
+    const deliverySummaryRow = document.getElementById('delivery-cost-summary');
+
+    const addressFields = document.getElementById('delivery-address-fields');
+    const pickupInfo = document.getElementById('pickup-info');
     const addressInput = document.getElementById('id_address');
 
-    function updateOrderForm() {
-        // Ищем выбранную радиокнопку
-        const selectedRadio = document.querySelector('input[name="delivery_option"]:checked');
-        if (!selectedRadio) return;
+    // 3. Функция пересчета всего
+    window.updateTotal = function() {
+        let total = cartTotal;
 
-        const selectedOption = selectedRadio.value;
+        // Доставка
+        const selectedDelivery = document.querySelector('input[name="delivery_option"]:checked').value;
+        if (selectedDelivery === 'delivery') {
+            total += deliveryCost;
 
-        if (selectedOption === 'delivery') {
-            if (deliveryAddressFields) deliveryAddressFields.style.display = 'block';
-            if (pickupInfo) pickupInfo.style.display = 'none';
-            if (deliveryCostSummary) deliveryCostSummary.style.display = 'flex';
-
-            if (deliveryCostDisplay) deliveryCostDisplay.textContent = deliveryCost.toFixed(2);
-            if (totalCostDisplay) totalCostDisplay.textContent = (cartTotal + deliveryCost).toFixed(2);
-
-            if (addressInput) addressInput.required = true;
+            // Показываем поля адреса
+            addressFields.style.display = 'block';
+            pickupInfo.style.display = 'none';
+            deliverySummaryRow.style.display = 'flex';
+            deliveryDisplay.textContent = deliveryCost.toFixed(2);
+            if(addressInput) addressInput.required = true;
         } else {
-            if (deliveryAddressFields) deliveryAddressFields.style.display = 'none';
-            if (pickupInfo) pickupInfo.style.display = 'block';
-            if (deliveryCostSummary) deliveryCostSummary.style.display = 'none';
-
-            if (totalCostDisplay) totalCostDisplay.textContent = cartTotal.toFixed(2);
-
-            if (addressInput) addressInput.required = false;
+            // Самовывоз
+            addressFields.style.display = 'none';
+            pickupInfo.style.display = 'block';
+            deliverySummaryRow.style.display = 'none';
+            if(addressInput) addressInput.required = false;
         }
-    }
 
-    deliveryOptionRadios.forEach(radio => radio.addEventListener('change', updateOrderForm));
+        // Открытка (если выбрана платная)
+        const selectedCard = document.querySelector('input[name="postcard"]:checked');
+        if (selectedCard && selectedCard.value !== "") {
+            const price = parseFloat(selectedCard.getAttribute('data-price') || 0);
+            total += price;
 
-    // Запускаем при загрузке страницы
-    updateOrderForm();
+            // Подсветка выбранной
+            document.querySelectorAll('.postcard-item').forEach(i => i.classList.remove('selected'));
+            selectedCard.closest('.postcard-item').classList.add('selected');
+        } else {
+            // Если выбрано "Без открытки" или "Загрузка своей"
+             document.querySelectorAll('.postcard-item').forEach(i => {
+                 if(i.querySelector('input').checked) i.classList.add('selected');
+                 else i.classList.remove('selected');
+             });
+        }
+
+        totalDisplay.textContent = total.toFixed(2);
+    };
+
+    // 4. Переключение вкладок открыток
+    window.switchTab = function(tabName) {
+        document.querySelectorAll('.postcard-tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.postcard-section').forEach(s => s.style.display = 'none');
+
+        if (tabName === 'gallery') {
+            document.getElementById('tab-gallery').style.display = 'block';
+        } else {
+            document.getElementById('tab-upload').style.display = 'block';
+            // При переключении на загрузку сбрасываем выбор галереи
+            const noCardRadio = document.querySelector('input[name="postcard"][value=""]');
+            if (noCardRadio) {
+                noCardRadio.checked = true;
+                updateTotal();
+            }
+        }
+        event.target.classList.add('active');
+    };
+
+    // Слушатели событий
+    deliveryRadios.forEach(r => r.addEventListener('change', updateTotal));
+
+    // Старт
+    updateTotal();
 });
 </script>
 
 <style>
-    .checkout-container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding-bottom: 40px;
-    }
-
+    .checkout-container { max-width: 800px; margin: 0 auto; padding-bottom: 40px; }
     h1 { text-align: center; margin-bottom: 30px; }
     h3 { margin-bottom: 20px; font-size: 1.2rem; border-bottom: 1px solid #eee; padding-bottom: 10px; }
 
     .order-summary-card, .section-block {
-        background: #fff;
-        border: 1px solid #e0e0e0;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 30px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);
     }
 
+    /* Список товаров */
     .order-item-row { display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #f0f0f0; gap: 15px; }
-    .order-item-row:last-child { border-bottom: none; }
     .item-image { width: 60px; height: 60px; border-radius: 6px; overflow: hidden; flex-shrink: 0; }
     .item-image img { width: 100%; height: 100%; object-fit: cover; }
     .item-details { flex-grow: 1; }
@@ -214,73 +276,54 @@ document.addEventListener('DOMContentLoaded', function() {
     .total-row { font-size: 1.3rem; font-weight: bold; margin-top: 15px; border-top: 1px dashed #ddd; padding-top: 15px; }
     .final-price { color: var(--accent-color); }
 
+    /* Формы */
     .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 5px; }
-    .form-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
-    .form-group input:focus { border-color: var(--accent-color); outline: none; }
-
+    .form-group label { display: block; font-weight: 600; margin-bottom: 5px; }
+    .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
     .form-row { display: flex; gap: 20px; }
     .half-width { flex: 1; }
 
-    /* Радио кнопки */
+    /* Доставка (Радио) */
     .delivery-options { display: flex; gap: 15px; flex-wrap: wrap; }
+    .delivery-radio { flex: 1; min-width: 240px; }
     .radio-card {
-        flex: 1; display: flex; align-items: center;
-        border: 1px solid #ddd; border-radius: 8px; padding: 15px;
-        cursor: pointer; transition: all 0.2s; min-width: 240px; background: #fff;
+        display: flex; align-items: center; border: 1px solid #ddd; border-radius: 8px; padding: 15px; cursor: pointer; transition: all 0.2s; background: #fff;
     }
     .radio-card:hover { border-color: var(--accent-color); background: #fffafa; }
     .radio-card input { margin-right: 15px; accent-color: var(--accent-color); transform: scale(1.3); }
-    .radio-content { display: flex; flex-direction: column; }
-    .radio-title { font-weight: bold; }
+    .radio-title { font-weight: bold; display: block; }
     .radio-desc { font-size: 0.85rem; color: #666; }
+
+    /* ОТКРЫТКИ */
+    .postcard-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+    .postcard-tab { padding: 10px 20px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 20px; cursor: pointer; }
+    .postcard-tab.active { background: var(--accent-color); color: #fff; border-color: var(--accent-color); }
+
+    .postcards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+    .postcard-item { border: 2px solid #eee; border-radius: 8px; overflow: hidden; cursor: pointer; position: relative; }
+    .postcard-item.selected { border-color: var(--accent-color); box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.2); }
+    .postcard-item input { display: none; }
+    .postcard-img-box { width: 100%; aspect-ratio: 3/4; background: #f0f0f0; display: flex; align-items: center; justify-content: center; }
+    .postcard-img-box img { width: 100%; height: 100%; object-fit: cover; }
+    .postcard-info { padding: 5px; text-align: center; font-size: 0.8em; }
+    .pc-title { display: block; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .badge-free { color: #28a745; font-weight: bold; }
+    .badge-premium { color: #e53935; font-weight: bold; }
+    .upload-box { border: 2px dashed #ccc; padding: 20px; text-align: center; background: #fafafa; border-radius: 8px; }
 
     .info-box { background-color: #e3f2fd; padding: 20px; border-radius: 8px; color: #0d47a1; border: 1px solid #bbdefb; }
     .info-link { color: #0d47a1; font-weight: bold; text-decoration: underline; }
 
-    /* КНОПКИ ДЕЙСТВИЯ */
-    .checkout-actions {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 30px;
-        gap: 20px;
-    }
+    /* Кнопки */
+    .checkout-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 30px; gap: 20px; }
+    .btn-submit { padding: 15px 30px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; flex-grow: 1; max-width: 300px; text-align: center; background-color: var(--accent-color); color: white; border: none; }
+    .btn-back { text-decoration: none; padding: 15px 20px; font-size: 1rem; border-radius: 8px; background: #6c757d; color: white; }
 
-    .btn-submit {
-        padding: 15px 30px;
-        font-size: 1.1rem;
-        font-weight: bold;
-        border-radius: 8px;
-        cursor: pointer;
-        flex-grow: 1; /* Занимает доступное место, но не всё */
-        max-width: 300px; /* Ограничение ширины на ПК */
-        text-align: center;
-    }
-
-    .btn-back {
-        text-decoration: none;
-        padding: 15px 20px;
-        font-size: 1rem;
-        border-radius: 8px;
-    }
-
-    /* АДАПТИВ ДЛЯ МОБИЛЬНЫХ */
     @media (max-width: 600px) {
         .form-row { flex-direction: column; gap: 0; }
         .delivery-options { flex-direction: column; }
-
-        /* Кнопки друг над другом, "Подтвердить" сверху */
-        .checkout-actions {
-            flex-direction: column-reverse;
-            gap: 15px;
-        }
-        .btn-submit, .btn-back {
-            width: 100%;
-            max-width: none;
-            text-align: center;
-            padding: 15px;
-        }
+        .checkout-actions { flex-direction: column-reverse; gap: 15px; }
+        .btn-submit, .btn-back { width: 100%; max-width: none; }
     }
 </style>
 {% endblock %}

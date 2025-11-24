@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils.html import format_html # Добавил для админки, если пригодится
 
 # --- КОНСТАНТЫ ВЫБОРА ---
 
@@ -423,3 +424,21 @@ def create_user_profile(sender, instance, created, **kwargs):
 def save_user_profile(sender, instance, **kwargs):
     if hasattr(instance, 'profile'):
         instance.profile.save()
+
+
+class Postcard(models.Model):
+    # НОВАЯ МОДЕЛЬ ОТКРЫТКИ
+    title = models.CharField("Название", max_length=100)
+    image = models.ImageField("Изображение открытки", upload_to='postcards/')
+    price = models.DecimalField("Цена (0 = бесплатно)", max_digits=10, decimal_places=2, default=0.00)
+    order = models.PositiveIntegerField("Порядок сортировки", default=0)
+    is_active = models.BooleanField("Активна", default=True)
+
+    class Meta:
+        verbose_name = 'Открытка'
+        verbose_name_plural = 'Открытки (для заказа)'
+        ordering = ['order', 'price'] # Сначала по порядку, потом по цене
+
+    def __str__(self):
+        type_str = "Платная" if self.price > 0 else "Бесплатная"
+        return f"{self.title} ({type_str})"
