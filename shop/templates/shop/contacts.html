@@ -7,16 +7,9 @@
 <div class="static-page-container">
     <h1 class="static-page-title">{{ site_settings.contacts_page_title|default:'Контактная информация' }}</h1>
 
-    <!-- Карта теперь отображается вверху, перед контактными данными -->
-    {% if site_settings.map_embed_code %}
-    <div class="map-container">
-        {{ site_settings.map_embed_code|safe }}
-    </div>
-    {% endif %}
-
+    <!-- 1. ТЕКСТОВАЯ ИНФОРМАЦИЯ (ТЕПЕРЬ СВЕРХУ) -->
     <div class="contact-grid">
-
-        <!-- 1. Карточка с Адресом -->
+        <!-- Адрес -->
         {% if site_settings.pickup_address %}
         <div class="contact-card">
             <div class="contact-card-icon">
@@ -29,7 +22,7 @@
         </div>
         {% endif %}
 
-        <!-- 2. Карточка с Телефонами -->
+        <!-- Телефоны -->
         {% if site_settings.contact_phone or site_settings.contact_phone_secondary %}
         <div class="contact-card">
             <div class="contact-card-icon">
@@ -49,7 +42,7 @@
         </div>
         {% endif %}
 
-        <!-- 3. Карточка с Графиком работы -->
+        <!-- График -->
         {% if site_settings.working_hours %}
         <div class="contact-card">
             <div class="contact-card-icon">
@@ -62,6 +55,14 @@
         </div>
         {% endif %}
     </div>
+
+    <!-- 2. КАРТА (ТЕПЕРЬ В САМОМ НИЗУ) -->
+    {% if site_settings.map_embed_code %}
+    <h3 style="margin-top: 40px; text-align: center; color: var(--main-text-color);">Мы на карте</h3>
+    <div class="map-container">
+        {{ site_settings.map_embed_code|safe }}
+    </div>
+    {% endif %}
 
 </div>
 
@@ -90,7 +91,7 @@
         border-bottom: 2px solid #f0f0f0;
     }
     .map-container {
-        margin-bottom: 2rem;
+        margin-top: 1rem;
         border-radius: 12px;
         overflow: hidden;
         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -103,7 +104,7 @@
     }
     .contact-grid {
         display: grid;
-        gap: 1.5rem; /* Немного уменьшил отступ для компактности */
+        gap: 1.5rem;
     }
     .contact-card {
         display: flex;
@@ -117,7 +118,7 @@
     .contact-card-icon {
         flex-shrink: 0;
         color: var(--static-icon-color);
-        margin-top: 5px; /* Небольшой сдвиг иконки вниз для лучшего выравнивания */
+        margin-top: 5px;
     }
     .contact-card-icon svg {
         width: 28px;
@@ -152,26 +153,10 @@
     .contact-phone-link:hover {
         color: var(--static-link-hover-color);
     }
-    .static-page-content {
-        line-height: 1.8;
-        font-size: 1.1em;
-    }
-    .static-page-content p {
-        margin-bottom: 1.5em;
-    }
     @media (max-width: 768px) {
-        .static-page-container {
-            padding: 1.5rem;
-            margin: 1rem;
-        }
-        .contact-card {
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-        .map-container iframe {
-            height: 300px;
-        }
+        .static-page-container { padding: 1.5rem; margin: 1rem; }
+        .contact-card { flex-direction: column; align-items: center; text-align: center; }
+        .map-container iframe { height: 300px; }
     }
 </style>
 {% endblock %}

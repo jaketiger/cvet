@@ -30,7 +30,8 @@ class OrderCreateForm(forms.ModelForm):
             'delivery_option',
             'first_name', 'last_name', 'email', 'phone',
             'address', 'postal_code', 'city',
-            'postcard', 'postcard_text', 'custom_postcard_image'
+            'postcard', 'postcard_text', 'custom_postcard_image',
+            'recipient_name', 'recipient_phone'
         ]
         widgets = {
             'postcard_text': forms.Textarea(

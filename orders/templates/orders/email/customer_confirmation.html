@@ -3,67 +3,84 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Информация о заказе</title>
+    <title>Ваш заказ принят</title>
 </head>
-<body style="font-family: sans-serif; color: #333;">
+<body style="font-family: sans-serif; color: #333; line-height: 1.6;">
 
-    <div style="max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee;">
-        <h1 style="text-align: center;">Здравствуйте, {{ order.first_name }}!</h1>
-        <p>Это подтверждение вашего заказа <strong>#{{ order.id }}</strong> в магазине <strong>{{ site_settings.shop_name }}</strong>.</p>
+    <div style="max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+        <h1 style="text-align: center; color: #28a745;">Заказ #{{ order.id }} принят!</h1>
+        <p>Здравствуйте, {{ order.first_name }}!</p>
+        <p>Спасибо за покупку в магазине <strong>{{ site_settings.shop_name }}</strong>. Мы уже начали собирать ваш заказ.</p>
 
-        <!-- --- НОВЫЙ БЛОК ДЛЯ СТАТУСА --- -->
-        <div style="background-color: #f0f0f0; padding: 10px; border-radius: 5px; text-align: center; margin-bottom: 20px;">
-            <p style="margin: 0;">Текущий статус вашего заказа:</p>
-            <p style="margin: 5px 0; font-size: 1.2em; font-weight: bold;">{{ order.get_status_display }}</p>
-        </div>
+        <hr style="border: 0; border-top: 1px solid #eee;">
 
-        <hr>
-
-        <h3>Детали заказа:</h3>
-
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-            <thead>
-                <tr style="background-color: #f2f2f2;">
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Товар</th>
-                    <th style="border: 1px solid #ddd; padding: 8px;">Кол-во</th>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Сумма</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in order.items.all %}
-                    <tr style="border-top: 1px solid #eee;">
-                        <td style="border: 1px solid #ddd; padding: 8px;">{{ item.product.name }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">{{ item.quantity }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">{{ item.get_cost }} руб.</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <div style="text-align: right;">
-            <p style="margin: 5px 0;">Стоимость товаров: {{ order.get_items_cost }} руб.</p>
-            <p style="margin: 5px 0;">Стоимость доставки: {{ order.delivery_cost }} руб.</p>
-            <h3 style="margin-top: 10px;">Итого к оплате: {{ order.get_total_cost }} руб.</h3>
-        </div>
-
-        <hr>
-
+        <!-- ДЕТАЛИ ДОСТАВКИ -->
+        <h3>Информация о доставке:</h3>
         {% if order.delivery_option == 'delivery' %}
-            <h4>Адрес доставки:</h4>
-            <p>
-                {{ order.postal_code }}, {{ order.city }}<br>
-                {{ order.address }}<br>
-                Телефон: {{ order.phone }}
-            </p>
+            <p><strong>Тип:</strong> Курьерская доставка</p>
+            <p><strong>Адрес:</strong> {{ order.address }} ({{ order.city }})</p>
+
+            {% if order.recipient_name %}
+                <p style="background-color: #fdf2ce; padding: 5px; display: inline-block; border-radius: 4px;">
+                    <strong>🎁 Получатель:</strong> {{ order.recipient_name }} ({{ order.recipient_phone }})
+                </p>
+            {% else %}
+                <p><strong>Получатель:</strong> Вы ({{ order.phone }})</p>
+            {% endif %}
         {% else %}
-            <h4>Способ получения:</h4>
-            <p>Самовывоз. Мы свяжемся с вами, когда заказ будет готов к выдаче.</p>
+            <p><strong>Тип:</strong> Самовывоз</p>
+            <p>Мы оповестим вас, когда заказ будет готов к выдаче.</p>
         {% endif %}
 
-        <hr>
+        <hr style="border: 0; border-top: 1px solid #eee;">
+
+        <!-- ТОВАРЫ -->
+        <h3>Состав заказа:</h3>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            {% for item in order.items.all %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 10px 0;">
+                        <strong>{{ item.product.name }}</strong>
+                        {% if item.quantity > 1 %}<br><small>{{ item.quantity }} шт. x {{ item.price }} руб.</small>{% endif %}
+                    </td>
+                    <td style="text-align: right; padding: 10px 0;">{{ item.get_cost }} руб.</td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        <!-- ОТКРЫТКА -->
+        {% if order.postcard or order.custom_postcard_image %}
+        <div style="background-color: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <strong>+ Открытка:</strong>
+            {% if order.postcard %}{{ order.postcard.title }}{% else %}Ваше фото{% endif %}
+
+            {% if order.postcard_text %}
+                <br><small style="color: #666;">С текстом: "{{ order.postcard_text|truncatechars:50 }}"</small>
+            {% endif %}
+
+            <div style="text-align: right; float: right; font-weight: bold;">
+                {% if order.postcard and order.postcard.price > 0 %}
+                    {{ order.postcard.price }} руб.
+                {% else %}
+                    0 руб.
+                {% endif %}
+            </div>
+            <div style="clear: both;"></div>
+        </div>
+        {% endif %}
+
+        <!-- ИТОГО -->
+        <div style="text-align: right; font-size: 1.1em;">
+            <p style="margin: 5px 0;">Товары: {{ order.get_items_cost }} руб.</p>
+            <p style="margin: 5px 0;">Доставка: {{ order.delivery_cost }} руб.</p>
+            <h3 style="margin-top: 10px; color: #e53935;">Итого: {{ order.get_total_cost }} руб.</h3>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #eee;">
 
         <p style="text-align: center; font-size: 0.9em; color: #777;">
-            Спасибо за покупку в магазине {{ site_settings.shop_name }}!
+            Если у вас есть вопросы, ответьте на это письмо или позвоните нам.<br>
+            С любовью, команда {{ site_settings.shop_name }}.
         </p>
     </div>
 

@@ -1,10 +1,16 @@
 <!-- orders/templates/orders/email/status_update.html -->
+<div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+    <h2 style="color: #333;">Статус заказа #{{ order.id }} изменен</h2>
+    <p>Здравствуйте, {{ order.first_name }}!</p>
 
-<h1>Статус вашего заказа #{{ order.id }} изменен</h1>
-        <p>Здравствуйте, {{ order.first_name }}!</p>
-        <p>
-            Статус вашего заказа в магазине {{ site_settings.shop_name }} был изменен на:
-            <strong style="font-size: 1.2em;">{{ order.get_status_display }}</strong>.
-        </p>
-        <p>Вы можете просмотреть детали заказа в вашем <a href="{% url 'shop:cabinet' %}">личном кабинете</a>.</p>
-        <p>Спасибо, что выбрали нас!</p>
+    <div style="background-color: #e7f3ff; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0;">
+        Новый статус: <strong style="font-size: 1.2em; color: #0056b3;">{{ order.get_status_display }}</strong>
+    </div>
+
+    {% if order.delivery_option == 'delivery' and order.recipient_name %}
+        <p>Получатель: <strong>{{ order.recipient_name }}</strong></p>
+    {% endif %}
+
+    <p>Следить за заказом можно в <a href="{% url 'shop:cabinet' %}">Личном кабинете</a>.</p>
+    <p>Магазин {{ site_settings.shop_name }}</p>
+</div>

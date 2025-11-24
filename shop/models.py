@@ -194,7 +194,7 @@ class Benefit(models.Model):
     class Meta:
         ordering = ['order']
         verbose_name = "Преимущество (в карточке)"
-        verbose_name_plural = "Преимущества (в карточке)"
+        verbose_name_plural = "Преимущества (иконка в карточке Товара)"
 
     def __str__(self):
         return self.title

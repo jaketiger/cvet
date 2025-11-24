@@ -3,7 +3,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
-from .models import Category, Product, Profile, SiteSettings, FooterPage, ProductImage, Banner, Benefit
+from .models import Category, Product, Profile, SiteSettings, FooterPage, ProductImage, Banner, Benefit, Postcard
 from solo.admin import SingletonModelAdmin
 from adminsortable2.admin import SortableAdminMixin
 from django.utils.html import format_html
@@ -32,6 +32,19 @@ class UserAdmin(BaseUserAdmin):
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 
+
+@admin.register(Postcard)
+class PostcardAdmin(SortableAdminMixin, admin.ModelAdmin):
+    list_display = ('title', 'preview', 'price', 'is_active', 'order')
+    list_editable = ('price', 'is_active', 'order')
+    list_filter = ('is_active',)
+
+    def preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="height: 50px; border-radius: 4px;" />', obj.image.url)
+        return "-"
+
+    preview.short_description = "Фото"
 
 @admin.register(Banner)
 class BannerAdmin(SortableAdminMixin, admin.ModelAdmin):

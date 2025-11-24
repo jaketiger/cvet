@@ -8,10 +8,6 @@ from shop.models import SiteSettings
 from .models import Order
 
 
-# ВАЖНО: Все функции теперь принимают простые типы данных (ID, строки),
-# а не сложные объекты вроде 'request'.
-
-
 def send_order_creation_emails_task(order_id, base_url):
     """
     Асинхронная ЗАДАЧА для отправки писем о СОЗДАНИИ заказа клиенту и админу.
@@ -24,7 +20,13 @@ def send_order_creation_emails_task(order_id, base_url):
         return
 
     site_settings = SiteSettings.get_solo()
-    context = {'order': order, 'site_settings': site_settings}
+
+    # --- ИЗМЕНЕНИЕ: Добавляем base_url в контекст, чтобы картинки в письмах были с полным путем ---
+    context = {
+        'order': order,
+        'site_settings': site_settings,
+        'base_url': base_url  # <-- Теперь доступно в шаблоне
+    }
 
     # 1. Отправка письма клиенту
     subject_customer = f'Подтверждение заказа #{order.id} - {site_settings.shop_name}'
@@ -37,7 +39,10 @@ def send_order_creation_emails_task(order_id, base_url):
     admin_emails = [email.strip() for email in site_settings.admin_notification_emails.split(',') if email.strip()]
     if admin_emails:
         admin_order_url = f"{base_url}{reverse('admin:orders_order_change', args=[order.id])}"
-        context_admin = {'order': order, 'site_settings': site_settings, 'admin_order_url': admin_order_url}
+        # Обновляем контекст для админа
+        context_admin = context.copy()
+        context_admin['admin_order_url'] = admin_order_url
+
         subject_admin = f'Новый заказ #{order.id} на сайте {site_settings.shop_name}'
         html_content_admin = render_to_string('orders/email/admin_notification.html', context_admin)
         msg_admin = EmailMultiAlternatives(subject_admin, '', settings.EMAIL_HOST_USER, admin_emails)
@@ -48,7 +53,6 @@ def send_order_creation_emails_task(order_id, base_url):
 def send_cancellation_email_task(order_id, base_url):
     """
     Асинхронная ЗАДАЧА для уведомления админов об ОТМЕНЕ заказа клиентом.
-    Вызывается из shop/views.py.
     """
     try:
         order = Order.objects.get(id=order_id)
@@ -63,7 +67,14 @@ def send_cancellation_email_task(order_id, base_url):
 
     admin_order_url = f"{base_url}{reverse('admin:orders_order_change', args=[order.id])}"
     subject = f'Заказ #{order.id} на сайте {site_settings.shop_name} был отменен клиентом'
-    context = {'order': order, 'admin_order_url': admin_order_url, 'site_settings': site_settings}
+
+    context = {
+        'order': order,
+        'admin_order_url': admin_order_url,
+        'site_settings': site_settings,
+        'base_url': base_url
+    }
+
     html_message = render_to_string('orders/email/admin_cancellation_notification.html', context)
 
     msg = EmailMultiAlternatives(subject, '', settings.EMAIL_HOST_USER, admin_emails)
@@ -74,7 +85,6 @@ def send_cancellation_email_task(order_id, base_url):
 def send_status_update_email_task(order_id):
     """
     Асинхронная ЗАДАЧА для отправки письма клиенту об ИЗМЕНЕНИИ СТАТУСА заказа.
-    Вызывается из orders/admin.py.
     """
     try:
         order = Order.objects.get(id=order_id)
@@ -85,6 +95,7 @@ def send_status_update_email_task(order_id):
     site_settings = SiteSettings.get_solo()
     subject = f'Статус вашего заказа #{order.id} изменен - {site_settings.shop_name}'
     context = {'order': order, 'site_settings': site_settings}
+
     html_content = render_to_string('orders/email/status_update.html', context)
     msg = EmailMultiAlternatives(subject, '', settings.EMAIL_HOST_USER, [order.email])
     msg.attach_alternative(html_content, "text/html")
@@ -93,8 +104,7 @@ def send_status_update_email_task(order_id):
 
 def send_order_confirmation_email_task(order_id):
     """
-    Асинхронная ЗАДАЧА для повторной отправки ПОДТВЕРЖДЕНИЯ ЗАКАЗА только клиенту.
-    Вызывается из кастомной кнопки в orders/admin.py.
+    Асинхронная ЗАДАЧА для повторной отправки ПОДТВЕРЖДЕНИЯ ЗАКАЗА.
     """
     try:
         order = Order.objects.get(id=order_id)
@@ -104,7 +114,9 @@ def send_order_confirmation_email_task(order_id):
 
     site_settings = SiteSettings.get_solo()
     subject = f'Подтверждение заказа #{order.id} - {site_settings.shop_name}'
+    # Здесь base_url может быть недоступен, если вызывается из админки без передачи URL
     context = {'order': order, 'site_settings': site_settings}
+
     html_content = render_to_string('orders/email/customer_confirmation.html', context)
     msg = EmailMultiAlternatives(subject, '', settings.EMAIL_HOST_USER, [order.email])
     msg.attach_alternative(html_content, "text/html")

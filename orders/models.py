@@ -32,6 +32,9 @@ class Order(models.Model):
     created = models.DateTimeField(auto_now_add=True, verbose_name="Создан")
     updated = models.DateTimeField(auto_now=True, verbose_name="Обновлен")
     paid = models.BooleanField(default=False, verbose_name="Оплачен")
+    recipient_name = models.CharField("Имя получателя", max_length=100, blank=True)
+    recipient_phone = models.CharField("Телефон получателя", max_length=20, blank=True)
+
 
     # --- НОВЫЕ ПОЛЯ ДЛЯ ОТКРЫТКИ ---
     postcard = models.ForeignKey(Postcard, on_delete=models.SET_NULL, null=True, blank=True,

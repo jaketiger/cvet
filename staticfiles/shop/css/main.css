@@ -574,13 +574,54 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
+    position: relative; /* Важно для позиционирования галочки */
     overflow: hidden;
     padding: 0.8rem 1.5rem; /* Адаптивный padding */
     font-size: 1.1em; /* Увеличенный шрифт */
     min-height: 50px; /* Минимальная высота для кнопки */
     box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* Мягкая тень */
+    transition: background-color 0.3s ease;
 }
+
+
+/* Состояние "Обычное" (Текст и иконка корзины) */
+.add-to-cart-btn-new .btn-content-normal {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Состояние "Успех" (Галочка и "Добавлено") */
+.add-to-cart-btn-new .btn-content-success {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    transform: translateY(20px); /* Спрятано внизу */
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    color: #fff;
+}
+
+/* --- КОГДА ДОБАВЛЕН КЛАСС .added --- */
+.add-to-cart-btn-new.added {
+    background-color: #28a745 !important; /* Зеленый фон */
+}
+
+.add-to-cart-btn-new.added .btn-content-normal {
+    opacity: 0;
+    transform: translateY(-20px); /* Улетает вверх */
+}
+
+.add-to-cart-btn-new.added .btn-content-success {
+    opacity: 1;
+    transform: translateY(0); /* Выплывает на центр */
+}
+
+/*
 .add-to-cart-btn-new .btn-text {
     transition: opacity 0.2s ease, transform 0.2s ease;
 }
@@ -599,6 +640,9 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     opacity: 1;
     transform: translateY(0);
 }
+*/
+
+
 
 /* 5. Аккордеон */
 .accordion-new {

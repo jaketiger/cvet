@@ -68,22 +68,42 @@
         <!-- === КОНЕЦ БЛОКА ОТКРЫТКИ === -->
 
         <div class="order-summary-footer">
+            <p>Стоимость товаров: {{ order.get_items_cost }} руб.</p>
             <p>Стоимость доставки: {{ order.delivery_cost }} руб.</p>
+
+            {% if order.postcard and order.postcard.price > 0 %}
+                <p style="color: green;">+ Открытка: {{ order.postcard.price }} руб.</p>
+            {% endif %}
+
             <h4>Итого к оплате: {{ order.get_total_cost }} руб.</h4>
         </div>
 
         <hr>
 
         {% if order.delivery_option == 'delivery' %}
-            <h4>Адрес доставки</h4>
+            <hr>
+            <h4>Информация о доставке</h4>
+
+            <!-- Блок получателя -->
+            {% if order.recipient_name %}
+                <div style="background: #fff3cd; padding: 10px; border-radius: 5px; margin-bottom: 10px; color: #856404;">
+                    <strong>🎁 Получатель (другой человек):</strong><br>
+                    Имя: {{ order.recipient_name }}<br>
+                    Телефон: {{ order.recipient_phone }}
+                </div>
+            {% else %}
+                <p style="color: #666;">Получатель: Вы ({{ order.phone }})</p>
+            {% endif %}
+
             <p>
+                <strong>Адрес:</strong><br>
                 {{ order.postal_code }}, {{ order.city }}<br>
-                {{ order.address }}<br>
-                Телефон: {{ order.phone }}
+                {{ order.address }}
             </p>
         {% else %}
+            <hr>
             <h4>Способ получения</h4>
-            <p>Самовывоз. Мы свяжемся с вами, когда заказ будет готов к выдаче.</p>
+            <p>Самовывоз. Мы свяжемся с вами по телефону {{ order.phone }}, когда заказ будет готов к выдаче.</p>
         {% endif %}
     </div>
 

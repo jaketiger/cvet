@@ -1,65 +1,27 @@
 <!-- orders/templates/orders/created.html -->
-
 {% extends "base.html" %}
 
-{% block title %}Спасибо за ваш заказ!{% endblock %}
+{% block title %}Заказ #{{ order.id }} принят{% endblock %}
 
 {% block content %}
-<div class="container" style="max-width: 800px; margin: 2rem auto; text-align: center;">
-    <h1>Спасибо, {{ order.first_name }}!</h1>
-    <p class="lead">Ваш заказ <strong>#{{ order.id }}</strong> был успешно оформлен.</p>
-    <p>Мы отправили подтверждение на ваш email-адрес: <strong>{{ order.email }}</strong>.</p>
+<div class="static-page-container" style="text-align: center; padding: 40px;">
+    <div style="font-size: 4em; color: #28a745;">✔</div>
+    <h1>Спасибо за заказ!</h1>
+    <p>Ваш заказ <strong>#{{ order.id }}</strong> успешно оформлен.</p>
+    <p>Мы отправили письмо с подтверждением на <strong>{{ order.email }}</strong>.</p>
 
-    <div style="text-align: left; margin-top: 30px; background-color: #f9f9f9; padding: 20px; border-radius: 5px;">
-        <h3>Детали заказа:</h3>
+    <div style="background: #f8f8f8; padding: 20px; max-width: 400px; margin: 20px auto; border-radius: 8px;">
+        <h3>Сумма к оплате: {{ order.get_total_cost }} руб.</h3>
+        <ul style="list-style: none; padding: 0; text-align: left; color: #555;">
+            <li>Товары: {{ order.get_items_cost }} руб.</li>
+            <li>Доставка: {{ order.delivery_cost }} руб.</li>
 
-        <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Товар</th>
-                    <th style="border: 1px solid #ddd; padding: 8px;">Количество</th>
-                    <th style="border: 1px solid #ddd; padding: 8px;">Цена</th>
-                </tr>
-            </thead>
-                <tbody>
-                {% for item in order.items.all %}
-                    <tr>
-                        <td style="border: 1px solid #ddd; padding: 8px;">{{ item.product.name }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">{{ item.quantity }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">{{ item.get_cost }} руб.</td>
-                    </tr>
-                {% endfor %}
-                    <tr style="font-weight: bold;">
-                        <!--  <td colspan="2" style="border: 1px solid #ddd; padding: 8px; text-align: right;">Итого:</td>  -->
-                        <!-- <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">{{ order.get_total_cost }} руб.</td>  -->
-                    </tr>
-                </tbody>
-        </table>
-
-        <div style="text-align: right;">
-            {% with total_items_cost=order.get_total_cost|add:"-"|add:order.delivery_cost %}
-                <!--  <p>Стоимость товаров: {{ total_items_cost }} руб.</p> -->
-            {% endwith %}
-            <p>Стоимость доставки: {{ order.delivery_cost }} руб.</p>
-            <h4 style="margin-top: 10px;">Итого к оплате: {{ order.get_total_cost }} руб.</h4>
-        </div>
-
-        <hr>
-
-        {% if order.delivery_option == 'delivery' %}
-            <h4>Адрес доставки</h4>
-            <p>
-                {{ order.postal_code }}, {{ order.city }}<br>
-                {{ order.address }}<br>
-                Телефон: {{ order.phone }}
-            </p>
-        {% else %}
-            <h4>Способ получения</h4>
-            <p>Самовывоз. Мы свяжемся с вами, когда заказ будет готов к выдаче.</p>
-        {% endif %}
+            {% if order.postcard and order.postcard.price > 0 %}
+                <li style="color: #28a745;">+ Открытка: {{ order.postcard.price }} руб.</li>
+            {% endif %}
+        </ul>
     </div>
 
-    <!-- --- ИСПРАВЛЕНИЕ ЗДЕСЬ --- -->
-    <a href="{% url 'shop:product_list_all' %}" style="display: inline-block; margin-top: 30px;">Вернуться в каталог</a>
+    <a href="{% url 'shop:product_list_all' %}" class="btn btn-primary">Вернуться в магазин</a>
 </div>
 {% endblock %}

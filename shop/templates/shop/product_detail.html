@@ -150,6 +150,10 @@
 {% endblock %}
 
 {% block extra_scripts %}
+
+
+
+
 <script>
     // 1. Кнопки +/-
     function updateQty(change) {
@@ -208,6 +212,7 @@
         });
     });
 
+
     // 4. Анимация кнопки
     const addToCartForm = document.querySelector('.add-to-cart-form-detail');
     if (addToCartForm) {
@@ -216,13 +221,17 @@
             if (!btn.classList.contains('added')) {
                 const originalText = btn.querySelector('.btn-text').innerText;
                 btn.classList.add('added');
-                btn.querySelector('.btn-text').innerText = 'Добавлено!';
+                // btn.querySelector('.btn-text').innerText = 'Добавлено!';
                 setTimeout(() => {
                     btn.classList.remove('added');
                     btn.querySelector('.btn-text').innerText = originalText;
                 }, 2000);
             }
         });
+
+
     }
 </script>
+
+
 {% endblock %}

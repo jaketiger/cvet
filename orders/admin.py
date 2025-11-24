@@ -12,6 +12,7 @@ from django_q.tasks import async_task
 class OrderItemForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Поле "Цена" в этой форме не является обязательным для заполнения
         self.fields['price'].required = False
 
 
@@ -27,11 +28,17 @@ class OrderItemInline(admin.TabularInline):
 class OrderAdmin(admin.ModelAdmin):
     # 1. Настройки отображения списка
     list_display = (
-        'id', 'first_name', 'last_name', 'email', 'status', 'paid',
-        'delivery_option', 'postcard_info', 'get_total_cost_display', 'created'
+        'id',
+        'first_name', 'last_name',
+        'recipient_display',        # <--- Кто получает
+        'status', 'paid',
+        'delivery_option',
+        'postcard_status_column',   # <--- Статус открытки
+        'get_total_cost_display',
+        'created'
     )
     list_filter = ('status', 'paid', 'created', 'updated', 'delivery_option')
-    search_fields = ('id', 'first_name', 'last_name', 'email', 'phone')
+    search_fields = ('id', 'first_name', 'last_name', 'email', 'phone', 'recipient_name', 'recipient_phone')
 
     # 2. Настройки страницы редактирования
     inlines = [OrderItemInline]
@@ -45,15 +52,26 @@ class OrderAdmin(admin.ModelAdmin):
         ('Основная информация', {
             'fields': ('status', 'paid', 'delivery_option', 'delivery_cost')
         }),
-        ('Данные клиента', {
+        ('Заказчик', {
             'fields': ('user', 'first_name', 'last_name', 'email', 'phone')
         }),
+        # --- БЛОК ПОЛУЧАТЕЛЯ ---
+        ('Получатель (если отличается)', {
+            'fields': ('recipient_name', 'recipient_phone'),
+            'description': 'Заполняется только если клиент выбрал опцию "Другой человек".'
+        }),
+        # -----------------------
         ('Доставка', {
             'fields': ('address', 'postal_code', 'city')
         }),
         ('Открытка', {
             'fields': (
-            'postcard', 'postcard_preview', 'custom_postcard_image', 'custom_postcard_preview', 'postcard_text')
+                'postcard',
+                'postcard_preview',
+                'custom_postcard_image',
+                'custom_postcard_preview',
+                'postcard_text'
+            )
         }),
         ('Стоимость и даты', {
             'fields': ('get_items_cost_display', 'get_total_cost_display', 'created', 'updated')
@@ -64,39 +82,54 @@ class OrderAdmin(admin.ModelAdmin):
 
     # --- Методы для отображения ---
 
-    def postcard_info(self, obj):
+    # Отображение получателя в списке
+    def recipient_display(self, obj):
+        if obj.recipient_name:
+            return f"🎁 {obj.recipient_name}"
+        return "👤 Заказчик"
+    recipient_display.short_description = "Получатель"
+
+    # Статус открытки (иконки)
+    def postcard_status_column(self, obj):
         if obj.custom_postcard_image:
-            return "Своё фото"
+            return format_html('<span style="color: purple; font-weight: bold;">📸 Своё фото</span>')
         elif obj.postcard:
-            return f"{obj.postcard.title} ({obj.postcard.price} руб.)"
+            if obj.postcard.price > 0:
+                return format_html('<span style="color: green;">💰 {} ({}р)</span>', obj.postcard.title, obj.postcard.price)
+            else:
+                return format_html('<span style="color: #666;">🎁 {} (Беспл.)</span>', obj.postcard.title)
         return "-"
+    postcard_status_column.short_description = "Открытка"
 
-    postcard_info.short_description = "Открытка"
-
+    # Превью открытки из базы
     def postcard_preview(self, obj):
         if obj.postcard and obj.postcard.image:
-            return format_html('<img src="{}" style="max-height: 200px; border-radius: 5px;" />',
-                               obj.postcard.image.url)
+            price_tag = f"Цена: {obj.postcard.price} руб." if obj.postcard.price > 0 else "БЕСПЛАТНО"
+            return format_html(
+                '<div style="margin-bottom: 5px; font-weight: bold;">{}</div>'
+                '<img src="{}" style="max-height: 300px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);" />',
+                price_tag, obj.postcard.image.url
+            )
         return "-"
-
     postcard_preview.short_description = "Превью (Каталог)"
 
+    # Превью пользовательской открытки
     def custom_postcard_preview(self, obj):
         if obj.custom_postcard_image:
-            return format_html('<img src="{}" style="max-height: 200px; border-radius: 5px;" />',
-                               obj.custom_postcard_image.url)
+            return format_html(
+                '<div style="margin-bottom: 5px; font-weight: bold; color: purple;">Загружено клиентом</div>'
+                '<a href="{}" target="_blank"><img src="{}" style="max-height: 300px; border-radius: 8px;" /></a>',
+                obj.custom_postcard_image.url, obj.custom_postcard_image.url
+            )
         return "-"
-
     custom_postcard_preview.short_description = "Превью (Клиент)"
 
     def get_total_cost_display(self, obj):
         return f"{obj.get_total_cost()} руб."
-
     get_total_cost_display.short_description = "Полная стоимость"
 
     def get_items_cost_display(self, obj):
         return f"{obj.get_items_cost()} руб."
-
     get_items_cost_display.short_description = "Стоимость товаров"
 
     # --- Действия (Actions) ---

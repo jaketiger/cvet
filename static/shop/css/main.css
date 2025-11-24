@@ -574,13 +574,16 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
+    position: relative; /* Важно для позиционирования галочки */
     overflow: hidden;
     padding: 0.8rem 1.5rem; /* Адаптивный padding */
     font-size: 1.1em; /* Увеличенный шрифт */
     min-height: 50px; /* Минимальная высота для кнопки */
     box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* Мягкая тень */
 }
+
+
+
 .add-to-cart-btn-new .btn-text {
     transition: opacity 0.2s ease, transform 0.2s ease;
 }
