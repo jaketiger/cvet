@@ -72,7 +72,12 @@
         <!-- ИТОГО -->
         <div style="text-align: right; font-size: 1.1em;">
             <p style="margin: 5px 0;">Товары: {{ order.get_items_cost }} руб.</p>
-            <p style="margin: 5px 0;">Доставка: {{ order.delivery_cost }} руб.</p>
+
+            <!-- ПРОВЕРКА: Показываем доставку ТОЛЬКО если выбрана 'delivery' -->
+            {% if order.delivery_option == 'delivery' %}
+                <p style="margin: 5px 0;">Доставка: {{ order.delivery_cost }} руб.</p>
+            {% endif %}
+
             <h3 style="margin-top: 10px; color: #e53935;">Итого: {{ order.get_total_cost }} руб.</h3>
         </div>
 
