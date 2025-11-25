@@ -153,6 +153,40 @@
     <!-- БЛОК СТИЛЕЙ ДЛЯ МОБИЛЬНОГО МЕНЮ (КНОПКИ В ШАПКЕ) -->
     <!-- ===================================================================== -->
     <style>
+
+    /* Стиль для мини-бейджа корзины */
+.cart-badge {
+    position: absolute;
+
+    /* --- РАЗМЕР --- */
+    width: 13px;
+    height: 13px;
+    font-size: 8px;
+
+    /* --- ЦВЕТ (Берем из настроек сайта!) --- */
+    background-color: var(--button-bg-color, #e53935); /* Цвет кнопок */
+    color: var(--button-text-color, #fff);             /* Цвет текста на кнопках */
+
+    /* --- ПОЗИЦИЯ --- */
+    top: -4px;
+    right: -6px;
+
+    /* --- ОФОРМЛЕНИЕ --- */
+    border-radius: 50%;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    pointer-events: none;
+}
+
+.cart-badge.hidden {
+    display: none;
+}
+
+
         .mobile-dropdown-content {
             font-family: var(--font-{{ site_settings.mobile_dropdown_font_family|default:site_settings.default_font_family|default:'roboto' }});
             font-size: {{ site_settings.mobile_dropdown_font_size|default:site_settings.default_font_size|default:16 }}px;
@@ -273,7 +307,19 @@
                 <nav class="user-navigation-mobile">
                     <a href="#" class="user-nav-link" id="search-toggle"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><span class="user-nav-text partial-text">Поиск</span></a>
                     <a href="#" class="user-nav-link" id="cabinet-toggle"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span class="user-nav-text partial-text">Кабинет</span></a>
-                    <a href="#" class="user-nav-link" id="cart-toggle"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg><span class="user-nav-text partial-text">Корзина</span></a>
+
+                    <a href="#" class="user-nav-link" id="cart-toggle">
+                    <div style="position: relative; display: inline-block;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+
+                    <!-- БЕЙДЖ С ЦИФРОЙ -->
+                    <span class="cart-badge" id="mobile-cart-badge" {% if not cart or cart|length == 0 %}style="display: none;"{% endif %}>
+                    {{ cart|length }}
+                    </span>
+                    </div>
+                    <span class="user-nav-text partial-text">Корзина</span>
+                    </a>
+
                     {% if site_settings.mobile_header_style != 'icons_plus_cat_full' %}
                     <a href="#" class="user-nav-link" id="category-toggle"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"></path></svg><span class="user-nav-text partial-text">Категории</span></a>
                     {% endif %}
@@ -444,11 +490,21 @@ document.addEventListener('DOMContentLoaded', function() {
                             desktopCartText.innerText = data.cart_len + ' на ' + data.total_price + ' руб.';
                         }
 
-                        // === 2. ОБНОВЛЕНИЕ МОБИЛЬНОЙ ИКОНКИ ===
+                        // === 2. ОБНОВЛЕНИЕ МОБИЛЬНОГО БЕЙДЖА И ТЕКСТА ===
                         const mobileCartText = document.querySelector('#cart-toggle .user-nav-text');
                         if (mobileCartText) {
-                            // Пишем кол-во товаров вместо слова "Корзина"
-                            mobileCartText.innerText = data.cart_len + ' шт.';
+                            mobileCartText.innerText = 'Корзина'; // Можно оставить просто текст, так как есть цифра сверху
+                        }
+
+                        // Обновляем кружочек
+                        const badge = document.getElementById('mobile-cart-badge');
+                        if (badge) {
+                                if (data.cart_len > 0) {
+                                badge.style.display = 'flex'; // Показываем
+                                badge.innerText = data.cart_len; // Обновляем цифру
+                            } else {
+                                badge.style.display = 'none'; // Скрываем, если 0
+                            }
                         }
 
                         // === 3. ОБНОВЛЕНИЕ МОБИЛЬНОГО ВЫПАДАЮЩЕГО МЕНЮ ===

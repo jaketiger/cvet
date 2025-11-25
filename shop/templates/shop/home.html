@@ -33,7 +33,7 @@
                 </div>
             {% endfor %}
         </div>
-        <div class="swiper-pagination"></div><div class="swiper-button-prev"></div><div class="swiper-button-next"></div>
+        <div class="swiper-pagination"></div>
     </div>
     {% endif %}
 
@@ -70,14 +70,16 @@
                     disableOnInteraction: false,
                 },
                 loop: true,
-                navigation: {
-                    nextEl: '.swiper-button-next',
-                    prevEl: '.swiper-button-prev',
-                },
-                pagination: {
-                    el: '.swiper-pagination',
-                    clickable: true,
-                },
+            // Блок navigation удален
+            //    navigation: {
+            //        nextEl: '.swiper-button-next',
+            //        prevEl: '.swiper-button-prev',
+            //    },
+            // точки (пагинация) внизу удален
+            //    pagination: {
+            //        el: '.swiper-pagination',
+            //        clickable: true,
+            //    },
                 grabCursor: true,
                 effect: effectName.startsWith('creative') ? 'creative' : effectName,
             };
