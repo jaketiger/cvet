@@ -753,17 +753,17 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
 
 /* Эффект при наведении */
 /* ======================================================= */
-/* === [FIX] СТИЛИ ДЛЯ ПРЕИМУЩЕСТВ (ИКОНКИ + ТУЛТИПЫ) === */
+/* === СТИЛИ ДЛЯ ПРЕИМУЩЕСТВ (ИКОНКИ + ТУЛТИПЫ) === */
 /* ======================================================= */
 
 .benefit-item {
-    display: flex;              /* Выравниваем иконку и текст в ряд */
-    align-items: center;        /* Центрируем по вертикали */
-    gap: 10px;                  /* Отступ между иконкой и текстом */
-    position: relative;         /* Для позиционирования тултипа */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
     cursor: help;
 
-    /* ЗАПРЕТ ВЫДЕЛЕНИЯ (чтобы не копировалось на мобильном) */
+    /* ЗАПРЕТ ВЫДЕЛЕНИЯ */
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -772,21 +772,21 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     -webkit-tap-highlight-color: transparent;
 }
 
-/* --- ВОТ ЭТОГО НЕ ХВАТАЛО (Размер иконки) --- */
+/* Размер иконки */
 .benefit-item svg {
-    width: 32px;        /* Фиксированный размер */
-    height: 32px;       /* Фиксированный размер */
-    flex-shrink: 0;     /* Запрещаем сжимать иконку */
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
     color: var(--accent-color, #e53935);
     transition: transform 0.3s ease, color 0.2s ease;
 }
 
 .benefit-item:hover svg,
 .benefit-item.active-tooltip svg {
-    color: #333; /* Цвет иконки при активации */
+    color: #333;
 }
 
-/* --- СТИЛИ ТУЛТИПА (Всплывашка) --- */
+/* Всплывашка */
 .benefit-tooltip {
     visibility: hidden;
     opacity: 0;
@@ -798,12 +798,11 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     padding: 10px;
     font-size: 0.85em;
     line-height: 1.4;
-    font-weight: normal; /* Убираем жирность, если есть */
+    font-weight: normal;
 
-    /* Позиционирование */
     position: absolute;
-    z-index: 100;       /* Чтобы был поверх всего */
-    bottom: 130%;       /* Поднимаем над иконкой */
+    z-index: 100;
+    bottom: 130%;
     left: 50%;
     transform: translateX(-50%) translateY(10px);
 
@@ -812,7 +811,6 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     pointer-events: none;
 }
 
-/* Стрелочка вниз */
 .benefit-tooltip::after {
     content: "";
     position: absolute;
@@ -824,13 +822,18 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     border-color: #333 transparent transparent transparent;
 }
 
-/* ЛОГИКА ПОКАЗА */
+/* Логика показа */
 .benefit-item:hover .benefit-tooltip,
 .benefit-item.active-tooltip .benefit-tooltip {
     visibility: visible;
     opacity: 1;
     transform: translateX(-50%) translateY(0);
 }
+
+
+/* ======================================================= */
+/* === [конец] СТИЛИ ДЛЯ ПРЕИМУЩЕСТВ (ИКОНКИ+ ТУЛТИПЫ) === */
+/* ======================================================= */
 
 .back-link-new {
     display: inline-flex; /* Чтобы выглядела как кнопка/ссылка */
