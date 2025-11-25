@@ -341,3 +341,4 @@ class SiteSettingsAdmin(SingletonModelAdmin):
         else:
             self.message_user(request, "Файл ecosystem.config.js не найден.", level='warning')
             return redirect(reverse('admin:shop_sitesettings_change', args=[SiteSettings.objects.get().pk]))
+

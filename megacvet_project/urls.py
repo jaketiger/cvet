@@ -43,3 +43,20 @@ if settings.DEBUG is False:  # Используем is False для продак
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# --- СКРЫВАЕМ DJANGO Q ИЗ АДМИНКИ ---
+# Этот код выполняется после загрузки всех приложений
+try:
+    from django.contrib import admin
+    from django_q.models import Schedule, Task, Success, Failure, OrmQ
+
+    # Список моделей, которые нужно убрать
+    q_models = [Schedule, Task, Success, Failure, OrmQ]
+
+    for model in q_models:
+        # Проверяем, есть ли они в админке, и удаляем
+        if admin.site.is_registered(model):
+            admin.site.unregister(model)
+except Exception:
+    pass  # Если возникла ошибка (например, библиотека не установлена), просто игнорируем
+    pass # Если их нет или уже скрыты — игнорируем
