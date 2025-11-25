@@ -115,21 +115,20 @@
             <!-- Преимущества -->
             <div class="benefits-block">
                 {% for benefit in benefits %}
-                    <div class="benefits-block">
-                {% for benefit in benefits %}
                     <div class="benefit-item">
+                        <!-- Иконка -->
                         {{ benefit.icon_svg|safe }}
+
+                        <!-- Текст -->
                         <span>{{ benefit.title }}</span>
 
-                        <!-- ВСПЛЫВАШКА (Добавлено) -->
+                        <!-- Всплывашка (Tooltip) -->
                         {% if benefit.description %}
                             <div class="benefit-tooltip">
                                 {{ benefit.description }}
                             </div>
                         {% endif %}
                     </div>
-                {% endfor %}
-            </div>
                 {% endfor %}
             </div>
 
