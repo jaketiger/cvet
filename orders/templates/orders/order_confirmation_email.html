@@ -73,7 +73,7 @@
         <div style="text-align: right; font-size: 1.1em;">
             <p style="margin: 5px 0;">Товары: {{ order.get_items_cost }} руб.</p>
 
-            <!-- ИЗМЕНЕНИЕ ЗДЕСЬ: Скрываем доставку, если она 0 -->
+            <!-- ИЗМЕНЕНИЕ ЗДЕСЬ: Показываем доставку только если она > 0 -->
             {% if order.delivery_cost > 0 %}
                 <p style="margin: 5px 0;">Доставка: {{ order.delivery_cost }} руб.</p>
             {% endif %}
