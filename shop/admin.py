@@ -215,10 +215,11 @@ class SiteSettingsAdmin(SingletonModelAdmin):
             'classes': ('collapse',),
             'description': "Шрифты и цвета всего сайта.",
             'fields': (
+                ('icon_size', 'icon_color', 'icon_animation_style'),
                 ('default_font_family', 'default_font_size', 'default_text_color'),
                 ('heading_font_family', 'heading_font_size', 'heading_font_style', 'accent_color'),
                 ('logo_font_family', 'logo_font_size', 'logo_font_style', 'logo_color'),
-                ('icon_size', 'icon_color', 'icon_animation_style'),
+
                 ('category_font_family', 'category_font_size', 'category_font_style', 'category_text_color'),
                 ('footer_font_family', 'footer_font_size', 'footer_font_style', 'footer_text_color'),
                 ('product_title_font_family', 'product_title_font_size', 'product_title_font_style',

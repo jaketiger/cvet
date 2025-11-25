@@ -213,8 +213,18 @@ class Profile(models.Model):
 
 class SiteSettings(SingletonModel):
     # Выборы
-    NAV_STYLE_CHOICES = [('underline', 'Анимация подчеркивания'), ('highlight', 'Фоновая подсветка'), ('lift', 'Эффект приподнимания'), ('shadow', 'Сдвиг с тенью (3D)'), ('wave', '"Жидкая" волна')]
-    ICON_ANIMATION_CHOICES = [('scale', 'Увеличение (стандарт)'), ('rotate', 'Вращение'), ('bounce', 'Подпрыгивание')]
+    NAV_STYLE_CHOICES = [('underline', 'Анимация подчеркивания'), ('highlight', 'Фоновая подсветка'),
+                         ('lift', 'Эффект приподнимания'), ('shadow', 'Сдвиг с тенью (3D)'), ('wave', '"Жидкая" волна')]
+
+    # --- ОБНОВЛЕННЫЙ СПИСОК АНИМАЦИЙ ---
+    ICON_ANIMATION_CHOICES = [
+        ('scale', 'Увеличение (стандарт)'),
+        ('rotate', 'Вращение'),
+        ('bounce', 'Подпрыгивание'),
+        ('shake', 'Тряска (Shake)'),  # Новое
+        ('pulse', 'Пульсация (Pulse)'),  # Новое
+        ('swing', 'Качание (Swing)'),  # Новое
+    ]
     MOBILE_HEADER_CHOICES = [('partial', 'Иконки и внизу текст'), ('icons_plus_cat_full', 'Иконки+Категории(полная вер.)'), ('icons', 'Только иконки')]
     MOBILE_GRID_CHOICES = [(0, 'Как на десктопе (адаптивный от разрешения экрана)'), (1, 'Одна колонка'), (2, 'Две колонки'), (3, 'Три колонки'), (4, 'Четыре колонки')]
 
@@ -274,7 +284,7 @@ class SiteSettings(SingletonModel):
 
     # Глобальное оформление
     navigation_style = models.CharField("Стиль анимации навигации", max_length=10, choices=NAV_STYLE_CHOICES, default='underline', help_text="Эффект при наведении на ссылки в меню.")
-    icon_animation_style = models.CharField("Стиль анимации иконок", max_length=10, choices=ICON_ANIMATION_CHOICES, default='scale', help_text="Эффект при наведении на иконки в шапке.")
+    icon_animation_style = models.CharField("СТИЛЬ АНИМАЦИИ ИКОНОК", max_length=10, choices=ICON_ANIMATION_CHOICES, default='scale', help_text="Эффект при наведении на иконки в шапке.")
     default_font_family = models.CharField("Шрифт (Основной текст)", max_length=50, choices=GLOBAL_FONT_FAMILY_CHOICES, default='roboto')
     default_font_size = models.PositiveIntegerField("Размер (Основной текст, px)", default=16)
     default_text_color = models.CharField("Цвет шрифта (Основной)", max_length=7, default='#333333', blank=True, help_text=HELP_COLOR_RESET)

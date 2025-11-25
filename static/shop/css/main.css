@@ -185,6 +185,48 @@ a:active, button:active, .product-card:active { transform: scale(0.98); opacity:
 .icon-anim-rotate .user-nav-link:hover svg, .icon-anim-rotate .logo a:hover .logo-icon, .icon-anim-rotate .benefit-item:hover svg { transform: rotate(15deg); }
 .icon-anim-bounce .user-nav-link:hover svg, .icon-anim-bounce .logo a:hover .logo-icon, .icon-anim-bounce .benefit-item:hover svg { transform: translateY(-4px); }
 
+/* 1. SHAKE (Тряска) */
+@keyframes iconShake {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(10deg); }
+    50% { transform: rotate(0deg); }
+    75% { transform: rotate(-10deg); }
+    100% { transform: rotate(0deg); }
+}
+.icon-anim-shake .user-nav-link:hover svg,
+.icon-anim-shake .logo a:hover .logo-icon,
+.icon-anim-shake .benefit-item:hover svg {
+    animation: iconShake 0.4s ease-in-out;
+}
+
+/* 2. PULSE (Пульсация) */
+@keyframes iconPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); opacity: 0.8; }
+    100% { transform: scale(1); }
+}
+.icon-anim-pulse .user-nav-link:hover svg,
+.icon-anim-pulse .logo a:hover .logo-icon,
+.icon-anim-pulse .benefit-item:hover svg {
+    animation: iconPulse 0.8s infinite;
+}
+
+/* 3. SWING (Качание) */
+@keyframes iconSwing {
+    20% { transform: rotate(15deg); }
+    40% { transform: rotate(-10deg); }
+    60% { transform: rotate(5deg); }
+    80% { transform: rotate(-5deg); }
+    100% { transform: rotate(0deg); }
+}
+.icon-anim-swing .user-nav-link:hover svg,
+.icon-anim-swing .logo a:hover .logo-icon,
+.icon-anim-swing .benefit-item:hover svg {
+    transform-origin: top center;
+    animation: iconSwing 0.6s ease-in-out;
+}
+
+
 /* КНОПКИ (Исключаем accordion-header) */
 .btn, button:not(.accordion-header), input[type="submit"],
 a.btn-primary, a.btn-secondary, a.btn-danger,
