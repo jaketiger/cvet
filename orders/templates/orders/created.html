@@ -14,7 +14,11 @@
         <h3>Сумма к оплате: {{ order.get_total_cost }} руб.</h3>
         <ul style="list-style: none; padding: 0; text-align: left; color: #555;">
             <li>Товары: {{ order.get_items_cost }} руб.</li>
-            <li>Доставка: {{ order.delivery_cost }} руб.</li>
+
+            <!-- ИЗМЕНЕНИЕ ЗДЕСЬ: Проверка стоимости доставки -->
+            {% if order.delivery_cost > 0 %}
+                <li>Доставка: {{ order.delivery_cost }} руб.</li>
+            {% endif %}
 
             {% if order.postcard and order.postcard.price > 0 %}
                 <li style="color: #28a745;">+ Открытка: {{ order.postcard.price }} руб.</li>
