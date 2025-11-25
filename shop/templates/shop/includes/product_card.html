@@ -26,10 +26,28 @@
         </div>
     </a>
 
-    <form action="{% url 'cart:cart_add' product.id %}" method="post" class="add-to-cart-form">
-        {% csrf_token %}
-        <input type="hidden" name="quantity" value="1">
-        <input type="hidden" name="update" value="False">
-        <button type="submit" class="btn add-to-cart-btn-small">🛒 В корзину</button>
-    </form>
+    <!-- ФОРМА С АНИМИРОВАННОЙ КНОПКОЙ -->
+    <div class="add-to-cart-form" style="padding: 0 15px 15px 15px;">
+        {% if product.stock > 0 and product.available %}
+            <form action="{% url 'cart:cart_add' product.id %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="quantity" value="1">
+                <input type="hidden" name="update" value="False">
+
+                <!-- Кнопка как на детальной странице, но адаптированная под карточку -->
+                <button type="submit" class="add-to-cart-btn-new" style="width: 100%; min-height: 40px; padding: 8px; font-size: 0.95em;">
+                    <span class="btn-text">В корзину</span>
+                    <span class="btn-icon">
+                        <!-- Иконка галочки -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                    </span>
+                </button>
+            </form>
+        {% else %}
+            <!-- Если товара нет в наличии -->
+            <button disabled class="btn btn-secondary" style="width: 100%; font-size: 0.9em; cursor: not-allowed;">
+                Нет в наличии
+            </button>
+        {% endif %}
+    </div>
 </div>
