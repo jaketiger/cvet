@@ -26,15 +26,14 @@
         </div>
     </a>
 
-    <!-- ВАЖНО: У формы должен быть этот класс, чтобы работал AJAX -->
     <div style="padding: 0 15px 15px 15px;">
         <form action="{% url 'cart:cart_add' product.id %}" method="post" class="add-to-cart-form">
             {% csrf_token %}
             <input type="hidden" name="quantity" value="1">
             <input type="hidden" name="update" value="False">
 
-            <!-- КНОПКА ЗАМЕНЕНА НА ТАКУЮ ЖЕ, КАК В ДЕТАЛЯХ ТОВАРА -->
-            <button type="submit" class="add-to-cart-btn-new" style="width: 100%; min-height: 40px; padding: 8px; font-size: 0.9em;">
+            <!-- ИСПРАВЛЕНИЕ ЗДЕСЬ: white-space: nowrap и уменьшенный padding -->
+            <button type="submit" class="add-to-cart-btn-new" style="width: 100%; min-height: 40px; padding: 8px 0; font-size: 0.9em; white-space: nowrap;">
                 <span class="btn-text">В корзину</span>
                 <span class="btn-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
