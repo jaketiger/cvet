@@ -46,12 +46,15 @@ class PostcardAdmin(SortableAdminMixin, admin.ModelAdmin):
 
     preview.short_description = "Фото"
 
+
 @admin.register(Banner)
 class BannerAdmin(SortableAdminMixin, admin.ModelAdmin):
     form = BannerAdminForm
     list_display = ('title', 'image_preview', 'is_active', 'order')
     list_editable = ('is_active',)
     search_fields = ('title', 'subtitle')
+
+    # ... ваши fieldsets ...
     fieldsets = (
         ('Контент', {'fields': ('title', 'subtitle', 'button_text', 'link', 'content_position')}),
         ('Стилизация текста', {'fields': ('background_opacity', 'font_color', 'font_family')}),
@@ -66,6 +69,15 @@ class BannerAdmin(SortableAdminMixin, admin.ModelAdmin):
 
     image_preview.short_description = 'Превью'
 
+    # --- ДОБАВЛЕННЫЙ МЕТОД ---
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        # Переопределяем метку (Label)
+        form.base_fields['image'].label = "Изображение (адаптивно)"
+        # Переопределяем подсказку (Help Text)
+        form.base_fields[
+            'image'].help_text = "Рекомендуется горизонтальное фото (например, 1600x600 или 1920x800). Изображение будет автоматически адаптироваться под размер экрана. Используйте одинаковый формат для всех баннеров для лучшего вида"
+        return form
 
 @admin.register(Category)
 class CategoryAdmin(SortableAdminMixin, admin.ModelAdmin):
