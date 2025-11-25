@@ -113,9 +113,11 @@
             </div>
 
             <!-- Преимущества -->
-            <div class="benefit-item" tabindex="0" onclick="">
+            <div class="benefits-block">
                 {% for benefit in benefits %}
-                    <div class="benefit-item" tabindex="0" onclick="">
+                    <div class="benefits-block">
+                {% for benefit in benefits %}
+                    <div class="benefit-item">
                         {{ benefit.icon_svg|safe }}
                         <span>{{ benefit.title }}</span>
 
@@ -126,6 +128,8 @@
                             </div>
                         {% endif %}
                     </div>
+                {% endfor %}
+            </div>
                 {% endfor %}
             </div>
 
@@ -238,6 +242,36 @@
 
 
     }
+// === СКРИПТ ДЛЯ ПОДСКАЗОК (МОБИЛЬНЫЕ) ===
+    document.addEventListener('DOMContentLoaded', function() {
+        const benefits = document.querySelectorAll('.benefit-item');
+
+        benefits.forEach(item => {
+            item.addEventListener('click', function(e) {
+                // Проверяем, есть ли у этого элемента подсказка
+                if (this.querySelector('.benefit-tooltip')) {
+                    e.stopPropagation(); // Чтобы клик не ушел "в пустоту" сразу
+
+                    // 1. Закрываем все остальные открытые подсказки
+                    benefits.forEach(other => {
+                        if (other !== item) {
+                            other.classList.remove('active-tooltip');
+                        }
+                    });
+
+                    // 2. Переключаем состояние текущей (Открыт/Закрыт)
+                    this.classList.toggle('active-tooltip');
+                }
+            });
+        });
+
+        // 3. Закрываем всё при клике в любое другое место экрана
+        document.addEventListener('click', function() {
+            benefits.forEach(item => {
+                item.classList.remove('active-tooltip');
+            });
+        });
+    });
 </script>
 
 

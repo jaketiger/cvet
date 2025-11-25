@@ -752,30 +752,84 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
 }
 
 /* Эффект при наведении */
-/* Стало: добавляем поддержку нажатия пальцем */
-.benefit-item:hover .benefit-tooltip,
-.benefit-item:active .benefit-tooltip,
-.benefit-item:focus .benefit-tooltip,
-.benefit-item:focus-within .benefit-tooltip {
-    visibility: visible;
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
+/* ======================================================= */
+/* === [FIX] СТИЛИ ДЛЯ ПРЕИМУЩЕСТВ (ИКОНКИ + ТУЛТИПЫ) === */
+/* ======================================================= */
+
+.benefit-item {
+    display: flex;              /* Выравниваем иконку и текст в ряд */
+    align-items: center;        /* Центрируем по вертикали */
+    gap: 10px;                  /* Отступ между иконкой и текстом */
+    position: relative;         /* Для позиционирования тултипа */
+    cursor: help;
+
+    /* ЗАПРЕТ ВЫДЕЛЕНИЯ (чтобы не копировалось на мобильном) */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.benefit-item:hover {
-    color: var(--accent-color); /* Цвет при наведении */
-    transform: translateX(5px); /* Легкий сдвиг вправо при наведении */
-}
+/* --- ВОТ ЭТОГО НЕ ХВАТАЛО (Размер иконки) --- */
 .benefit-item svg {
-    width: 28px;
-    height: 28px;
-    flex-shrink: 0;
+    width: 32px;        /* Фиксированный размер */
+    height: 32px;       /* Фиксированный размер */
+    flex-shrink: 0;     /* Запрещаем сжимать иконку */
     color: var(--accent-color, #e53935);
     transition: transform 0.3s ease, color 0.2s ease;
 }
-.benefit-item:hover svg {
-    color: var(--product-header-text-color, #333); /* Цвет иконки при наведении */
-    /* Анимация иконки из SiteSettings, уже добавлена в .icon-anim-... классы */
+
+.benefit-item:hover svg,
+.benefit-item.active-tooltip svg {
+    color: #333; /* Цвет иконки при активации */
+}
+
+/* --- СТИЛИ ТУЛТИПА (Всплывашка) --- */
+.benefit-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    width: 200px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 0.85em;
+    line-height: 1.4;
+    font-weight: normal; /* Убираем жирность, если есть */
+
+    /* Позиционирование */
+    position: absolute;
+    z-index: 100;       /* Чтобы был поверх всего */
+    bottom: 130%;       /* Поднимаем над иконкой */
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+
+    transition: opacity 0.3s, transform 0.3s, visibility 0.3s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    pointer-events: none;
+}
+
+/* Стрелочка вниз */
+.benefit-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+/* ЛОГИКА ПОКАЗА */
+.benefit-item:hover .benefit-tooltip,
+.benefit-item.active-tooltip .benefit-tooltip {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
 }
 
 .back-link-new {
