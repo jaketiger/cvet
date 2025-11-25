@@ -185,6 +185,48 @@ a:active, button:active, .product-card:active { transform: scale(0.98); opacity:
 .icon-anim-rotate .user-nav-link:hover svg, .icon-anim-rotate .logo a:hover .logo-icon, .icon-anim-rotate .benefit-item:hover svg { transform: rotate(15deg); }
 .icon-anim-bounce .user-nav-link:hover svg, .icon-anim-bounce .logo a:hover .logo-icon, .icon-anim-bounce .benefit-item:hover svg { transform: translateY(-4px); }
 
+/* 1. SHAKE (Тряска) */
+@keyframes iconShake {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(10deg); }
+    50% { transform: rotate(0deg); }
+    75% { transform: rotate(-10deg); }
+    100% { transform: rotate(0deg); }
+}
+.icon-anim-shake .user-nav-link:hover svg,
+.icon-anim-shake .logo a:hover .logo-icon,
+.icon-anim-shake .benefit-item:hover svg {
+    animation: iconShake 0.4s ease-in-out;
+}
+
+/* 2. PULSE (Пульсация) */
+@keyframes iconPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); opacity: 0.8; }
+    100% { transform: scale(1); }
+}
+.icon-anim-pulse .user-nav-link:hover svg,
+.icon-anim-pulse .logo a:hover .logo-icon,
+.icon-anim-pulse .benefit-item:hover svg {
+    animation: iconPulse 0.8s infinite;
+}
+
+/* 3. SWING (Качание) */
+@keyframes iconSwing {
+    20% { transform: rotate(15deg); }
+    40% { transform: rotate(-10deg); }
+    60% { transform: rotate(5deg); }
+    80% { transform: rotate(-5deg); }
+    100% { transform: rotate(0deg); }
+}
+.icon-anim-swing .user-nav-link:hover svg,
+.icon-anim-swing .logo a:hover .logo-icon,
+.icon-anim-swing .benefit-item:hover svg {
+    transform-origin: top center;
+    animation: iconSwing 0.6s ease-in-out;
+}
+
+
 /* КНОПКИ (Исключаем accordion-header) */
 .btn, button:not(.accordion-header), input[type="submit"],
 a.btn-primary, a.btn-secondary, a.btn-danger,
@@ -580,48 +622,10 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     font-size: 1.1em; /* Увеличенный шрифт */
     min-height: 50px; /* Минимальная высота для кнопки */
     box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* Мягкая тень */
-    transition: background-color 0.3s ease;
 }
 
 
-/* Состояние "Обычное" (Текст и иконка корзины) */
-.add-to-cart-btn-new .btn-content-normal {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: transform 0.3s ease, opacity 0.3s ease;
-    opacity: 1;
-    transform: translateY(0);
-}
 
-/* Состояние "Успех" (Галочка и "Добавлено") */
-.add-to-cart-btn-new .btn-content-success {
-    position: absolute;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    opacity: 0;
-    transform: translateY(20px); /* Спрятано внизу */
-    transition: transform 0.3s ease, opacity 0.3s ease;
-    color: #fff;
-}
-
-/* --- КОГДА ДОБАВЛЕН КЛАСС .added --- */
-.add-to-cart-btn-new.added {
-    background-color: #28a745 !important; /* Зеленый фон */
-}
-
-.add-to-cart-btn-new.added .btn-content-normal {
-    opacity: 0;
-    transform: translateY(-20px); /* Улетает вверх */
-}
-
-.add-to-cart-btn-new.added .btn-content-success {
-    opacity: 1;
-    transform: translateY(0); /* Выплывает на центр */
-}
-
-/*
 .add-to-cart-btn-new .btn-text {
     transition: opacity 0.2s ease, transform 0.2s ease;
 }
@@ -640,9 +644,6 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     opacity: 1;
     transform: translateY(0);
 }
-*/
-
-
 
 /* 5. Аккордеон */
 .accordion-new {
@@ -704,15 +705,63 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     border-bottom: 1px solid #eee;
     margin-bottom: 2.5rem; /* Увеличил отступ */
 }
+
+/* --- СТИЛИ ДЛЯ ВСПЛЫВАЮЩИХ ПОДСКАЗОК (BENEFITS) --- */
+
 .benefit-item {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem; /* Увеличил отступ */
-    font-size: 1em; /* Чуть крупнее текст */
-    color: var(--main-text-color); /* Основной цвет текста */
-    transition: color 0.2s ease, transform 0.2s ease;
-    cursor: default; /* чтобы показать, что это не интерактивный элемент, если нет описания */
+    position: relative; /* Чтобы подсказка позиционировалась относительно иконки */
+    cursor: help;       /* Курсор-вопросик, чтобы показать, что есть инфо */
 }
+
+/* Сам блок подсказки (скрыт по умолчанию) */
+.benefit-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    width: 200px;           /* Ширина подсказки */
+    background-color: #333; /* Темный фон */
+    color: #fff;            /* Белый текст */
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.85em;
+    line-height: 1.4;
+
+    /* Позиционирование */
+    position: absolute;
+    z-index: 10;
+    bottom: 125%;  /* Поднимаем НАД элементом */
+    left: 50%;
+    transform: translateX(-50%) translateY(10px); /* Центрируем + сдвиг для анимации */
+
+    /* Анимация появления */
+    transition: opacity 0.3s, transform 0.3s, visibility 0.3s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    pointer-events: none; /* Чтобы мышка не "спотыкалась" об него */
+}
+
+/* Стрелочка вниз у подсказки */
+.benefit-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%; /* В самом низу блока */
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent; /* Треугольник цвета фона */
+}
+
+/* Эффект при наведении */
+/* Стало: добавляем поддержку нажатия пальцем */
+.benefit-item:hover .benefit-tooltip,
+.benefit-item:active .benefit-tooltip,
+.benefit-item:focus .benefit-tooltip,
+.benefit-item:focus-within .benefit-tooltip {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
 .benefit-item:hover {
     color: var(--accent-color); /* Цвет при наведении */
     transform: translateX(5px); /* Легкий сдвиг вправо при наведении */

@@ -115,7 +115,7 @@
             <!-- Преимущества -->
             <div class="benefits-block">
                 {% for benefit in benefits %}
-                    <div class="benefit-item">
+                    <div class="benefit-item" tabindex="0" onclick="">
                         {{ benefit.icon_svg|safe }}
                         <span>{{ benefit.title }}</span>
 

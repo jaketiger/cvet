@@ -752,10 +752,14 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
 }
 
 /* Эффект при наведении */
-.benefit-item:hover .benefit-tooltip {
+/* Стало: добавляем поддержку нажатия пальцем */
+.benefit-item:hover .benefit-tooltip,
+.benefit-item:active .benefit-tooltip,
+.benefit-item:focus .benefit-tooltip,
+.benefit-item:focus-within .benefit-tooltip {
     visibility: visible;
     opacity: 1;
-    transform: translateX(-50%) translateY(0); /* Плавный подъем на место */
+    transform: translateX(-50%) translateY(0);
 }
 
 .benefit-item:hover {
