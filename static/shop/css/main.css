@@ -705,15 +705,59 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     border-bottom: 1px solid #eee;
     margin-bottom: 2.5rem; /* Увеличил отступ */
 }
+
+/* --- СТИЛИ ДЛЯ ВСПЛЫВАЮЩИХ ПОДСКАЗОК (BENEFITS) --- */
+
 .benefit-item {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem; /* Увеличил отступ */
-    font-size: 1em; /* Чуть крупнее текст */
-    color: var(--main-text-color); /* Основной цвет текста */
-    transition: color 0.2s ease, transform 0.2s ease;
-    cursor: default; /* чтобы показать, что это не интерактивный элемент, если нет описания */
+    position: relative; /* Чтобы подсказка позиционировалась относительно иконки */
+    cursor: help;       /* Курсор-вопросик, чтобы показать, что есть инфо */
 }
+
+/* Сам блок подсказки (скрыт по умолчанию) */
+.benefit-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    width: 200px;           /* Ширина подсказки */
+    background-color: #333; /* Темный фон */
+    color: #fff;            /* Белый текст */
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.85em;
+    line-height: 1.4;
+
+    /* Позиционирование */
+    position: absolute;
+    z-index: 10;
+    bottom: 125%;  /* Поднимаем НАД элементом */
+    left: 50%;
+    transform: translateX(-50%) translateY(10px); /* Центрируем + сдвиг для анимации */
+
+    /* Анимация появления */
+    transition: opacity 0.3s, transform 0.3s, visibility 0.3s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    pointer-events: none; /* Чтобы мышка не "спотыкалась" об него */
+}
+
+/* Стрелочка вниз у подсказки */
+.benefit-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%; /* В самом низу блока */
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent; /* Треугольник цвета фона */
+}
+
+/* Эффект при наведении */
+.benefit-item:hover .benefit-tooltip {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0); /* Плавный подъем на место */
+}
+
 .benefit-item:hover {
     color: var(--accent-color); /* Цвет при наведении */
     transform: translateX(5px); /* Легкий сдвиг вправо при наведении */
