@@ -66,17 +66,25 @@ class Cart:
         for product in products:
             cart[str(product.id)]['product'] = product
 
-        for item in cart.values():
-            # --- ИСПРАВЛЕНИЕ ОШИБКИ ---
-            # Если товар был удален из БД, у элемента не будет ключа 'product'.
-            # Мы просто пропускаем такие элементы, чтобы не ломать сайт.
+        # Список ключей для удаления (мусор)
+        keys_to_remove = []
+
+        for item_id, item in cart.items():
+            # Если товар был удален из БД, у элемента не будет ключа 'product'
             if 'product' not in item:
+                keys_to_remove.append(item_id)
                 continue
-            # ---------------------------
 
             item['price'] = Decimal(item['price'])
             item['total_price'] = item['price'] * item['quantity']
             yield item
+
+        # --- ЧИСТКА МУСОРА ---
+        # Если мы нашли товары, которых нет в базе, удаляем их из сессии
+        if keys_to_remove:
+            for item_id in keys_to_remove:
+                del self.cart[item_id]
+            self.save()
 
     def __len__(self):
         """
