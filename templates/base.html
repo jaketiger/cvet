@@ -136,16 +136,53 @@
         .site-wrapper { max-width: 1200px; margin: 20px auto; background-color: rgba(var(--sheet-rgb), var(--sheet-alpha)); backdrop-filter: blur(var(--blur-sheet)); border-radius: 8px; padding: 20px 40px; min-height: 80vh; position: relative; z-index: 1; box-shadow: 0 5px 25px rgba(0,0,0,0.1); }
         .header { transition: background-color 0.3s ease, box-shadow 0.3s ease; }
         @media (min-width: 993px) { .category-nav-desktop { background-color: rgba(var(--desktop-cat-rgb), var(--desktop-cat-alpha)) !important; backdrop-filter: blur(var(--blur-desktop-cat)); } body.desktop-header-sticky_all .header, body.desktop-header-sticky_header .header { position: sticky; top: 0; z-index: 1100; background-color: rgba(255, 255, 255, 0.98); box-shadow: 0 2px 5px rgba(0,0,0,0.05); } body.desktop-header-sticky_all .header.is-scrolled, body.desktop-header-sticky_header .header.is-scrolled { background-color: rgba(255, 255, 255, var(--header-scroll-opacity-desktop)) !important; backdrop-filter: blur(var(--blur-desktop-header)); } body.desktop-header-sticky_all .category-nav-desktop { position: sticky; z-index: 1090; margin-top: 0; } body.desktop-header-sticky_nav .category-nav-desktop { position: sticky; top: 10px; z-index: 1100; } }
+
+
         @media (max-width: 992px) {
+            /* 1. Отступы основного контейнера */
             .site-wrapper { margin: 10px; padding: 10px 15px; }
+
+            /* 2. Фон шапки (из настроек) */
             .header { background-color: rgba(var(--mobile-header-rgb), var(--mobile-header-alpha)) !important; }
+
+            /* 3. Липкая шапка (если включено) */
             body.mobile-header-sticky .header { position: sticky; top: 0; z-index: 1100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 0 !important; }
-            body.mobile-header-sticky .header.is-scrolled { {% if site_settings.mobile_header_transparent_scroll %} background-color: rgba(var(--mobile-header-rgb), var(--header-scroll-opacity-mobile)) !important; backdrop-filter: blur(var(--blur-mobile)); {% endif %} }
+
+            /* 4. Прозрачность при скролле (если включено) */
+            body.mobile-header-sticky .header.is-scrolled {
+                {% if site_settings.mobile_header_transparent_scroll %}
+                background-color: rgba(var(--mobile-header-rgb), var(--header-scroll-opacity-mobile)) !important;
+                backdrop-filter: blur(var(--blur-mobile));
+                {% endif %}
+            }
+
+            /* 5. Адаптация заголовков (реагирует на ползунок "Корректировка размера") */
             .responsive-title { font-size: calc(1.8rem * {{ site_settings.mobile_font_scale_css|default:'1' }}) !important; line-height: 1.3 !important; word-wrap: break-word; }
             h1 { font-size: calc(1.8rem * {{ site_settings.mobile_font_scale_css|default:'1' }}); }
             h2 { font-size: calc(1.5rem * {{ site_settings.mobile_font_scale_css|default:'1' }}); }
-            .logo a { font-size: 1.4rem !important; }
-            /* --- ЗДЕСЬ БЫЛ КОНФЛИКТНЫЙ КОД, ОН УДАЛЕН! --- */
+
+            /* 6. АДАПТАЦИЯ ЛОГОТИПА (Текст)
+               Берет размер из админки и делает его 85% от оригинала */
+            .logo a {
+                font-size: calc(var(--logo-font-size) * 0.85) !important;
+            }
+
+            /* 7. АДАПТАЦИЯ ЛОГОТИПА (Иконка цветка) */
+            .logo a .logo-icon {
+                width: calc(var(--icon-size) * 0.85) !important;
+                height: calc(var(--icon-size) * 0.85) !important;
+            }
+
+            /* 8. АДАПТАЦИЯ ИКОНОК МЕНЮ (Корзина, Поиск, Кабинет) */
+            .user-nav-link svg {
+                width: calc(var(--icon-size) * 0.85) !important;
+                height: calc(var(--icon-size) * 0.85) !important;
+            }
+
+            /* 9. Текст под иконками (если выбран стиль с текстом) */
+            .user-nav-text {
+                font-size: 0.7rem !important; /* Фиксированный маленький размер */
+            }
         }
     </style>
 
