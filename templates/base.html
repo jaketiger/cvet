@@ -16,8 +16,8 @@
     <!-- Слайдер -->
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
 
-    <!-- CSS v48 - Фикс сердечек на ПК (position: relative) -->
-    <link rel="stylesheet" href="{% static 'shop/css/main.css' %}?v=2024_FINAL_FIX_HEARTS">
+    <!-- Основной CSS (Версия FULL_FIX) -->
+    <link rel="stylesheet" href="{% static 'shop/css/main.css' %}?v=2024_FINAL_FULL_FIX">
 
     <!-- ===================================================================== -->
     <!-- БЛОК 1: ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ -->
@@ -90,95 +90,60 @@
             .desktop-nav { gap: 10px !important; }
         }
 
-        /* --- ГЛОБАЛЬНЫЕ СТИЛИ КАРТОЧКИ (ДЕСКТОП + БАЗА) --- */
-        .product-card {
-            padding: 0 !important;
-            border-radius: 8px !important;
-            overflow: hidden !important;
-            border: 1px solid #eaeaea !important;
-            background: #fff;
-            position: relative; /* Важно! */
-        }
+        /* --- ГЛОБАЛЬНЫЕ СТИЛИ КАРТОЧКИ И СЕРДЕЧКА (ВАЖНО ДЛЯ ДЕСКТОПА) --- */
 
-        /* [ВАЖНО] ОБЕРТКА ФОТО ДОЛЖНА БЫТЬ RELATIVE, ЧТОБЫ СЕРДЕЧКО ПОЗИЦИОНИРОВАЛОСЬ ОТНОСИТЕЛЬНО НЕЕ */
-        .product-image-wrapper {
-            margin: 0 !important;
-            width: 100% !important;
-            border-radius: 0 !important;
-            position: relative !important; /* <--- ВОТ ЭТОГО НЕ ХВАТАЛО */
-        }
+        /* 1. Карточка и фото - RELATIVE, чтобы сердечко позиционировалось внутри */
+        .product-card { padding: 0 !important; border-radius: 8px !important; overflow: hidden !important; border: 1px solid #eaeaea !important; background: #fff; position: relative !important; }
+        .product-image-wrapper { margin: 0 !important; width: 100% !important; border-radius: 0 !important; position: relative !important; }
 
         .product-card-link { padding: 0 !important; }
         .product-title, .product-footer { padding: 0 10px !important; }
         .product-title { margin-top: 10px !important; margin-bottom: 5px !important; }
         .product-footer { padding-bottom: 10px !important; }
         .product-card-actions, .add-to-cart-form { padding: 0 !important; margin: 0 10px 10px 10px !important; }
+
+        /* Глобальная кнопка (Десктоп) */
         .add-to-cart-btn-new { width: 100% !important; border-radius: 4px !important; white-space: nowrap !important; min-height: 40px; }
 
-        /* --- СЕРДЕЧКО (ГЛОБАЛЬНО) --- */
+        /* 2. Сердечко (Глобально) */
         .fav-btn {
             position: absolute !important;
             top: 10px !important;
             right: 10px !important;
             z-index: 20 !important;
-            width: 32px; /* Размер для Десктопа */
-            height: 32px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 50%;
-            border: none;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            padding: 0;
+            width: 32px !important;
+            height: 32px !important;
+            background: rgba(255, 255, 255, 0.9) !important;
+            border-radius: 50% !important;
+            border: none !important;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            cursor: pointer !important;
+            padding: 0 !important;
             transition: transform 0.2s;
         }
         .fav-btn:hover { transform: scale(1.1); }
         .fav-btn svg {
-            width: 18px;
-            height: 18px;
+            width: 18px !important;
+            height: 18px !important;
             fill: none;
             stroke: #333;
             stroke-width: 2;
-            display: block;
+            display: block !important;
         }
         .fav-btn.active svg {
             fill: #ff4081;
             stroke: #ff4081;
         }
 
-        /* Скрытие ОК на ПК (по умолчанию) */
+        /* Скрытие иконки успеха на ПК (по умолчанию) */
         .add-to-cart-btn-new .btn-content-success { display: none !important; }
         .add-to-cart-btn-new .btn-content-normal { display: flex !important; align-items: center; justify-content: center; }
-
-        /* При клике показываем галочку */
+        /* При клике */
         .add-to-cart-btn-new.added .btn-content-normal { display: none !important; }
         .add-to-cart-btn-new.added .btn-content-success { display: flex !important; justify-content: center; align-items: center; }
-
-
-        /* ============================================================ */
-        /* === ДЕСКТОП (УЛУЧШЕНИЯ) === */
-        /* ============================================================ */
-        @media (min-width: 993px) {
-            .category-nav-desktop { background-color: rgba(var(--desktop-cat-rgb), var(--desktop-cat-alpha)) !important; backdrop-filter: blur(var(--blur-desktop-cat)); }
-
-            body.desktop-header-sticky_all .header,
-            body.desktop-header-sticky_header .header {
-                position: sticky; top: 0; z-index: 1100;
-                background-color: rgba(255, 255, 255, 0.98);
-                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            }
-
-            body.desktop-header-sticky_all .header.is-scrolled,
-            body.desktop-header-sticky_header .header.is-scrolled {
-                background-color: rgba(255, 255, 255, var(--header-scroll-opacity-desktop)) !important;
-                backdrop-filter: blur(var(--blur-desktop-header));
-            }
-
-            body.desktop-header-sticky_all .category-nav-desktop { position: sticky; z-index: 1090; margin-top: 0; }
-            body.desktop-header-sticky_nav .category-nav-desktop { position: sticky; top: 10px; z-index: 1100; }
-        }
 
 
         /* ============================================================ */
@@ -216,8 +181,11 @@
             .mobile-grid-col-4 .product-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 4px !important; }
 
             /* --- КАРТОЧКА (ОТСТУПЫ) --- */
-            .mobile-grid-col-0 .product-card, .mobile-grid-col-1 .product-card, .mobile-grid-col-2 .product-card,
-            .mobile-grid-col-3 .product-card, .mobile-grid-col-4 .product-card {
+            .mobile-grid-col-0 .product-card,
+            .mobile-grid-col-1 .product-card,
+            .mobile-grid-col-2 .product-card,
+            .mobile-grid-col-3 .product-card,
+            .mobile-grid-col-4 .product-card {
                 padding: 1px !important; border-radius: 6px !important; border: 1px solid #eee !important; background: #fff;
             }
 
@@ -255,33 +223,50 @@
                 display: flex !important; justify-content: center !important; align-items: center !important;
             }
 
-            /* 3 Колонки (НИЗКАЯ 24px) */
+            /* 3 Колонки (ВЫСОТА 24px) */
             .mobile-grid-col-3 .add-to-cart-btn-new,
             @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .add-to-cart-btn-new } {
                 width: 100% !important; margin: 0 !important;
-                min-height: 24px !important; height: 24px !important; max-height: 24px !important;
+                /* НИЗКАЯ ВЫСОТА */
+                min-height: 24px !important;
+                height: 24px !important;
+                max-height: 24px !important;
+
                 padding: 0 2px !important;
+                display: flex !important; justify-content: center !important; align-items: center !important;
                 border-radius: 4px !important;
                 overflow: hidden !important;
             }
+
+            /* Контент кнопки */
             .mobile-grid-col-3 .add-to-cart-btn-new .btn-content-normal,
             @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .add-to-cart-btn-new .btn-content-normal } {
-                display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important;
-                align-items: center !important; justify-content: center !important; width: 100% !important;
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: 100% !important;
             }
-            /* Текст кнопки (3 колонки) */
+
+            /* Текст кнопки (3 колонки) - МЕЛКИЙ */
             .mobile-grid-col-3 .add-to-cart-btn-new .btn-text,
             .mobile-grid-col-3 .add-to-cart-btn-new .btn-content-success span,
             @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .btn-text, .mobile-grid-col-0 .btn-content-success span } {
-                display: inline-block !important; font-size: 0.58rem !important; white-space: nowrap !important;
-                line-height: 24px !important; padding: 0 2px !important;
+                display: inline-block !important;
+                font-size: 0.58rem !important;
+                white-space: nowrap !important;
+                line-height: 24px !important;
+                padding: 0 2px !important;
             }
+
             /* Иконка кнопки (3 колонки) */
             .mobile-grid-col-3 .add-to-cart-btn-new svg,
             @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .add-to-cart-btn-new svg } {
                 width: 10px !important; height: 10px !important; margin-right: 3px !important;
                 display: inline-block !important; flex-shrink: 0 !important; vertical-align: middle !important;
             }
+
             /* Галочка успеха (3 колонки) */
             .mobile-grid-col-3 .add-to-cart-btn-new.added svg,
             @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .add-to-cart-btn-new.added svg } {
@@ -292,7 +277,8 @@
             /* 4 Колонки */
             .mobile-grid-col-4 .add-to-cart-btn-new,
             @media (min-width: 590px) { .mobile-grid-col-0 .add-to-cart-btn-new } {
-                width: 100% !important; min-height: 22px !important; height: 22px !important; max-height: 22px !important;
+                width: 100% !important;
+                min-height: 22px !important; height: 22px !important; max-height: 22px !important;
                 padding: 0 !important; display: flex !important; justify-content: center !important; align-items: center !important;
                 border-radius: 3px !important; margin: 0 !important;
             }
@@ -308,13 +294,15 @@
             @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .product-title } {
                 font-size: 0.65rem !important; line-height: 1.1 !important; height: 2.2em; overflow: hidden; margin: 2px 4px !important; text-align: center !important;
             }
+
             .mobile-grid-col-3 .product-price, .mobile-grid-col-4 .product-price,
             @media (min-width: 390px) { .mobile-grid-col-0 .product-price } {
                 font-size: 0.75rem !important; margin: 0 4px 4px 4px !important; text-align: center !important; font-weight: bold !important; display: block !important;
             }
+
             .mobile-grid-col-3 .product-rank-badge, .mobile-grid-col-4 .product-rank-badge, .mobile-grid-col-3 .product-similarity-badge, .mobile-grid-col-4 .product-similarity-badge { display: none !important; }
 
-            /* Переопределение СЕРДЕЧКА для мобильных (уменьшаем до 22px) */
+            /* Переопределение СЕРДЕЧКА для мобильных (22px) */
             .fav-btn {
                 width: 22px !important; height: 22px !important; top: 4px !important; right: 4px !important;
                 background: rgba(255,255,255,0.9) !important; padding: 0 !important;
@@ -323,6 +311,7 @@
             }
             .fav-btn svg { width: 12px !important; height: 12px !important; stroke-width: 2 !important; margin: 0 !important; display: block !important; }
 
+            /* Переключение для мобильных */
             .add-to-cart-btn-new .btn-content-success { display: none !important; }
             .add-to-cart-btn-new .btn-content-normal { display: flex !important; }
             .add-to-cart-btn-new.added .btn-content-normal { display: none !important; }
@@ -330,7 +319,9 @@
         }
     </style>
 
-    <!-- БЕЙДЖИ -->
+    <!-- ===================================================================== -->
+    <!-- БЛОК 2: БЕЙДЖИ (КРУЖОЧКИ) -->
+    <!-- ===================================================================== -->
     <style>
         .icon-wrapper { position: relative; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; }
         .cart-badge { position: absolute; background-color: var(--button-bg-color, #e53935); color: var(--button-text-color, #fff); border-radius: 50%; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 1px 2px rgba(0,0,0,0.2); pointer-events: none; border: 1px solid #fff; }
@@ -343,6 +334,7 @@
         }
 
         .cart-badge.hidden { display: none; }
+
         .mobile-dropdown-content { font-family: var(--font-{{ site_settings.mobile_dropdown_font_family|default:'roboto' }}); }
         .mobile-dropdown-content .btn { background: var(--mobile-btn-bg-color) !important; color: var(--mobile-btn-text-color) !important; }
     </style>
@@ -357,12 +349,16 @@
 <div class="site-wrapper">
     <header class="header" id="site-header">
         <div class="header-content">
+
+            <!-- ЛОГОТИП -->
             <div class="logo">
                 <a href="{% url 'shop:home' %}" style="font-size: var(--logo-font-size); color: var(--logo-color); font-family: var(--logo-font-family);">
                     <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="На главную"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                     <span class="logo-text">{{ site_settings.shop_name }}</span>
                 </a>
             </div>
+
+            <!-- ДЕСКТОПНАЯ НАВИГАЦИЯ -->
             <div class="desktop-nav">
                 <form class="search-form-desktop" action="{% url 'shop:search_results' %}" method="get"><input type="text" name="q" placeholder="Поиск по товарам..."><button type="submit" class="btn-primary">Найти</button></form>
                 <nav class="user-navigation">
