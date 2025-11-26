@@ -16,54 +16,74 @@
     <!-- Слайдер -->
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
 
-    <!-- Основной CSS (Версия 40 - Фикс высоты (-8px) и скрытие ОК на десктопе) -->
-    <link rel="stylesheet" href="{% static 'shop/css/main.css' %}?v=2024_FINAL_40">
+    <!-- Основной CSS (Версия 39 - Включена фиксация шапки на десктопе) -->
+    <link rel="stylesheet" href="{% static 'shop/css/main.css' %}?v=2024_FINAL_39">
 
+    <!-- ===================================================================== -->
+    <!-- БЛОК 1: ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ -->
+    <!-- ===================================================================== -->
     <style>
         /* Глобальный сброс */
-        *, *::before, *::after { box-sizing: border-box; }
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
 
         :root {
             --font-roboto: 'Roboto', sans-serif;
             --font-montserrat: 'Montserrat', sans-serif;
 
+            /* Базовые настройки */
             --default-font-family: var(--font-{{ site_settings.default_font_family|default:'roboto' }});
             --default-font-size: {{ site_settings.default_font_size|default:16 }}px;
             --default-text-color: {{ site_settings.default_text_color|default:'#333333' }};
             --accent-color: {{ site_settings.accent_color|default:'#e53935' }};
 
+            /* Заголовки */
             --heading-font-family: var(--font-{{ site_settings.heading_font_family|default:'montserrat' }});
             --heading-font-size: {{ site_settings.heading_font_size|default:24 }}px;
             --heading-font-weight: {% if site_settings.heading_font_style == 'bold' %}bold{% else %}normal{% endif %};
             --heading-font-style: {% if site_settings.heading_font_style == 'italic' %}italic{% else %}normal{% endif %};
 
+            /* Логотип */
             --logo-font-family: var(--font-{{ site_settings.logo_font_family|default:site_settings.default_font_family|default:'roboto' }});
             --logo-font-size: {{ site_settings.logo_font_size|default:24 }}px;
             --logo-color: {{ site_settings.logo_color|default:'var(--default-text-color)' }};
 
+            /* Иконки */
             --icon-size: {{ site_settings.icon_size|default:22 }}px;
             --icon-color: {{ site_settings.icon_color|default:'currentColor' }};
 
+            /* Категории и Футер */
             --category-font-family: var(--font-{{ site_settings.category_font_family|default:site_settings.default_font_family|default:'roboto' }});
-            --category-font-size: {{ site_settings.category_font_size|default:site_settings.default_font_size|default:16 }}px;
+            --category-font-size: {{ site_settings.category_font_size|default:16 }}px;
             --category-text-color: {{ site_settings.category_text_color|default:'var(--default-text-color)' }};
 
             --footer-font-family: var(--font-{{ site_settings.footer_font_family|default:site_settings.default_font_family|default:'roboto' }});
             --footer-text-color: {{ site_settings.footer_text_color|default:'#555555' }};
 
+            /* Кнопки (Десктоп) */
             --button-bg-color: {{ site_settings.button_bg_color|default:'var(--accent-color)' }};
             --button-text-color: {{ site_settings.button_text_color|default:'#FFFFFF' }};
             --button-hover-bg-color: {{ site_settings.button_hover_bg_color|default:'#333333' }};
             --button-border-radius: {{ site_settings.button_border_radius|default:5 }}px;
 
+            /* Фоны */
             --sheet-rgb: {{ site_settings.sheet_bg_rgb }};
             --sheet-alpha: {% if not site_settings.site_sheet_bg_color %}0{% else %}{{ site_settings.sheet_opacity_css }}{% endif %};
             --blur-sheet: {{ site_settings.site_sheet_blur|default:0 }}px;
 
+            /* Мобильное меню */
             --mobile-header-rgb: {{ site_settings.mobile_header_bg_rgb }};
             --mobile-header-alpha: {% if site_settings.mobile_header_bg_mode == 'transparent' %}0{% else %}0.98{% endif %};
             --mobile-btn-bg-color: rgba({{ site_settings.mobile_dropdown_button_bg_rgb }}, {{ site_settings.mobile_dropdown_button_opacity_css }});
             --mobile-btn-text-color: {{ site_settings.mobile_dropdown_button_text_color_css }};
+
+            /* Прозрачность при скролле (Десктоп) */
+            {% if site_settings.desktop_header_scroll_enabled %}
+            --header-scroll-opacity-desktop: {{ site_settings.desktop_header_opacity_css|default:'0.9' }};
+            {% else %}
+            --header-scroll-opacity-desktop: 0.98;
+            {% endif %}
         }
 
         body {
@@ -81,13 +101,40 @@
             box-shadow: 0 5px 25px rgba(0,0,0,0.1);
         }
 
+        .header { transition: background-color 0.3s ease, box-shadow 0.3s ease; }
+
+        /* ============================================================ */
+        /* === ДЕСКТОПНАЯ ВЕРСИЯ (СТИЛИ ХЕДЕРА И МЕНЮ) === */
+        /* ============================================================ */
+        @media (min-width: 993px) {
+            .category-nav-desktop { background-color: rgba(var(--desktop-cat-rgb), var(--desktop-cat-alpha)) !important; backdrop-filter: blur(var(--blur-desktop-cat)); }
+
+            /* ЛОГИКА ФИКСАЦИИ (Теперь будет работать, так как класс добавлен в body) */
+            body.desktop-header-sticky_all .header,
+            body.desktop-header-sticky_header .header {
+                position: sticky; top: 0; z-index: 1100;
+                background-color: rgba(255, 255, 255, 0.98);
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            }
+
+            /* Прозрачность при скролле */
+            body.desktop-header-sticky_all .header.is-scrolled,
+            body.desktop-header-sticky_header .header.is-scrolled {
+                background-color: rgba(255, 255, 255, var(--header-scroll-opacity-desktop)) !important;
+                backdrop-filter: blur(var(--blur-desktop-header));
+            }
+
+            body.desktop-header-sticky_all .category-nav-desktop { position: sticky; z-index: 1090; margin-top: 0; }
+            body.desktop-header-sticky_nav .category-nav-desktop { position: sticky; top: 10px; z-index: 1100; }
+        }
+
         @media (min-width: 993px) and (max-width: 1350px) {
             .user-nav-text.full-text { display: none !important; }
             .cart .user-nav-text.full-text { display: inline-block !important; font-size: 0.8rem !important; }
             .desktop-nav { gap: 10px !important; }
         }
 
-        /* --- ГЛОБАЛЬНЫЕ СТИЛИ КНОПКИ (ДЕСКТОП + БАЗА) --- */
+        /* Дефолтные стили (Десктоп) */
         .product-card { padding: 0 !important; border-radius: 8px !important; overflow: hidden !important; border: 1px solid #eaeaea !important; background: #fff; }
         .product-image-wrapper { margin: 0 !important; width: 100% !important; border-radius: 0 !important; }
         .product-card-link { padding: 0 !important; }
@@ -96,14 +143,6 @@
         .product-footer { padding-bottom: 10px !important; }
         .product-card-actions, .add-to-cart-form { padding: 0 !important; margin: 0 10px 10px 10px !important; }
         .add-to-cart-btn-new { width: 100% !important; border-radius: 4px !important; white-space: nowrap !important; }
-
-        /* [ВАЖНО] Скрываем "ОК" по умолчанию ВЕЗДЕ (и на десктопе) */
-        .add-to-cart-btn-new .btn-content-success { display: none !important; }
-        .add-to-cart-btn-new .btn-content-normal { display: flex !important; align-items: center; justify-content: center; }
-
-        /* Показываем "ОК" только при классе .added */
-        .add-to-cart-btn-new.added .btn-content-normal { display: none !important; }
-        .add-to-cart-btn-new.added .btn-content-success { display: flex !important; justify-content: center; align-items: center; }
 
 
         /* ============================================================ */
@@ -149,12 +188,12 @@
                 padding: 1px !important; border-radius: 6px !important;
             }
 
+            /* Фото */
             .mobile-grid-col-0 .product-image-wrapper, .mobile-grid-col-1 .product-image-wrapper,
             .mobile-grid-col-2 .product-image-wrapper, .mobile-grid-col-3 .product-image-wrapper,
             .mobile-grid-col-4 .product-image-wrapper {
                 margin: 0 !important; width: 100% !important; border-radius: 6px 6px 0 0 !important;
             }
-
             .mobile-grid-col-0 .product-card-link, .mobile-grid-col-1 .product-card-link,
             .mobile-grid-col-2 .product-card-link, .mobile-grid-col-3 .product-card-link,
             .mobile-grid-col-4 .product-card-link {
@@ -185,11 +224,10 @@
                 display: flex !important; justify-content: center !important; align-items: center !important;
             }
 
-            /* 3 Колонки (ВЫСОТА УМЕНЬШЕНА ДО 24px - ЭТО НА 8px МЕНЬШЕ, ЧЕМ 32px) */
+            /* 3 Колонки (НИЗКАЯ 24px) */
             .mobile-grid-col-3 .add-to-cart-btn-new,
             @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .add-to-cart-btn-new } {
                 width: 100% !important; margin: 0 !important;
-                /* Тонкая полоска */
                 min-height: 24px !important;
                 height: 24px !important;
                 max-height: 24px !important;
@@ -200,6 +238,7 @@
                 overflow: hidden !important;
             }
 
+            /* Контент кнопки */
             .mobile-grid-col-3 .add-to-cart-btn-new .btn-content-normal,
             @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .add-to-cart-btn-new .btn-content-normal } {
                 display: flex !important;
@@ -210,14 +249,14 @@
                 width: 100% !important;
             }
 
-            /* Текст кнопки (3 колонки) - ОЧЕНЬ КОМПАКТНЫЙ */
+            /* Текст кнопки (3 колонки) */
             .mobile-grid-col-3 .add-to-cart-btn-new .btn-text,
             .mobile-grid-col-3 .add-to-cart-btn-new .btn-content-success span,
             @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .btn-text, .mobile-grid-col-0 .btn-content-success span } {
                 display: inline-block !important;
-                font-size: 0.58rem !important;
+                font-size: 0.58rem !important;  /* 9px */
                 white-space: nowrap !important;
-                line-height: 24px !important; /* Центрирование по новой высоте */
+                line-height: 24px !important;
                 padding: 0 2px !important;
             }
 
@@ -264,16 +303,21 @@
                 box-shadow: 0 1px 3px rgba(0,0,0,0.15) !important; border-radius: 50% !important; position: absolute !important; z-index: 20 !important;
             }
             .fav-btn svg { width: 12px !important; height: 12px !important; stroke-width: 2 !important; margin: 0 !important; display: block !important; }
+
+            /* Переключение */
+            .add-to-cart-btn-new .btn-content-success { display: none !important; }
+            .add-to-cart-btn-new .btn-content-normal { display: flex !important; }
+            .add-to-cart-btn-new.added .btn-content-normal { display: none !important; }
+            .add-to-cart-btn-new.added .btn-content-success { display: flex !important; justify-content: center !important; align-items: center !important; }
         }
     </style>
 
-    <!-- Бейджи -->
     <style>
         .icon-wrapper { position: relative; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; }
         .cart-badge { position: absolute; background-color: var(--button-bg-color, #e53935); color: var(--button-text-color, #fff); border-radius: 50%; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 1px 2px rgba(0,0,0,0.2); pointer-events: none; border: 1px solid #fff; }
 
         /* Десктоп */
-        .fav-btn { width: 28px; height: 28px; top: 8px; right: 8px; background: rgba(255,255,255,0.9); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 5; position: absolute; }
+        .fav-btn { position: absolute; width: 28px; height: 28px; top: 8px; right: 8px; background: rgba(255,255,255,0.9); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 5; }
         .fav-btn svg { width: 16px; height: 16px; }
 
         @media (min-width: 993px) {
@@ -289,10 +333,12 @@
     </style>
 </head>
 
+<!-- [ИСПРАВЛЕНО] Добавлен класс desktop-header-{{ site_settings.desktop_header_behavior }} -->
 <body class="nav-style-{{ site_settings.navigation_style }}
              icon-anim-{{ site_settings.icon_animation_style|default:'scale' }}
              mobile-grid-col-{{ site_settings.mobile_product_grid }}
-             mobile-header-{{ site_settings.mobile_header_style }}">
+             mobile-header-{{ site_settings.mobile_header_style }}
+             desktop-header-{{ site_settings.desktop_header_behavior }}">
 
 <div class="site-wrapper">
     <header class="header" id="site-header">
@@ -469,14 +515,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-<script> if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; window.addEventListener('load', function() { window.scrollTo(0, 0); }); </script>
+<script>
+    if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+    }
+    window.addEventListener('load', function() {
+        window.scrollTo(0, 0);
+    });
+</script>
+
+<!-- AJAX Script -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const cartForms = document.querySelectorAll('.add-to-cart-form, .add-to-cart-form-detail');
+
         cartForms.forEach(form => {
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const btn = this.querySelector('button[type="submit"]');
+
                 fetch(this.action, {
                     method: 'POST',
                     body: new FormData(this),
@@ -485,21 +542,49 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+
+                        // === 1. ОБНОВЛЕНИЕ ДЕСКТОПНОЙ ШАПКИ ===
                         const desktopCartText = document.querySelector('.cart .user-nav-text');
-                        if (desktopCartText) desktopCartText.innerText = data.total_price + ' руб.';
+                        if (desktopCartText) {
+                            desktopCartText.innerText = data.total_price + ' руб.';
+                        }
+
+                        // === 2. ОБНОВЛЕНИЕ ВСЕХ БЕЙДЖЕЙ КОРЗИНЫ ===
                         const cartBadges = document.querySelectorAll('.cart-badge:not(.fav-badge)');
+
                         cartBadges.forEach(badge => {
-                            if (data.cart_len > 0) { badge.innerText = data.cart_len; badge.style.display = 'flex'; badge.classList.remove('hidden'); }
-                            else { badge.style.display = 'none'; badge.classList.add('hidden'); }
+                            if (data.cart_len > 0) {
+                                badge.innerText = data.cart_len;
+                                badge.style.display = 'flex';
+                                badge.classList.remove('hidden');
+                            } else {
+                                badge.style.display = 'none';
+                                badge.classList.add('hidden');
+                            }
                         });
+
+                        // === 3. ОБНОВЛЕНИЕ МОБИЛЬНОГО ТЕКСТА ===
                         const mobileCartText = document.querySelector('#cart-toggle .user-nav-text');
-                        if (mobileCartText) mobileCartText.innerText = 'Корзина';
+                        if (mobileCartText) {
+                            mobileCartText.innerText = 'Корзина';
+                        }
+
+                        // === 4. ОБНОВЛЕНИЕ МОБИЛЬНОГО ВЫПАДАЮЩЕГО МЕНЮ ===
                         const mobileSummary = document.querySelector('.cart-summary-mobile');
                         if (mobileSummary) {
-                            mobileSummary.innerHTML = `<p>Товаров: <strong>${data.cart_len}</strong></p><p>Сумма: <strong>${data.total_price} руб.</strong></p><a href="{% url 'cart:cart_detail' %}" class="btn btn-secondary" style="width:100%; margin-bottom:8px;">В корзину</a><a href="{% url 'orders:order_create' %}" class="btn" style="width:100%;">Оформить заказ</a>`;
+                            mobileSummary.innerHTML = `
+                                <p>Товаров в корзине: <strong>${data.cart_len}</strong></p>
+                                <p>На сумму: <strong>${data.total_price} руб.</strong></p>
+                                <a href="{% url 'cart:cart_detail' %}" class="btn btn-secondary" style="width: 100%; box-sizing: border-box; text-align: center; display: block; margin-bottom: 8px;">Перейти в корзину</a>
+                                <a href="{% url 'orders:order_create' %}" class="btn" style="width: 100%; box-sizing: border-box; text-align: center; display: block;">Оформить заказ</a>
+                            `;
                         }
+
+                        // === 5. АНИМАЦИЯ КНОПКИ ===
                         btn.classList.add('added');
-                        setTimeout(() => { btn.classList.remove('added'); }, 2000);
+                        setTimeout(() => {
+                            btn.classList.remove('added');
+                        }, 2000);
                     }
                 })
                 .catch(error => console.error('Error:', error));
@@ -507,24 +592,49 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 </script>
+
 <script>
     function toggleFavorite(btn, event) {
-        event.preventDefault(); event.stopPropagation();
+        event.preventDefault();
+        event.stopPropagation();
+
         const productId = btn.getAttribute('data-id');
         const url = "{% url 'favorites:toggle' %}";
+
         fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest' },
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             body: `product_id=${productId}`
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                if (data.added) { btn.classList.add('active'); } else { btn.classList.remove('active'); if (window.location.href.includes('favorites')) { btn.closest('.product-card').remove(); if (data.count === 0) location.reload(); } }
+                // 1. Меняем вид кнопки
+                if (data.added) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                    if (window.location.href.includes('favorites')) {
+                       btn.closest('.product-card').remove();
+                       if (data.count === 0) location.reload();
+                    }
+                }
+
+                // 2. Обновляем счетчик Избранного
                 const badges = document.querySelectorAll('.fav-badge');
                 badges.forEach(badge => {
                     badge.innerText = data.count;
-                    if (data.count > 0) { badge.classList.remove('hidden'); badge.style.display = 'flex'; } else { badge.classList.add('hidden'); badge.style.display = 'none'; }
+                    if (data.count > 0) {
+                        badge.classList.remove('hidden');
+                        badge.style.display = 'flex';
+                    } else {
+                        badge.classList.add('hidden');
+                        badge.style.display = 'none';
+                    }
                 });
             }
         })
