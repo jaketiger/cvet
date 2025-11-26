@@ -1,38 +1,41 @@
 <!-- templates/base.html -->
-
 <!DOCTYPE html>
 {% load static %}
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Адаптивность -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{% block title %}{{ site_settings.shop_name|default:'MegaCvet' }}{% endblock %}</title>
+
+    <!-- Шрифты -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400&family=Montserrat:ital,wght@0,400;0,700;1,400&family=Open+Sans:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,700;1,400&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lobster&family=Pacifico&display=swap" rel="stylesheet">
+
+    <!-- Слайдер -->
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
 
-    <!-- ОБНОВЛЕННАЯ ВЕРСИЯ CSS -->
-    <link rel="stylesheet" href="{% static 'shop/css/main.css' %}?v=2024_FINAL_2">
+    <!-- Основной CSS (Версия 22 - Исправление кнопок для 3-х колонок) -->
+    <link rel="stylesheet" href="{% static 'shop/css/main.css' %}?v=2024_FINAL_22">
 
+    <!-- ===================================================================== -->
+    <!-- БЛОК 1: ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ (SiteSettings) -->
+    <!-- ===================================================================== -->
     <style>
+        /* Глобальный сброс */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         :root {
-            /* --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ --- */
             --font-roboto: 'Roboto', sans-serif;
             --font-montserrat: 'Montserrat', sans-serif;
-            --font-open-sans: 'Open Sans', sans-serif;
-            --font-lora: 'Lora', serif;
-            --font-merriweather: 'Merriweather', serif;
-            --font-playfair-display: 'Playfair Display', serif;
-            --font-lobster: 'Lobster', cursive;
-            --font-pacifico: 'Pacifico', cursive;
 
+            /* Базовые настройки */
             --default-font-family: var(--font-{{ site_settings.default_font_family|default:'roboto' }});
             --default-font-size: {{ site_settings.default_font_size|default:16 }}px;
             --default-text-color: {{ site_settings.default_text_color|default:'#333333' }};
-            --body-font-family: var(--default-font-family);
-            --base-font-size: var(--default-font-size);
-            --main-text-color: var(--default-text-color);
             --accent-color: {{ site_settings.accent_color|default:'#e53935' }};
 
             /* Заголовки */
@@ -45,120 +48,85 @@
             --logo-font-family: var(--font-{{ site_settings.logo_font_family|default:site_settings.default_font_family|default:'roboto' }});
             --logo-font-size: {{ site_settings.logo_font_size|default:24 }}px;
             --logo-color: {{ site_settings.logo_color|default:'var(--default-text-color)' }};
-            --logo-font-weight: {% if site_settings.logo_font_style == 'bold' %}bold{% else %}normal{% endif %};
-            --logo-font-style: {% if site_settings.logo_font_style == 'italic' %}italic{% else %}normal{% endif %};
 
             /* Иконки */
             --icon-size: {{ site_settings.icon_size|default:22 }}px;
             --icon-color: {{ site_settings.icon_color|default:'currentColor' }};
 
-            /* Категории */
+            /* Категории и Футер */
             --category-font-family: var(--font-{{ site_settings.category_font_family|default:site_settings.default_font_family|default:'roboto' }});
             --category-font-size: {{ site_settings.category_font_size|default:site_settings.default_font_size|default:16 }}px;
             --category-text-color: {{ site_settings.category_text_color|default:'var(--default-text-color)' }};
-            --category-font-weight: {% if site_settings.category_font_style == 'bold' %}bold{% else %}normal{% endif %};
-            --category-font-style: {% if site_settings.category_font_style == 'italic' %}italic{% else %}normal{% endif %};
 
-            /* Футер */
             --footer-font-family: var(--font-{{ site_settings.footer_font_family|default:site_settings.default_font_family|default:'roboto' }});
-            --footer-font-size: {{ site_settings.footer_font_size|default:14 }}px;
             --footer-text-color: {{ site_settings.footer_text_color|default:'#555555' }};
-            --footer-font-weight: {% if site_settings.footer_font_style == 'bold' %}bold{% else %}normal{% endif %};
-            --footer-font-style: {% if site_settings.footer_font_style == 'italic' %}italic{% else %}normal{% endif %};
 
-            /* Название товара */
-            --product-title-font-family: var(--font-{{ site_settings.product_title_font_family|default:site_settings.default_font_family|default:'roboto' }});
-            --product-title-font-size: {{ site_settings.product_title_font_size|default:18 }}px;
-            --product-title-text-color: {{ site_settings.product_title_text_color|default:'var(--default-text-color)' }};
-            --product-title-font-weight: {% if site_settings.product_title_font_style == 'bold' %}bold{% else %}normal{% endif %};
-            --product-title-font-style: {% if site_settings.product_title_font_style == 'italic' %}italic{% else %}normal{% endif %};
-
-            /* Заголовки в товаре */
-            --product-header-font-family: var(--font-{{ site_settings.product_header_font_family|default:site_settings.heading_font_family|default:'montserrat' }});
-            --product-header-font-size: {{ site_settings.product_header_font_size|default:20 }}px;
-            --product-header-text-color: {{ site_settings.product_header_text_color|default:'var(--default-text-color)' }};
-            --product-header-font-weight: {% if site_settings.product_header_font_style == 'bold' %}bold{% else %}normal{% endif %};
-            --product-header-font-style: {% if site_settings.product_header_font_style == 'italic' %}italic{% else %}normal{% endif %};
-
-            /* КНОПКИ (ДЕСКТОП) */
-            --button-font-family: var(--font-{{ site_settings.button_font_family|default:site_settings.default_font_family|default:'roboto' }});
+            /* Кнопки (Десктоп) */
             --button-bg-color: {{ site_settings.button_bg_color|default:'var(--accent-color)' }};
-            --button-accent-color: {{ site_settings.button_accent_color|default:site_settings.accent_color|default:'#e53935' }};
             --button-text-color: {{ site_settings.button_text_color|default:'#FFFFFF' }};
             --button-hover-bg-color: {{ site_settings.button_hover_bg_color|default:'#333333' }};
             --button-border-radius: {{ site_settings.button_border_radius|default:5 }}px;
-            --button-font-weight: {% if site_settings.button_font_style == 'bold' %}bold{% else %}normal{% endif %};
-            --button-font-style: {% if site_settings.button_font_style == 'italic' %}italic{% else %}normal{% endif %};
 
-            --add-to-cart-bg-color: {{ site_settings.add_to_cart_bg_color|default:'var(--button-bg-color)' }};
-            --add-to-cart-text-color: {{ site_settings.add_to_cart_text_color|default:'var(--button-text-color)' }};
-            --add-to-cart-hover-bg-color: {{ site_settings.add_to_cart_hover_bg_color|default:'var(--button-hover-bg-color)' }};
-
-            /* ПЕРЕМЕННЫЕ ДЛЯ МОБИЛЬНЫХ КНОПОК */
-            --mobile-btn-bg-color: rgba({{ site_settings.mobile_dropdown_button_bg_rgb }}, {{ site_settings.mobile_dropdown_button_opacity_css }});
-            --mobile-btn-text-color: {{ site_settings.mobile_dropdown_button_text_color_css }};
-            --mobile-btn-radius: {{ site_settings.mobile_dropdown_button_border_radius|default:site_settings.button_border_radius|default:5 }}px;
-
-            --mobile-icon-size: {{ site_settings.icon_size|default:24 }}px;
-            --mobile-dropdown-font-weight: {% if site_settings.mobile_dropdown_font_style == 'bold' %}bold{% else %}normal{% endif %};
-            --mobile-dropdown-font-style: {% if site_settings.mobile_dropdown_font_style == 'italic' %}italic{% else %}normal{% endif %};
-
+            /* Фоны */
             --sheet-rgb: {{ site_settings.sheet_bg_rgb }};
             --sheet-alpha: {% if not site_settings.site_sheet_bg_color %}0{% else %}{{ site_settings.sheet_opacity_css }}{% endif %};
             --blur-sheet: {{ site_settings.site_sheet_blur|default:0 }}px;
-            --blur-desktop-header: {{ site_settings.desktop_header_blur|default:0 }}px;
-            --blur-desktop-cat: {{ site_settings.desktop_category_blur|default:0 }}px;
-            --blur-mobile: {{ site_settings.mobile_header_blur|default:0 }}px;
-            --desktop-cat-rgb: {{ site_settings.desktop_cat_bg_rgb }};
-            --mobile-header-rgb: {{ site_settings.mobile_header_bg_rgb }};
-            --desktop-cat-alpha: {% if site_settings.desktop_categories_bg_mode == 'transparent' %}0{% else %}{{ site_settings.desktop_cat_opacity_css }}{% endif %};
-            --mobile-header-alpha: {% if site_settings.mobile_header_bg_mode == 'transparent' %}0{% else %}0.98{% endif %};
-            {% if site_settings.desktop_header_scroll_enabled %}--header-scroll-opacity-desktop: {{ site_settings.desktop_header_opacity_css|default:'0.9' }};{% else %}--header-scroll-opacity-desktop: 0.98;{% endif %}
-            {% if site_settings.mobile_header_transparent_scroll %}--header-scroll-opacity-mobile: {{ site_settings.mobile_header_opacity_css|default:'0.9' }};{% else %}--header-scroll-opacity-mobile: 0.98;{% endif %}
 
-            --product-zoom-factor: {{ site_settings.product_image_zoom_factor|default:2.0 }};
+            /* Мобильное меню */
+            --mobile-header-rgb: {{ site_settings.mobile_header_bg_rgb }};
+            --mobile-header-alpha: {% if site_settings.mobile_header_bg_mode == 'transparent' %}0{% else %}0.98{% endif %};
+            --mobile-btn-bg-color: rgba({{ site_settings.mobile_dropdown_button_bg_rgb }}, {{ site_settings.mobile_dropdown_button_opacity_css }});
+            --mobile-btn-text-color: {{ site_settings.mobile_dropdown_button_text_color_css }};
         }
 
         body {
             {% if site_settings.background_image %}
                 background-image: url('{{ site_settings.background_image.url }}');
             {% endif %}
+            overflow-x: hidden;
+            width: 100%;
+            position: relative;
         }
 
-        h1, h2, h3, h4, h5, h6 { font-weight: var(--heading-font-weight); font-style: var(--heading-font-style); font-size: var(--heading-font-size); overflow-wrap: break-word; word-wrap: break-word; }
-        .logo a { font-weight: var(--logo-font-weight); font-style: var(--logo-font-style); }
-        .category-nav-desktop a, .category-nav-header a { font-weight: var(--category-font-weight); font-style: var(--category-font-style); }
-        .footer { font-weight: var(--footer-font-weight); font-style: var(--footer-font-style); }
-        .product-title { font-weight: var(--product-title-font-weight); font-style: var(--product-title-font-style); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; }
-        .product-composition-section h3, .product-description-section h3 { font-weight: var(--product-header-font-weight); font-style: var(--product-header-font-style); }
-        .btn, button, input[type="submit"], a.btn-primary, a.btn-secondary { font-weight: var(--button-font-weight); font-style: var(--button-font-style); }
+        .site-wrapper {
+            max-width: 1200px;
+            margin: 20px auto;
+            background-color: rgba(var(--sheet-rgb), var(--sheet-alpha));
+            backdrop-filter: blur(var(--blur-sheet));
+            border-radius: 8px;
+            padding: 20px 40px;
+            min-height: 80vh;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+        }
 
-        .site-wrapper { max-width: 1200px; margin: 20px auto; background-color: rgba(var(--sheet-rgb), var(--sheet-alpha)); backdrop-filter: blur(var(--blur-sheet)); border-radius: 8px; padding: 20px 40px; min-height: 80vh; position: relative; z-index: 1; box-shadow: 0 5px 25px rgba(0,0,0,0.1); }
-        .header { transition: background-color 0.3s ease, box-shadow 0.3s ease; }
-        @media (min-width: 993px) { .category-nav-desktop { background-color: rgba(var(--desktop-cat-rgb), var(--desktop-cat-alpha)) !important; backdrop-filter: blur(var(--blur-desktop-cat)); } body.desktop-header-sticky_all .header, body.desktop-header-sticky_header .header { position: sticky; top: 0; z-index: 1100; background-color: rgba(255, 255, 255, 0.98); box-shadow: 0 2px 5px rgba(0,0,0,0.05); } body.desktop-header-sticky_all .header.is-scrolled, body.desktop-header-sticky_header .header.is-scrolled { background-color: rgba(255, 255, 255, var(--header-scroll-opacity-desktop)) !important; backdrop-filter: blur(var(--blur-desktop-header)); } body.desktop-header-sticky_all .category-nav-desktop { position: sticky; z-index: 1090; margin-top: 0; } body.desktop-header-sticky_nav .category-nav-desktop { position: sticky; top: 10px; z-index: 1100; } }
+        /* Адаптация для планшетов/ноутбуков */
+        @media (min-width: 993px) and (max-width: 1350px) {
+            .user-nav-text.full-text { display: none !important; }
+            .cart .user-nav-text.full-text { display: inline-block !important; font-size: 0.8rem !important; }
+            .desktop-nav { gap: 10px !important; }
+        }
 
-
-/* !!! ВСТАВИТЬ СЮДА (ПЕРЕД МОБИЛЬНОЙ ВЕРСИЕЙ) !!! */
-@media (min-width: 993px) and (max-width: 1350px) {
-    .user-nav-text.full-text { display: none !important; }
-    .cart .user-nav-text.full-text { display: inline-block !important; font-size: 0.8rem !important; }
-    .desktop-nav { gap: 10px !important; }
-    .user-navigation { gap: 10px !important; }
-    .search-form-desktop { max-width: 250px !important; }
-}
-
-
+        /* ============================================================ */
+        /* === ГЛАВНЫЙ МОБИЛЬНЫЙ БЛОК (МЕНЮ + СЕТКА ТОВАРОВ) === */
+        /* ============================================================ */
         @media (max-width: 992px) {
-            /* 1. Отступы основного контейнера */
-            .site-wrapper { margin: 10px; padding: 10px 15px; }
-
-            /* 2. Фон шапки (из настроек) */
+            /* 1. ОБЩИЕ НАСТРОЙКИ */
+            .site-wrapper {
+                margin: 10px;
+                width: auto;
+                max-width: calc(100% - 20px);
+                padding: 10px;
+            }
             .header { background-color: rgba(var(--mobile-header-rgb), var(--mobile-header-alpha)) !important; }
 
-            /* 3. Липкая шапка (если включено) */
-            body.mobile-header-sticky .header { position: sticky; top: 0; z-index: 1100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 0 !important; }
+            /* 2. ШАПКА И ИКОНКИ */
+            .logo a { font-size: calc(var(--logo-font-size) * 0.85) !important; }
+            .logo a .logo-icon { width: calc(var(--icon-size) * 0.85) !important; height: calc(var(--icon-size) * 0.85) !important; }
+            .user-nav-link svg { width: calc(var(--icon-size) * 0.85) !important; height: calc(var(--icon-size) * 0.85) !important; }
+            .user-nav-text { font-size: 0.7rem !important; }
 
-            /* 4. Прозрачность при скролле (если включено) */
+            /* 3. ПОВЕДЕНИЕ ШАПКИ */
+            body.mobile-header-sticky .header { position: sticky; top: 0; z-index: 1100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 0 !important; }
             body.mobile-header-sticky .header.is-scrolled {
                 {% if site_settings.mobile_header_transparent_scroll %}
                 background-color: rgba(var(--mobile-header-rgb), var(--header-scroll-opacity-mobile)) !important;
@@ -166,166 +134,282 @@
                 {% endif %}
             }
 
-            /* 5. Адаптация заголовков (реагирует на ползунок "Корректировка размера") */
-            .responsive-title { font-size: calc(1.8rem * {{ site_settings.mobile_font_scale_css|default:'1' }}) !important; line-height: 1.3 !important; word-wrap: break-word; }
+            /* 4. ЗАГОЛОВКИ */
+            .responsive-title { font-size: calc(1.8rem * {{ site_settings.mobile_font_scale_css|default:'1' }}) !important; line-height: 1.3 !important; }
             h1 { font-size: calc(1.8rem * {{ site_settings.mobile_font_scale_css|default:'1' }}); }
             h2 { font-size: calc(1.5rem * {{ site_settings.mobile_font_scale_css|default:'1' }}); }
 
-            /* 6. АДАПТАЦИЯ ЛОГОТИПА (Текст)
-               Берет размер из админки и делает его 85% от оригинала */
-            .logo a {
-                font-size: calc(var(--logo-font-size) * 0.85) !important;
+            /* ----------------------------------------------------------- */
+            /* --- [ФИНАЛ v22] АДАПТИВНАЯ СЕТКА И КНОПКИ --- */
+            /* ----------------------------------------------------------- */
+
+            /* 1. КОЛОНКИ (GRID) */
+            @media (min-width: 590px) { .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 10px !important; } }
+            @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 6px !important; } }
+            @media (max-width: 389px) { .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; } }
+
+            .mobile-grid-col-1 .product-grid { grid-template-columns: 1fr !important; gap: 15px !important; }
+            .mobile-grid-col-2 .product-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+            .mobile-grid-col-3 .product-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 5px !important; }
+            .mobile-grid-col-4 .product-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 4px !important; }
+
+            /* 2. КАРТОЧКА (ОТСТУПЫ) */
+            /* Для 1 и 2 колонок - стандартный отступ */
+            .mobile-grid-col-1 .product-card,
+            .mobile-grid-col-2 .product-card,
+            @media (max-width: 389px) { .mobile-grid-col-0 .product-card } {
+                padding: 5px !important;
+                border-radius: 6px !important;
             }
 
-            /* 7. АДАПТАЦИЯ ЛОГОТИПА (Иконка цветка) */
-            .logo a .logo-icon {
-                width: calc(var(--icon-size) * 0.85) !important;
-                height: calc(var(--icon-size) * 0.85) !important;
+            /* [ВАЖНО] Для 3 и 4 колонок - МЕНЬШЕ отступ, чтобы кнопке было больше места */
+            .mobile-grid-col-3 .product-card,
+            .mobile-grid-col-4 .product-card,
+            @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .product-card } {
+                padding: 2px !important; /* Минимальный отступ от края карточки */
+                border-radius: 5px !important;
             }
 
-            /* 8. АДАПТАЦИЯ ИКОНОК МЕНЮ (Корзина, Поиск, Кабинет) */
-            .user-nav-link svg {
-                width: calc(var(--icon-size) * 0.85) !important;
-                height: calc(var(--icon-size) * 0.85) !important;
+            .mobile-grid-col-0 .product-image-wrapper,
+            .mobile-grid-col-1 .product-image-wrapper,
+            .mobile-grid-col-2 .product-image-wrapper,
+            .mobile-grid-col-3 .product-image-wrapper,
+            .mobile-grid-col-4 .product-image-wrapper {
+                margin: 0 !important;
+                width: 100% !important;
+                border-radius: 6px 6px 0 0 !important;
             }
 
-            /* 9. Текст под иконками (если выбран стиль с текстом) */
-            .user-nav-text {
-                font-size: 0.7rem !important; /* Фиксированный маленький размер */
+            .mobile-grid-col-0 .product-card-link,
+            .mobile-grid-col-1 .product-card-link,
+            .mobile-grid-col-2 .product-card-link,
+            .mobile-grid-col-3 .product-card-link,
+            .mobile-grid-col-4 .product-card-link {
+                 padding: 0 !important;
+            }
+
+            /* Отступ блока формы */
+            .mobile-grid-col-1 .add-to-cart-form,
+            .mobile-grid-col-2 .add-to-cart-form {
+                padding: 0 4px 4px 4px !important;
+            }
+            /* В 3 и 4 колонках убираем отступ, чтобы кнопка была шире */
+            .mobile-grid-col-0 .add-to-cart-form,
+            .mobile-grid-col-3 .add-to-cart-form,
+            .mobile-grid-col-4 .add-to-cart-form {
+                padding: 0 !important;
+                margin-top: 4px !important;
+            }
+
+            /* =========================================================== */
+            /* === [ИСПРАВЛЕНО] КНОПКИ "В КОРЗИНУ" === */
+            /* =========================================================== */
+
+            /* --- ГРУППА А: Широкие (1 и 2 колонки) --- */
+            .mobile-grid-col-1 .add-to-cart-btn-new,
+            .mobile-grid-col-2 .add-to-cart-btn-new,
+            @media (max-width: 389px) { .mobile-grid-col-0 .add-to-cart-btn-new } {
+                min-height: 38px !important;
+                padding: 8px 12px !important;
+                font-size: 0.9rem !important;
+            }
+
+            /* --- ГРУППА Б: 3 КОЛОНКИ (ШИРОКАЯ, НО КОМПАКТНАЯ) --- */
+            .mobile-grid-col-3 .add-to-cart-btn-new,
+            @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .add-to-cart-btn-new } {
+                /* РАСТЯГИВАЕМ НА 100% (без марджинов) */
+                width: 100% !important;
+                margin: 0 !important;
+
+                min-height: 28px !important;
+                height: 28px !important;
+
+                /* ОТСТУПЫ ВНУТРИ, ЧТОБЫ ТЕКСТ НЕ ПРИЛИПАЛ */
+                padding: 0 4px !important;
+
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                border-radius: 4px !important;
+            }
+
+            /* ТЕКСТ (3 колонки) */
+            .mobile-grid-col-3 .add-to-cart-btn-new .btn-text,
+            .mobile-grid-col-3 .add-to-cart-btn-new .btn-content-success span,
+            @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .btn-text, .mobile-grid-col-0 .btn-content-success span } {
+                display: inline-block !important;
+                font-size: 0.65rem !important;  /* ~10px */
+                white-space: nowrap !important;
+                line-height: 1 !important;
+                letter-spacing: -0.3px !important; /* Чуть сжимаем буквы */
+            }
+
+            /* ИКОНКА (3 колонки) */
+            .mobile-grid-col-3 .add-to-cart-btn-new svg,
+            @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .add-to-cart-btn-new svg } {
+                width: 12px !important;
+                height: 12px !important;
+                margin-right: 3px !important;
+                display: inline-block !important;
+                position: static !important;
+                opacity: 1 !important;
+                transform: none !important;
+            }
+
+            /* --- ГРУППА В: 4 КОЛОНКИ (Экстра узкая) --- */
+            .mobile-grid-col-4 .add-to-cart-btn-new,
+            @media (min-width: 590px) { .mobile-grid-col-0 .add-to-cart-btn-new } {
+                width: 100% !important;
+                min-height: 26px !important;
+                height: 26px !important;
+                padding: 0 !important;
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                border-radius: 3px !important;
+            }
+            /* Текст (4 колонки) - МИНИМАЛЬНЫЙ */
+            .mobile-grid-col-4 .add-to-cart-btn-new .btn-text,
+            .mobile-grid-col-4 .add-to-cart-btn-new .btn-content-success span,
+            @media (min-width: 590px) { .mobile-grid-col-0 .btn-text } {
+                display: inline-block !important;
+                font-size: 0.55rem !important; /* ~9px */
+                white-space: nowrap !important;
+                line-height: 1 !important;
+                letter-spacing: -0.5px !important;
+            }
+             /* Иконка (4 колонки) */
+            .mobile-grid-col-4 .add-to-cart-btn-new svg,
+            @media (min-width: 590px) { .mobile-grid-col-0 .add-to-cart-btn-new svg } {
+                width: 10px !important;
+                height: 10px !important;
+                margin-right: 1px !important;
+                display: inline-block !important;
+            }
+
+            /* 4. ШРИФТЫ КОНТЕНТА (АДАПТАЦИЯ ПОД УЗКУЮ КАРТОЧКУ) */
+
+            /* 3 колонки - уменьшаем название */
+            .mobile-grid-col-3 .product-title,
+            @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .product-title } {
+                font-size: 0.65rem !important;
+                line-height: 1.1 !important;
+                height: 2.2em;
+                overflow: hidden;
+                margin: 2px 2px 2px 2px !important;
+                text-align: center !important;
+            }
+
+            /* 4 колонки - еще меньше */
+            .mobile-grid-col-4 .product-title,
+            @media (min-width: 590px) { .mobile-grid-col-0 .product-title } {
+                font-size: 0.6rem !important;
+                line-height: 1.1 !important;
+                height: 2.2em;
+                overflow: hidden;
+                margin: 2px 2px 2px 2px !important;
+                text-align: center !important;
+            }
+
+            /* Цены */
+            .mobile-grid-col-3 .product-price,
+            .mobile-grid-col-4 .product-price,
+            @media (min-width: 390px) { .mobile-grid-col-0 .product-price } {
+                font-size: 0.75rem !important;
+                margin: 0 2px 2px 2px !important;
+                text-align: center !important;
+                font-weight: bold !important;
+                display: block !important;
+            }
+
+            /* Скрываем бейджи рейтинга в плотных сетках */
+            .mobile-grid-col-3 .product-rank-badge,
+            .mobile-grid-col-4 .product-rank-badge,
+            .mobile-grid-col-3 .product-similarity-badge,
+            .mobile-grid-col-4 .product-similarity-badge {
+                display: none !important;
+            }
+
+            /* 5. СЕРДЕЧКО (ИЗБРАННОЕ) - 22px */
+            .fav-btn {
+                width: 22px !important;
+                height: 22px !important;
+                top: 4px !important;
+                right: 4px !important;
+                background: rgba(255,255,255,0.9) !important;
+                padding: 0 !important;
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.15) !important;
+            }
+            .fav-btn svg {
+                width: 12px !important;
+                height: 12px !important;
+                stroke-width: 2 !important;
+                margin: 0 !important;
+                display: block !important;
             }
         }
     </style>
 
     <!-- ===================================================================== -->
-    <!-- БЛОК СТИЛЕЙ ДЛЯ МОБИЛЬНОГО МЕНЮ (КНОПКИ В ШАПКЕ) -->
+    <!-- БЛОК 2: БЕЙДЖИ (КРУЖОЧКИ) -->
     <!-- ===================================================================== -->
     <style>
-
-    /* --- СТИЛЬ ДЛЯ КРАСНОГО БЕЙДЖА (КОРЗИНА И ИЗБРАННОЕ) --- */
-    .cart-badge {
-        position: absolute;
-
-        /* РАЗМЕР */
-        width: 15px;
-        height: 15px;
-        font-size: 9px;
-
-        /* ЦВЕТ (Акцентный цвет сайта) */
-        background-color: var(--button-bg-color, #e53935);
-        color: var(--button-text-color, #fff);
-
-        /* ПОЗИЦИЯ (В углу иконки) */
-        top: -5px;
-        right: -8px;
-
-        /* ОФОРМЛЕНИЕ */
-        border-radius: 50%;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-        pointer-events: none;
-    }
-
-    .cart-badge.hidden {
-        display: none;
-    }
-
-
-        .mobile-dropdown-content {
-            font-family: var(--font-{{ site_settings.mobile_dropdown_font_family|default:site_settings.default_font_family|default:'roboto' }});
-            font-size: {{ site_settings.mobile_dropdown_font_size|default:site_settings.default_font_size|default:16 }}px;
-            color: {{ site_settings.mobile_dropdown_font_color|default:'var(--default-text-color)' }};
-            font-weight: var(--mobile-dropdown-font-weight);
-            font-style: var(--mobile-dropdown-font-style);
+        .icon-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
         }
 
-        .mobile-dropdown-content a:not(.btn):not(.btn-secondary):not(.category-link-item),
-        .mobile-menu-mode-text .category-link-item {
-             color: {{ site_settings.mobile_dropdown_font_color|default:'var(--default-text-color)' }} !important;
-             text-decoration: none;
+        .cart-badge {
+            position: absolute;
+            background-color: var(--button-bg-color, #e53935);
+            color: var(--button-text-color, #fff);
+            border-radius: 50%;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            pointer-events: none;
+            border: 1px solid #fff;
         }
 
-        .mobile-dropdown-content button,
-        .mobile-dropdown-content .btn,
-        .mobile-menu-mode-buttons .category-link-item {
-            --button-bg-color: var(--mobile-btn-bg-color);
-            --button-text-color: var(--mobile-btn-text-color);
-            --button-border-radius: var(--mobile-btn-radius);
-            color: var(--mobile-btn-text-color) !important;
+        /* Десктоп */
+        .fav-btn { width: 28px; height: 28px; top: 8px; right: 8px; }
+        .fav-btn svg { width: 16px; height: 16px; }
 
-            display: block; width: 100%; box-sizing: border-box;
-            margin-bottom: 8px; text-align: center; padding: 10px;
-            text-decoration: none; cursor: pointer;
+        @media (min-width: 993px) {
+            .cart-badge { width: 16px; height: 16px; font-size: 10px; top: -8px; right: -8px; }
         }
 
-        {% if site_settings.mobile_dropdown_button_bg_color or site_settings.mobile_dropdown_button_text_color %}
-            .mobile-dropdown-content button,
-            .mobile-dropdown-content .btn,
-            .mobile-menu-mode-buttons .category-link-item {
-                background: var(--mobile-btn-bg-color) !important;
-                background-image: none !important;
-                color: var(--mobile-btn-text-color) !important;
-                border: none !important;
-                box-shadow: none !important;
-                text-shadow: none !important;
-            }
-            .mobile-dropdown-content button::before, .mobile-dropdown-content button::after,
-            .mobile-dropdown-content .btn::before, .mobile-dropdown-content .btn::after,
-            .mobile-menu-mode-buttons .category-link-item::before, .mobile-menu-mode-buttons .category-link-item::after {
-                display: none !important;
-            }
-        {% endif %}
-
-        {% if site_settings.mobile_button_override_global %}
+        /* Мобайл */
         @media (max-width: 992px) {
-            .btn, button, input[type="submit"], a.btn, .add-to-cart-btn-small {
-                --button-bg-color: var(--mobile-btn-bg-color);
-                --button-text-color: var(--mobile-btn-text-color);
-                --button-border-radius: var(--mobile-btn-radius);
-            }
-
-            {% if site_settings.mobile_dropdown_button_bg_color or site_settings.mobile_dropdown_button_text_color %}
-            .btn, button, input[type="submit"], a.btn, .add-to-cart-btn-small {
-                background: var(--mobile-btn-bg-color) !important;
-                background-image: none !important;
-                color: var(--mobile-btn-text-color) !important;
-                border: none !important;
-                box-shadow: none !important;
-                text-shadow: none !important;
-                transform: none !important;
-            }
-            .btn::before, .btn::after,
-            button::before, button::after,
-            input[type="submit"]::before, input[type="submit"]::after,
-            a.btn::before, a.btn::after,
-            .add-to-cart-btn-small::before, .add-to-cart-btn-small::after {
-                 display: none !important;
-            }
-            .btn:hover, button:hover, input[type="submit"]:hover, a.btn:hover, .add-to-cart-btn-small:hover {
-                filter: brightness(90%);
-                transform: none !important;
-            }
-            {% endif %}
+            .cart-badge { width: 12px; height: 12px; font-size: 8px; top: -2px; right: -4px; }
         }
-        {% endif %}
+
+        .cart-badge.hidden { display: none; }
+
+        .mobile-dropdown-content { font-family: var(--font-{{ site_settings.mobile_dropdown_font_family|default:'roboto' }}); }
+        .mobile-dropdown-content .btn { background: var(--mobile-btn-bg-color) !important; color: var(--mobile-btn-text-color) !important; }
     </style>
 </head>
 
 <body class="nav-style-{{ site_settings.navigation_style }}
              icon-anim-{{ site_settings.icon_animation_style|default:'scale' }}
-             btn-preset-{{ site_settings.button_style_preset|default:'standard' }}
-             mobile-view-adaptive
              mobile-grid-col-{{ site_settings.mobile_product_grid }}
-             mobile-header-{{ site_settings.mobile_header_style }}
-             desktop-header-{{ site_settings.desktop_header_behavior }}
-             mobile-header-{{ site_settings.mobile_header_behavior }}">
+             mobile-header-{{ site_settings.mobile_header_style }}">
 
 <div class="site-wrapper">
     <header class="header" id="site-header">
         <div class="header-content">
+
+            <!-- ЛОГОТИП -->
             <div class="logo">
                 <a href="{% url 'shop:home' %}" style="font-size: var(--logo-font-size); color: var(--logo-color); font-family: var(--logo-font-family);">
                     <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="На главную"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
@@ -333,6 +417,7 @@
                 </a>
             </div>
 
+            <!-- ДЕСКТОПНАЯ НАВИГАЦИЯ -->
             <div class="desktop-nav">
                 <form class="search-form-desktop" action="{% url 'shop:search_results' %}" method="get">
                     <input type="text" name="q" placeholder="Поиск по товарам...">
@@ -344,45 +429,42 @@
                         <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: inline;">{% csrf_token %}<a href="#" onclick="document.getElementById('logout-form').submit(); return false;" class="user-nav-link"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg><span class="user-nav-text full-text">Выйти</span></a></form>
                     {% else %}
                         <a href="{% url 'login' %}" class="user-nav-link"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg><span class="user-nav-text full-text">Войти</span></a>
-                        <a href="{% url 'users:register' %}" class="user-nav-link"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="17" y1="11" x2="23" y2="11"></line></svg><span class="user-nav-text full-text">Регистрация</span></a>
                     {% endif %}
 
-                    <!-- ИЗБРАННОЕ (ДЕСКТОП) -->
-                    <a href="{% url 'favorites:list' %}" class="user-nav-link favorites-link" style="position: relative;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                    <!-- Избранное -->
+                    <a href="{% url 'favorites:list' %}" class="user-nav-link favorites-link">
+                        <div class="icon-wrapper">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                            <span class="cart-badge fav-badge {% if favorites|length == 0 %}hidden{% endif %}" id="fav-badge-desktop" style="display: {% if favorites|length == 0 %}none{% else %}flex{% endif %};">{{ favorites|length }}</span>
+                        </div>
                         <span class="user-nav-text full-text">Избранное</span>
-                        <!-- Бейдж избранного -->
-                        <span class="cart-badge fav-badge {% if favorites|length == 0 %}hidden{% endif %}" id="fav-badge-desktop" style="display: {% if favorites|length == 0 %}none{% else %}flex{% endif %};">
-                            {{ favorites|length }}
-                        </span>
                     </a>
 
-                    <!-- КОРЗИНА (ДЕСКТОП) -->
+                    <!-- Корзина -->
                     <div class="cart">
-                        <a href="{% url 'cart:cart_detail' %}" class="user-nav-link" style="position: relative;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                        <a href="{% url 'cart:cart_detail' %}" class="user-nav-link">
+                            <div class="icon-wrapper">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                                <span class="cart-badge" style="display: {% if cart|length > 0 %}flex{% else %}none{% endif %};">{{ cart|length }}</span>
+                            </div>
+                            <!-- ТОЛЬКО СУММА -->
                             {% if cart %}
-                                <span class="user-nav-text full-text">{{ cart|length }} на {{ cart.get_total_price }} руб.</span>
+                                <span class="user-nav-text full-text">{{ cart.get_total_price }} руб.</span>
                             {% else %}
                                 <span class="user-nav-text full-text">Корзина</span>
-                            {% endif %}
-
-                            <!-- Бейдж корзины для десктопа (если вдруг нужен) -->
-                            {% if cart and cart|length > 0 %}
-                            <span class="cart-badge" style="display: flex;">{{ cart|length }}</span>
                             {% endif %}
                         </a>
                     </div>
                 </nav>
             </div>
 
+            <!-- МОБИЛЬНАЯ НАВИГАЦИЯ -->
             <div class="mobile-nav-container">
                 <nav class="user-navigation-mobile">
                     <a href="#" class="user-nav-link" id="search-toggle"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><span class="user-nav-text partial-text">Поиск</span></a>
 
-                    <!-- ИЗБРАННОЕ (МОБИЛЬНОЕ) -->
-                    <a href="{% url 'favorites:list' %}" class="user-nav-link" style="position: relative;">
-                        <div style="position: relative; display: inline-block;">
+                    <a href="{% url 'favorites:list' %}" class="user-nav-link">
+                        <div class="icon-wrapper">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                             <span class="cart-badge fav-badge {% if favorites|length == 0 %}hidden{% endif %}" style="display: {% if favorites|length == 0 %}none{% else %}flex{% endif %};">
                                 {{ favorites|length }}
@@ -393,11 +475,9 @@
 
                     <a href="#" class="user-nav-link" id="cabinet-toggle"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span class="user-nav-text partial-text">Кабинет</span></a>
 
-                    <!-- КОРЗИНА (МОБИЛЬНОЕ) -->
                     <a href="#" class="user-nav-link" id="cart-toggle">
-                        <div style="position: relative; display: inline-block;">
+                        <div class="icon-wrapper">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-                            <!-- БЕЙДЖ С ЦИФРОЙ -->
                             <span class="cart-badge" id="mobile-cart-badge" {% if not cart or cart|length == 0 %}style="display: none;"{% endif %}>
                                 {{ cart|length }}
                             </span>
@@ -411,44 +491,39 @@
                 </nav>
                 <!-- ... (Остальная часть меню) ... -->
                 <div class="mobile-dropdown-panel" id="mobile-panel">
-                    <div class="mobile-dropdown-content" style="background: rgba({{ site_settings.mobile_dropdown_bg_rgb|default:'255, 255, 255' }}, {{ site_settings.mobile_dropdown_opacity_css|default:'0.95' }}); {% if site_settings.mobile_dropdown_opacity > 0 %}box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #eee;{% endif %}">
-                        <div class="search-form-mobile-wrapper" id="search-wrapper"><form class="search-form-mobile" action="{% url 'shop:search_results' %}" method="get"><input type="text" name="q" placeholder="Поиск по товарам..."><button type="submit" class="btn-primary">Найти</button></form></div>
+                    <div class="mobile-dropdown-content" style="background: rgba({{ site_settings.mobile_dropdown_bg_rgb|default:'255, 255, 255' }}, {{ site_settings.mobile_dropdown_opacity_css|default:'0.95' }});">
+                        <div class="search-form-mobile-wrapper" id="search-wrapper"><form class="search-form-mobile" action="{% url 'shop:search_results' %}" method="get"><input type="text" name="q" placeholder="Поиск..."><button type="submit" class="btn-primary">Найти</button></form></div>
 
                         <div class="category-nav-mobile-wrapper" id="category-wrapper">
                             <div class="category-nav-mobile {% if site_settings.mobile_dropdown_view_mode == 'buttons' %}mobile-menu-mode-buttons{% else %}mobile-menu-mode-text{% endif %}">
                                 <a href="{% url 'shop:product_list_all' %}" class="category-link-item">{{ site_settings.all_products_text|default:'Все товары' }}</a>
-                                {% for c in categories %}
-                                    <a href="{{ c.get_absolute_url }}" class="category-link-item">{{ c.name }}</a>
-                                {% endfor %}
+                                {% for c in categories %}<a href="{{ c.get_absolute_url }}" class="category-link-item">{{ c.name }}</a>{% endfor %}
                             </div>
                         </div>
 
                         <div class="user-nav-mobile-wrapper" id="cabinet-wrapper">
-                            <nav class="user-nav-mobile {% if site_settings.mobile_dropdown_view_mode == 'buttons' %}mobile-menu-mode-buttons{% else %}mobile-menu-mode-text{% endif %}">
+                            <nav class="user-nav-mobile">
                                 {% if user.is_authenticated %}
-                                    <p class="user-greeting">Здравствуйте, {{ user.first_name|default:user.username }}!</p>
-                                    <a href="{% url 'shop:cabinet' %}" class="{% if site_settings.mobile_dropdown_view_mode == 'buttons' %}btn{% endif %}">Личный кабинет</a>
-                                    <form id="logout-form-mobile" action="{% url 'logout' %}" method="post" style="display: contents;">
-                                        {% csrf_token %}
-                                        <a href="#" onclick="document.getElementById('logout-form-mobile').submit(); return false;" class="{% if site_settings.mobile_dropdown_view_mode == 'buttons' %}btn btn-secondary{% endif %}">Выйти</a>
-                                    </form>
+                                    <p class="user-greeting">Привет, {{ user.first_name|default:user.username }}!</p>
+                                    <a href="{% url 'shop:cabinet' %}" class="btn">Личный кабинет</a>
+                                    <form id="logout-form-mobile" action="{% url 'logout' %}" method="post"><a href="#" onclick="document.getElementById('logout-form-mobile').submit(); return false;" class="btn btn-secondary">Выйти</a></form>
                                 {% else %}
-                                    <a href="{% url 'login' %}" class="{% if site_settings.mobile_dropdown_view_mode == 'buttons' %}btn{% endif %}">Войти</a>
-                                    <a href="{% url 'users:register' %}" class="{% if site_settings.mobile_dropdown_view_mode == 'buttons' %}btn btn-secondary{% endif %}">Регистрация</a>
+                                    <a href="{% url 'login' %}" class="btn">Войти</a>
+                                    <a href="{% url 'users:register' %}" class="btn btn-secondary">Регистрация</a>
                                 {% endif %}
                             </nav>
                         </div>
 
                         <div class="cart-nav-mobile-wrapper" id="cart-wrapper">
-                            <div class="cart-summary-mobile {% if site_settings.mobile_dropdown_view_mode == 'buttons' %}mobile-menu-mode-buttons{% else %}mobile-menu-mode-text{% endif %}">
+                            <div class="cart-summary-mobile">
                                 {% if cart %}
-                                    <p>Товаров в корзине: <strong>{{ cart|length }}</strong></p>
-                                    <p>На сумму: <strong>{{ cart.get_total_price }} руб.</strong></p>
-                                    <a href="{% url 'cart:cart_detail' %}" class="{% if site_settings.mobile_dropdown_view_mode == 'buttons' %}btn btn-secondary{% endif %}">Перейти в корзину</a>
-                                    <a href="{% url 'orders:order_create' %}" class="{% if site_settings.mobile_dropdown_view_mode == 'buttons' %}btn{% endif %}">Оформить заказ</a>
+                                    <p>Товаров: <strong>{{ cart|length }}</strong></p>
+                                    <p>Сумма: <strong>{{ cart.get_total_price }} руб.</strong></p>
+                                    <a href="{% url 'cart:cart_detail' %}" class="btn btn-secondary" style="width:100%; margin-bottom:8px;">В корзину</a>
+                                    <a href="{% url 'orders:order_create' %}" class="btn" style="width:100%;">Оформить заказ</a>
                                 {% else %}
-                                    <p>Ваша корзина пуста</p>
-                                    <a href="{% url 'shop:product_list_all' %}" class="{% if site_settings.mobile_dropdown_view_mode == 'buttons' %}btn{% endif %}">К покупкам</a>
+                                    <p>Корзина пуста</p>
+                                    <a href="{% url 'shop:product_list_all' %}" class="btn">К покупкам</a>
                                 {% endif %}
                             </div>
                         </div>
@@ -541,62 +616,54 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 </script>
 
-
-
-
 <!-- AJAX Script -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Ищем формы добавления в корзину
         const cartForms = document.querySelectorAll('.add-to-cart-form, .add-to-cart-form-detail');
 
         cartForms.forEach(form => {
             form.addEventListener('submit', function(e) {
-                e.preventDefault(); // Останавливаем перезагрузку
-
+                e.preventDefault();
                 const btn = this.querySelector('button[type="submit"]');
-
-                // Сохраняем оригинальный контент кнопки, чтобы потом вернуть (если нужно)
-                // Но у нас CSS классы, так что это для страховки
-                const originalContent = btn.innerHTML;
 
                 fetch(this.action, {
                     method: 'POST',
                     body: new FormData(this),
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+
                         // === 1. ОБНОВЛЕНИЕ ДЕСКТОПНОЙ ШАПКИ ===
                         const desktopCartText = document.querySelector('.cart .user-nav-text');
                         if (desktopCartText) {
-                            desktopCartText.innerText = data.cart_len + ' на ' + data.total_price + ' руб.';
+                            desktopCartText.innerText = data.total_price + ' руб.';
                         }
 
-                        // === 2. ОБНОВЛЕНИЕ МОБИЛЬНОГО БЕЙДЖА И ТЕКСТА ===
+                        // === 2. ОБНОВЛЕНИЕ ВСЕХ БЕЙДЖЕЙ КОРЗИНЫ ===
+                        const cartBadges = document.querySelectorAll('.cart-badge:not(.fav-badge)');
+
+                        cartBadges.forEach(badge => {
+                            if (data.cart_len > 0) {
+                                badge.innerText = data.cart_len;
+                                badge.style.display = 'flex';
+                                badge.classList.remove('hidden');
+                            } else {
+                                badge.style.display = 'none';
+                                badge.classList.add('hidden');
+                            }
+                        });
+
+                        // === 3. ОБНОВЛЕНИЕ МОБИЛЬНОГО ТЕКСТА ===
                         const mobileCartText = document.querySelector('#cart-toggle .user-nav-text');
                         if (mobileCartText) {
-                            mobileCartText.innerText = 'Корзина'; // Можно оставить просто текст, так как есть цифра сверху
+                            mobileCartText.innerText = 'Корзина';
                         }
 
-                        // Обновляем кружочек
-                        const badge = document.getElementById('mobile-cart-badge');
-                        if (badge) {
-                                if (data.cart_len > 0) {
-                                badge.style.display = 'flex'; // Показываем
-                                badge.innerText = data.cart_len; // Обновляем цифру
-                            } else {
-                                badge.style.display = 'none'; // Скрываем, если 0
-                            }
-                        }
-
-                        // === 3. ОБНОВЛЕНИЕ МОБИЛЬНОГО ВЫПАДАЮЩЕГО МЕНЮ ===
+                        // === 4. ОБНОВЛЕНИЕ МОБИЛЬНОГО ВЫПАДАЮЩЕГО МЕНЮ ===
                         const mobileSummary = document.querySelector('.cart-summary-mobile');
                         if (mobileSummary) {
-                            // Переписываем содержимое блока итогов
                             mobileSummary.innerHTML = `
                                 <p>Товаров в корзине: <strong>${data.cart_len}</strong></p>
                                 <p>На сумму: <strong>${data.total_price} руб.</strong></p>
@@ -605,10 +672,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             `;
                         }
 
-                        // === 4. АНИМАЦИЯ КНОПКИ ===
+                        // === 5. АНИМАЦИЯ КНОПКИ ===
                         btn.classList.add('added');
-
-                        // Через 2 секунды убираем класс "added", чтобы галочка исчезла
                         setTimeout(() => {
                             btn.classList.remove('added');
                         }, 2000);
@@ -622,8 +687,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
     function toggleFavorite(btn, event) {
-        event.preventDefault(); // Не переходить по ссылке карточки
-        event.stopPropagation(); // Не всплывать событие
+        event.preventDefault();
+        event.stopPropagation();
 
         const productId = btn.getAttribute('data-id');
         const url = "{% url 'favorites:toggle' %}";
@@ -640,25 +705,24 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // 1. Меням вид кнопки (красное/белое)
+                // 1. Меняем вид кнопки
                 if (data.added) {
                     btn.classList.add('active');
                 } else {
                     btn.classList.remove('active');
-                    // Если мы на странице избранного - удаляем карточку
                     if (window.location.href.includes('favorites')) {
                        btn.closest('.product-card').remove();
-                       if (data.count === 0) location.reload(); // Обновить если пусто
+                       if (data.count === 0) location.reload();
                     }
                 }
 
-                // 2. Обновляем счетчик в шапке
+                // 2. Обновляем счетчик Избранного
                 const badges = document.querySelectorAll('.fav-badge');
                 badges.forEach(badge => {
                     badge.innerText = data.count;
                     if (data.count > 0) {
                         badge.classList.remove('hidden');
-                        badge.style.display = 'flex'; // Принудительно показываем
+                        badge.style.display = 'flex';
                     } else {
                         badge.classList.add('hidden');
                         badge.style.display = 'none';
@@ -669,7 +733,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => console.error('Error:', error));
     }
 </script>
-
 
 {% block extra_scripts %}{% endblock %}
 </body>
