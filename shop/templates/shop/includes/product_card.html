@@ -5,7 +5,7 @@
         <div class="product-image-wrapper">
             <img src="{% if product.image_thumbnail %}{{ product.image_thumbnail.url }}{% else %}{% static 'shop/img/no_image.png' %}{% endif %}" alt="{{ product.name }}" class="product-image">
 
-            <!-- КНОПКА ИЗБРАННОГО (Чистая, стили берутся из main.css) -->
+            <!-- КНОПКА ИЗБРАННОГО -->
             <button class="fav-btn {% if product.id in favorites.favorites %}active{% endif %}"
                     data-id="{{ product.id }}"
                     onclick="toggleFavorite(this, event)">
@@ -35,18 +35,25 @@
         </div>
     </a>
 
-    <div style="padding: 0 15px 15px 15px;">
-        <form action="{% url 'cart:cart_add' product.id %}" method="post" class="add-to-cart-form">
-            {% csrf_token %}
-            <input type="hidden" name="quantity" value="1">
-            <input type="hidden" name="update" value="False">
+    <!-- Блок действий (Кнопка) -->
+    <form action="{% url 'cart:cart_add' product.id %}" method="post" class="add-to-cart-form">
+        {% csrf_token %}
+        <input type="hidden" name="quantity" value="1">
+        <input type="hidden" name="update" value="False">
 
-            <button type="submit" class="add-to-cart-btn-new" style="width: 100%; min-height: 40px; padding: 8px 0; font-size: 0.9em; white-space: nowrap;">
-                <span class="btn-text">В корзину</span>
+        <button type="submit" class="add-to-cart-btn-new">
+            <!-- 1. Обычное состояние (Видно сразу) -->
+            <span class="btn-content-normal">
                 <span class="btn-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
                 </span>
-            </button>
-        </form>
-    </div>
+                <span class="btn-text">В корзину</span>
+            </span>
+
+            <!-- 2. Состояние успеха (СКРЫТО CSS-ом по умолчанию) -->
+            <span class="btn-content-success">
+                <span>OK</span>
+            </span>
+        </button>
+    </form>
 </div>

@@ -4,7 +4,6 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <!-- Адаптивность -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{% block title %}{{ site_settings.shop_name|default:'MegaCvet' }}{% endblock %}</title>
 
@@ -16,34 +15,44 @@
     <!-- Слайдер -->
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
 
-    <!-- Основной CSS (Версия 40 - Фикс высоты (-8px) и скрытие ОК на десктопе) -->
-    <link rel="stylesheet" href="{% static 'shop/css/main.css' %}?v=2024_FINAL_40">
+    <!-- Основной CSS (Версия 24 - Финальная настройка 3-х колонок) -->
+    <link rel="stylesheet" href="{% static 'shop/css/main.css' %}?v=2024_FINAL_24">
 
+    <!-- ===================================================================== -->
+    <!-- БЛОК 1: ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ (SiteSettings) -->
+    <!-- ===================================================================== -->
     <style>
         /* Глобальный сброс */
-        *, *::before, *::after { box-sizing: border-box; }
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
 
         :root {
             --font-roboto: 'Roboto', sans-serif;
             --font-montserrat: 'Montserrat', sans-serif;
 
+            /* Базовые настройки */
             --default-font-family: var(--font-{{ site_settings.default_font_family|default:'roboto' }});
             --default-font-size: {{ site_settings.default_font_size|default:16 }}px;
             --default-text-color: {{ site_settings.default_text_color|default:'#333333' }};
             --accent-color: {{ site_settings.accent_color|default:'#e53935' }};
 
+            /* Заголовки */
             --heading-font-family: var(--font-{{ site_settings.heading_font_family|default:'montserrat' }});
             --heading-font-size: {{ site_settings.heading_font_size|default:24 }}px;
             --heading-font-weight: {% if site_settings.heading_font_style == 'bold' %}bold{% else %}normal{% endif %};
             --heading-font-style: {% if site_settings.heading_font_style == 'italic' %}italic{% else %}normal{% endif %};
 
+            /* Логотип */
             --logo-font-family: var(--font-{{ site_settings.logo_font_family|default:site_settings.default_font_family|default:'roboto' }});
             --logo-font-size: {{ site_settings.logo_font_size|default:24 }}px;
             --logo-color: {{ site_settings.logo_color|default:'var(--default-text-color)' }};
 
+            /* Иконки */
             --icon-size: {{ site_settings.icon_size|default:22 }}px;
             --icon-color: {{ site_settings.icon_color|default:'currentColor' }};
 
+            /* Категории и Футер */
             --category-font-family: var(--font-{{ site_settings.category_font_family|default:site_settings.default_font_family|default:'roboto' }});
             --category-font-size: {{ site_settings.category_font_size|default:site_settings.default_font_size|default:16 }}px;
             --category-text-color: {{ site_settings.category_text_color|default:'var(--default-text-color)' }};
@@ -51,15 +60,18 @@
             --footer-font-family: var(--font-{{ site_settings.footer_font_family|default:site_settings.default_font_family|default:'roboto' }});
             --footer-text-color: {{ site_settings.footer_text_color|default:'#555555' }};
 
+            /* Кнопки (Десктоп) */
             --button-bg-color: {{ site_settings.button_bg_color|default:'var(--accent-color)' }};
             --button-text-color: {{ site_settings.button_text_color|default:'#FFFFFF' }};
             --button-hover-bg-color: {{ site_settings.button_hover_bg_color|default:'#333333' }};
             --button-border-radius: {{ site_settings.button_border_radius|default:5 }}px;
 
+            /* Фоны */
             --sheet-rgb: {{ site_settings.sheet_bg_rgb }};
             --sheet-alpha: {% if not site_settings.site_sheet_bg_color %}0{% else %}{{ site_settings.sheet_opacity_css }}{% endif %};
             --blur-sheet: {{ site_settings.site_sheet_blur|default:0 }}px;
 
+            /* Мобильное меню */
             --mobile-header-rgb: {{ site_settings.mobile_header_bg_rgb }};
             --mobile-header-alpha: {% if site_settings.mobile_header_bg_mode == 'transparent' %}0{% else %}0.98{% endif %};
             --mobile-btn-bg-color: rgba({{ site_settings.mobile_dropdown_button_bg_rgb }}, {{ site_settings.mobile_dropdown_button_opacity_css }});
@@ -70,54 +82,49 @@
             {% if site_settings.background_image %}
                 background-image: url('{{ site_settings.background_image.url }}');
             {% endif %}
-            overflow-x: hidden; width: 100%; position: relative;
+            overflow-x: hidden;
+            width: 100%;
+            position: relative;
         }
 
         .site-wrapper {
-            max-width: 1200px; margin: 20px auto;
+            max-width: 1200px;
+            margin: 20px auto;
             background-color: rgba(var(--sheet-rgb), var(--sheet-alpha));
             backdrop-filter: blur(var(--blur-sheet));
-            border-radius: 8px; padding: 20px 40px; min-height: 80vh;
+            border-radius: 8px;
+            padding: 20px 40px;
+            min-height: 80vh;
             box-shadow: 0 5px 25px rgba(0,0,0,0.1);
         }
 
+        /* Адаптация для планшетов/ноутбуков */
         @media (min-width: 993px) and (max-width: 1350px) {
             .user-nav-text.full-text { display: none !important; }
             .cart .user-nav-text.full-text { display: inline-block !important; font-size: 0.8rem !important; }
             .desktop-nav { gap: 10px !important; }
         }
 
-        /* --- ГЛОБАЛЬНЫЕ СТИЛИ КНОПКИ (ДЕСКТОП + БАЗА) --- */
-        .product-card { padding: 0 !important; border-radius: 8px !important; overflow: hidden !important; border: 1px solid #eaeaea !important; background: #fff; }
-        .product-image-wrapper { margin: 0 !important; width: 100% !important; border-radius: 0 !important; }
-        .product-card-link { padding: 0 !important; }
-        .product-title, .product-footer { padding: 0 10px !important; }
-        .product-title { margin-top: 10px !important; margin-bottom: 5px !important; }
-        .product-footer { padding-bottom: 10px !important; }
-        .product-card-actions, .add-to-cart-form { padding: 0 !important; margin: 0 10px 10px 10px !important; }
-        .add-to-cart-btn-new { width: 100% !important; border-radius: 4px !important; white-space: nowrap !important; }
-
-        /* [ВАЖНО] Скрываем "ОК" по умолчанию ВЕЗДЕ (и на десктопе) */
-        .add-to-cart-btn-new .btn-content-success { display: none !important; }
-        .add-to-cart-btn-new .btn-content-normal { display: flex !important; align-items: center; justify-content: center; }
-
-        /* Показываем "ОК" только при классе .added */
-        .add-to-cart-btn-new.added .btn-content-normal { display: none !important; }
-        .add-to-cart-btn-new.added .btn-content-success { display: flex !important; justify-content: center; align-items: center; }
-
-
         /* ============================================================ */
-        /* === МОБИЛЬНАЯ ВЕРСИЯ === */
+        /* === ГЛАВНЫЙ МОБИЛЬНЫЙ БЛОК (МЕНЮ + СЕТКА ТОВАРОВ) === */
         /* ============================================================ */
         @media (max-width: 992px) {
-            .site-wrapper { margin: 10px; width: auto; max-width: calc(100% - 20px); padding: 10px; }
+            /* 1. ОБЩИЕ НАСТРОЙКИ */
+            .site-wrapper {
+                margin: 10px;
+                width: auto;
+                max-width: calc(100% - 20px);
+                padding: 10px;
+            }
             .header { background-color: rgba(var(--mobile-header-rgb), var(--mobile-header-alpha)) !important; }
 
+            /* 2. ШАПКА И ИКОНКИ */
             .logo a { font-size: calc(var(--logo-font-size) * 0.85) !important; }
             .logo a .logo-icon { width: calc(var(--icon-size) * 0.85) !important; height: calc(var(--icon-size) * 0.85) !important; }
             .user-nav-link svg { width: calc(var(--icon-size) * 0.85) !important; height: calc(var(--icon-size) * 0.85) !important; }
             .user-nav-text { font-size: 0.7rem !important; }
 
+            /* 3. ПОВЕДЕНИЕ ШАПКИ */
             body.mobile-header-sticky .header { position: sticky; top: 0; z-index: 1100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 0 !important; }
             body.mobile-header-sticky .header.is-scrolled {
                 {% if site_settings.mobile_header_transparent_scroll %}
@@ -126,11 +133,16 @@
                 {% endif %}
             }
 
+            /* 4. ЗАГОЛОВКИ */
             .responsive-title { font-size: calc(1.8rem * {{ site_settings.mobile_font_scale_css|default:'1' }}) !important; line-height: 1.3 !important; }
             h1 { font-size: calc(1.8rem * {{ site_settings.mobile_font_scale_css|default:'1' }}); }
             h2 { font-size: calc(1.5rem * {{ site_settings.mobile_font_scale_css|default:'1' }}); }
 
-            /* --- СЕТКА (GRID) --- */
+            /* ----------------------------------------------------------- */
+            /* --- [ФИНАЛ v24] АДАПТИВНАЯ СЕТКА И КНОПКИ --- */
+            /* ----------------------------------------------------------- */
+
+            /* 1. КОЛОНКИ (GRID) */
             @media (min-width: 590px) { .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 10px !important; } }
             @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 6px !important; } }
             @media (max-width: 389px) { .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; } }
@@ -140,150 +152,243 @@
             .mobile-grid-col-3 .product-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 5px !important; }
             .mobile-grid-col-4 .product-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 4px !important; }
 
-            /* --- КАРТОЧКА (ОТСТУПЫ) --- */
+            /* 2. КАРТОЧКА (ОТСТУПЫ) */
             .mobile-grid-col-0 .product-card,
             .mobile-grid-col-1 .product-card,
             .mobile-grid-col-2 .product-card,
             .mobile-grid-col-3 .product-card,
             .mobile-grid-col-4 .product-card {
-                padding: 1px !important; border-radius: 6px !important;
+                padding: 1px !important; /* Минимальная граница */
+                border-radius: 6px !important;
             }
 
-            .mobile-grid-col-0 .product-image-wrapper, .mobile-grid-col-1 .product-image-wrapper,
-            .mobile-grid-col-2 .product-image-wrapper, .mobile-grid-col-3 .product-image-wrapper,
+            .mobile-grid-col-0 .product-image-wrapper,
+            .mobile-grid-col-1 .product-image-wrapper,
+            .mobile-grid-col-2 .product-image-wrapper,
+            .mobile-grid-col-3 .product-image-wrapper,
             .mobile-grid-col-4 .product-image-wrapper {
-                margin: 0 !important; width: 100% !important; border-radius: 6px 6px 0 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                border-radius: 6px 6px 0 0 !important;
             }
 
-            .mobile-grid-col-0 .product-card-link, .mobile-grid-col-1 .product-card-link,
-            .mobile-grid-col-2 .product-card-link, .mobile-grid-col-3 .product-card-link,
+            .mobile-grid-col-0 .product-card-link,
+            .mobile-grid-col-1 .product-card-link,
+            .mobile-grid-col-2 .product-card-link,
+            .mobile-grid-col-3 .product-card-link,
             .mobile-grid-col-4 .product-card-link {
                  padding: 0 !important;
             }
-            .mobile-grid-col-0 .product-card-actions, .mobile-grid-col-1 .product-card-actions, .mobile-grid-col-2 .product-card-actions,
-            .mobile-grid-col-3 .product-card-actions, .mobile-grid-col-4 .product-card-actions {
-                 padding: 0 !important;
+
+            /* Отступ для блока кнопки */
+            /* Для 1 и 2 колонок - побольше */
+            .mobile-grid-col-0 .add-to-cart-form,
+            .mobile-grid-col-1 .add-to-cart-form,
+            .mobile-grid-col-2 .add-to-cart-form {
+                padding: 0 4px 4px 4px !important;
             }
 
-            /* --- ОТСТУПЫ БЛОКА КНОПКИ --- */
-            .mobile-grid-col-1 .add-to-cart-form, .mobile-grid-col-2 .add-to-cart-form {
-                padding: 0 4px 4px 4px !important; margin: 0 !important;
-            }
-            .mobile-grid-col-0 .add-to-cart-form, .mobile-grid-col-3 .add-to-cart-form, .mobile-grid-col-4 .add-to-cart-form {
-                padding: 0 !important; margin: 0 2px 2px 2px !important;
-            }
-
-            /* --- КНОПКИ --- */
-            .add-to-cart-btn-new {
-                 white-space: nowrap !important;
+            /* Для 3 и 4 колонок - убираем паддинг, чтобы кнопка растянулась на 100% */
+            .mobile-grid-col-3 .add-to-cart-form,
+            .mobile-grid-col-4 .add-to-cart-form {
+                padding: 0 !important;
+                margin-bottom: 2px !important;
             }
 
-            /* 1-2 Колонки */
-            .mobile-grid-col-1 .add-to-cart-btn-new, .mobile-grid-col-2 .add-to-cart-btn-new,
+            /* =========================================================== */
+            /* === [НАСТРОЙКА] КНОПКИ "В КОРЗИНУ" === */
+            /* =========================================================== */
+
+            /* --- ГРУППА А: Широкие (1 и 2 колонки) --- */
+            .mobile-grid-col-1 .add-to-cart-btn-new,
+            .mobile-grid-col-2 .add-to-cart-btn-new,
             @media (max-width: 389px) { .mobile-grid-col-0 .add-to-cart-btn-new } {
-                min-height: 38px !important; padding: 0 !important; font-size: 0.9rem !important;
-                display: flex !important; justify-content: center !important; align-items: center !important;
+                min-height: 38px !important;
+                padding: 8px 12px !important;
+                font-size: 0.9rem !important;
             }
 
-            /* 3 Колонки (ВЫСОТА УМЕНЬШЕНА ДО 24px - ЭТО НА 8px МЕНЬШЕ, ЧЕМ 32px) */
+            /* --- ГРУППА Б: 3 КОЛОНКИ (ВОТ ЗДЕСЬ ИСПРАВЛЕНИЕ) --- */
             .mobile-grid-col-3 .add-to-cart-btn-new,
             @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .add-to-cart-btn-new } {
-                width: 100% !important; margin: 0 !important;
-                /* Тонкая полоска */
-                min-height: 24px !important;
-                height: 24px !important;
-                max-height: 24px !important;
 
-                padding: 0 2px !important;
-                display: flex !important; justify-content: center !important; align-items: center !important;
-                border-radius: 4px !important;
-                overflow: hidden !important;
-            }
-
-            .mobile-grid-col-3 .add-to-cart-btn-new .btn-content-normal,
-            @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .add-to-cart-btn-new .btn-content-normal } {
-                display: flex !important;
-                flex-direction: row !important;
-                flex-wrap: nowrap !important;
-                align-items: center !important;
-                justify-content: center !important;
+                /* 100% ШИРИНА */
                 width: 100% !important;
+                margin: 0 !important;
+
+                /* ВЫСОТА */
+                min-height: 32px !important;
+                height: 32px !important;
+
+                /* ОТСТУПЫ ВНУТРИ (ЧТОБЫ ТЕКСТ НЕ ПРИЛИПАЛ К ГРАНЯМ) */
+                padding: 0 6px !important;
+
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                border-radius: 4px !important;
             }
 
-            /* Текст кнопки (3 колонки) - ОЧЕНЬ КОМПАКТНЫЙ */
+            /* ТЕКСТ (3 колонки) */
             .mobile-grid-col-3 .add-to-cart-btn-new .btn-text,
             .mobile-grid-col-3 .add-to-cart-btn-new .btn-content-success span,
             @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .btn-text, .mobile-grid-col-0 .btn-content-success span } {
                 display: inline-block !important;
-                font-size: 0.58rem !important;
+                font-size: 0.65rem !important;  /* ~10px */
                 white-space: nowrap !important;
-                line-height: 24px !important; /* Центрирование по новой высоте */
-                padding: 0 2px !important;
+                line-height: 1 !important;
             }
 
-            /* Иконка кнопки (3 колонки) */
+            /* ИКОНКА (3 колонки) */
             .mobile-grid-col-3 .add-to-cart-btn-new svg,
             @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .add-to-cart-btn-new svg } {
-                width: 10px !important; height: 10px !important; margin-right: 3px !important;
-                display: inline-block !important; flex-shrink: 0 !important; vertical-align: middle !important;
+                width: 12px !important;
+                height: 12px !important;
+                margin-right: 4px !important; /* Отступ от текста */
+                display: inline-block !important;
+                position: static !important;
+                opacity: 1 !important;
+                transform: none !important;
             }
 
-            /* 4 Колонки */
+            /* --- ГРУППА В: 4 КОЛОНКИ (Сжимаем сильнее) --- */
             .mobile-grid-col-4 .add-to-cart-btn-new,
             @media (min-width: 590px) { .mobile-grid-col-0 .add-to-cart-btn-new } {
                 width: 100% !important;
-                min-height: 22px !important; height: 22px !important; max-height: 22px !important;
-                padding: 0 !important; display: flex !important; justify-content: center !important; align-items: center !important;
-                border-radius: 3px !important; margin: 0 !important;
+                min-height: 26px !important;
+                height: 26px !important;
+                padding: 0 !important;
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                border-radius: 3px !important;
             }
-            .mobile-grid-col-4 .add-to-cart-btn-new .btn-text, .mobile-grid-col-4 .add-to-cart-btn-new .btn-content-success span,
-            @media (min-width: 590px) { .mobile-grid-col-0 .btn-text } { display: none !important; }
+            /* Текст (4 колонки) */
+            .mobile-grid-col-4 .add-to-cart-btn-new .btn-text,
+            .mobile-grid-col-4 .add-to-cart-btn-new .btn-content-success span,
+            @media (min-width: 590px) { .mobile-grid-col-0 .btn-text } {
+                display: inline-block !important;
+                font-size: 0.55rem !important;
+                white-space: nowrap !important;
+                line-height: 1 !important;
+                letter-spacing: -0.5px !important;
+            }
+             /* Иконка (4 колонки) */
             .mobile-grid-col-4 .add-to-cart-btn-new svg,
             @media (min-width: 590px) { .mobile-grid-col-0 .add-to-cart-btn-new svg } {
-                width: 12px !important; height: 12px !important; margin: 0 !important; display: block !important;
+                width: 10px !important;
+                height: 10px !important;
+                margin-right: 2px !important;
+                display: inline-block !important;
             }
 
-            /* Шрифты контента */
-            .mobile-grid-col-3 .product-title, .mobile-grid-col-4 .product-title,
+            /* 4. ШРИФТЫ КОНТЕНТА (Уменьшаем чтобы не давили) */
+
+            /* Название товара (3 колонки) */
+            .mobile-grid-col-3 .product-title,
             @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .product-title } {
-                font-size: 0.65rem !important; line-height: 1.1 !important; height: 2.2em; overflow: hidden; margin: 2px 4px !important; text-align: center !important;
+                font-size: 0.65rem !important; /* ~10px */
+                line-height: 1.1 !important;
+                height: 2.2em;
+                overflow: hidden;
+                margin: 2px 2px 2px 2px !important;
+                text-align: center !important;
+            }
+             /* Название товара (4 колонки) */
+            .mobile-grid-col-4 .product-title,
+            @media (min-width: 590px) { .mobile-grid-col-0 .product-title } {
+                font-size: 0.6rem !important;
+                line-height: 1.1 !important;
+                height: 2.2em;
+                overflow: hidden;
+                margin: 2px 2px 2px 2px !important;
+                text-align: center !important;
             }
 
-            .mobile-grid-col-3 .product-price, .mobile-grid-col-4 .product-price,
+            /* Цена (3 и 4 колонки) */
+            .mobile-grid-col-3 .product-price,
+            .mobile-grid-col-4 .product-price,
             @media (min-width: 390px) { .mobile-grid-col-0 .product-price } {
-                font-size: 0.75rem !important; margin: 0 4px 4px 4px !important; text-align: center !important; font-weight: bold !important; display: block !important;
+                font-size: 0.75rem !important;
+                margin: 0 2px 2px 2px !important;
+                text-align: center !important;
+                font-weight: bold !important;
+                display: block !important;
             }
 
-            .mobile-grid-col-3 .product-rank-badge, .mobile-grid-col-4 .product-rank-badge, .mobile-grid-col-3 .product-similarity-badge, .mobile-grid-col-4 .product-similarity-badge { display: none !important; }
+            /* Скрываем бейджи рейтинга в плотных сетках */
+            .mobile-grid-col-3 .product-rank-badge,
+            .mobile-grid-col-4 .product-rank-badge,
+            .mobile-grid-col-3 .product-similarity-badge,
+            .mobile-grid-col-4 .product-similarity-badge {
+                display: none !important;
+            }
 
-            /* Сердечко */
+            /* 5. СЕРДЕЧКО (ИЗБРАННОЕ) - 22px */
             .fav-btn {
-                width: 22px !important; height: 22px !important; top: 4px !important; right: 4px !important;
-                background: rgba(255,255,255,0.9) !important; padding: 0 !important;
-                display: flex !important; justify-content: center !important; align-items: center !important;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.15) !important; border-radius: 50% !important; position: absolute !important; z-index: 20 !important;
+                width: 22px !important;
+                height: 22px !important;
+                top: 4px !important;
+                right: 4px !important;
+                background: rgba(255,255,255,0.9) !important;
+                padding: 0 !important;
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.15) !important;
             }
-            .fav-btn svg { width: 12px !important; height: 12px !important; stroke-width: 2 !important; margin: 0 !important; display: block !important; }
+            .fav-btn svg {
+                width: 12px !important;
+                height: 12px !important;
+                stroke-width: 2 !important;
+                margin: 0 !important;
+                display: block !important;
+            }
         }
     </style>
 
-    <!-- Бейджи -->
+    <!-- ===================================================================== -->
+    <!-- БЛОК 2: БЕЙДЖИ (КРУЖОЧКИ) -->
+    <!-- ===================================================================== -->
     <style>
-        .icon-wrapper { position: relative; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; }
-        .cart-badge { position: absolute; background-color: var(--button-bg-color, #e53935); color: var(--button-text-color, #fff); border-radius: 50%; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 1px 2px rgba(0,0,0,0.2); pointer-events: none; border: 1px solid #fff; }
+        .icon-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+        }
+
+        .cart-badge {
+            position: absolute;
+            background-color: var(--button-bg-color, #e53935);
+            color: var(--button-text-color, #fff);
+            border-radius: 50%;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            pointer-events: none;
+            border: 1px solid #fff;
+        }
 
         /* Десктоп */
-        .fav-btn { width: 28px; height: 28px; top: 8px; right: 8px; background: rgba(255,255,255,0.9); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 5; position: absolute; }
+        .fav-btn { width: 28px; height: 28px; top: 8px; right: 8px; }
         .fav-btn svg { width: 16px; height: 16px; }
 
         @media (min-width: 993px) {
             .cart-badge { width: 16px; height: 16px; font-size: 10px; top: -8px; right: -8px; }
         }
+
+        /* Мобайл */
         @media (max-width: 992px) {
             .cart-badge { width: 12px; height: 12px; font-size: 8px; top: -2px; right: -4px; }
         }
 
         .cart-badge.hidden { display: none; }
+
         .mobile-dropdown-content { font-family: var(--font-{{ site_settings.mobile_dropdown_font_family|default:'roboto' }}); }
         .mobile-dropdown-content .btn { background: var(--mobile-btn-bg-color) !important; color: var(--mobile-btn-text-color) !important; }
     </style>
@@ -297,14 +402,21 @@
 <div class="site-wrapper">
     <header class="header" id="site-header">
         <div class="header-content">
+
+            <!-- ЛОГОТИП -->
             <div class="logo">
                 <a href="{% url 'shop:home' %}" style="font-size: var(--logo-font-size); color: var(--logo-color); font-family: var(--logo-font-family);">
                     <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="На главную"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                     <span class="logo-text">{{ site_settings.shop_name }}</span>
                 </a>
             </div>
+
+            <!-- ДЕСКТОПНАЯ НАВИГАЦИЯ -->
             <div class="desktop-nav">
-                <form class="search-form-desktop" action="{% url 'shop:search_results' %}" method="get"><input type="text" name="q" placeholder="Поиск по товарам..."><button type="submit" class="btn-primary">Найти</button></form>
+                <form class="search-form-desktop" action="{% url 'shop:search_results' %}" method="get">
+                    <input type="text" name="q" placeholder="Поиск по товарам...">
+                    <button type="submit" class="btn-primary">Найти</button>
+                </form>
                 <nav class="user-navigation">
                     {% if user.is_authenticated %}
                         <a href="{% url 'shop:cabinet' %}" class="user-nav-link"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span class="user-nav-text full-text">Кабинет ({{ user.first_name|default:user.username }})</span></a>
@@ -312,6 +424,8 @@
                     {% else %}
                         <a href="{% url 'login' %}" class="user-nav-link"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg><span class="user-nav-text full-text">Войти</span></a>
                     {% endif %}
+
+                    <!-- Избранное -->
                     <a href="{% url 'favorites:list' %}" class="user-nav-link favorites-link">
                         <div class="icon-wrapper">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
@@ -319,12 +433,15 @@
                         </div>
                         <span class="user-nav-text full-text">Избранное</span>
                     </a>
+
+                    <!-- Корзина -->
                     <div class="cart">
                         <a href="{% url 'cart:cart_detail' %}" class="user-nav-link">
                             <div class="icon-wrapper">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                                 <span class="cart-badge" style="display: {% if cart|length > 0 %}flex{% else %}none{% endif %};">{{ cart|length }}</span>
                             </div>
+                            <!-- ТОЛЬКО СУММА -->
                             {% if cart %}
                                 <span class="user-nav-text full-text">{{ cart.get_total_price }} руб.</span>
                             {% else %}
@@ -334,37 +451,50 @@
                     </div>
                 </nav>
             </div>
+
+            <!-- МОБИЛЬНАЯ НАВИГАЦИЯ -->
             <div class="mobile-nav-container">
                 <nav class="user-navigation-mobile">
                     <a href="#" class="user-nav-link" id="search-toggle"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><span class="user-nav-text partial-text">Поиск</span></a>
+
                     <a href="{% url 'favorites:list' %}" class="user-nav-link">
                         <div class="icon-wrapper">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                            <span class="cart-badge fav-badge {% if favorites|length == 0 %}hidden{% endif %}" style="display: {% if favorites|length == 0 %}none{% else %}flex{% endif %};">{{ favorites|length }}</span>
+                            <span class="cart-badge fav-badge {% if favorites|length == 0 %}hidden{% endif %}" style="display: {% if favorites|length == 0 %}none{% else %}flex{% endif %};">
+                                {{ favorites|length }}
+                            </span>
                         </div>
                         <span class="user-nav-text partial-text">Избранное</span>
                     </a>
+
                     <a href="#" class="user-nav-link" id="cabinet-toggle"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span class="user-nav-text partial-text">Кабинет</span></a>
+
                     <a href="#" class="user-nav-link" id="cart-toggle">
                         <div class="icon-wrapper">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-                            <span class="cart-badge" id="mobile-cart-badge" {% if not cart or cart|length == 0 %}style="display: none;"{% endif %}>{{ cart|length }}</span>
+                            <span class="cart-badge" id="mobile-cart-badge" {% if not cart or cart|length == 0 %}style="display: none;"{% endif %}>
+                                {{ cart|length }}
+                            </span>
                         </div>
                         <span class="user-nav-text partial-text">Корзина</span>
                     </a>
+
                     {% if site_settings.mobile_header_style != 'icons_plus_cat_full' %}
                     <a href="#" class="user-nav-link" id="category-toggle"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"></path></svg><span class="user-nav-text partial-text">Категории</span></a>
                     {% endif %}
                 </nav>
+                <!-- ... (Остальная часть меню) ... -->
                 <div class="mobile-dropdown-panel" id="mobile-panel">
                     <div class="mobile-dropdown-content" style="background: rgba({{ site_settings.mobile_dropdown_bg_rgb|default:'255, 255, 255' }}, {{ site_settings.mobile_dropdown_opacity_css|default:'0.95' }});">
                         <div class="search-form-mobile-wrapper" id="search-wrapper"><form class="search-form-mobile" action="{% url 'shop:search_results' %}" method="get"><input type="text" name="q" placeholder="Поиск..."><button type="submit" class="btn-primary">Найти</button></form></div>
+
                         <div class="category-nav-mobile-wrapper" id="category-wrapper">
                             <div class="category-nav-mobile {% if site_settings.mobile_dropdown_view_mode == 'buttons' %}mobile-menu-mode-buttons{% else %}mobile-menu-mode-text{% endif %}">
                                 <a href="{% url 'shop:product_list_all' %}" class="category-link-item">{{ site_settings.all_products_text|default:'Все товары' }}</a>
                                 {% for c in categories %}<a href="{{ c.get_absolute_url }}" class="category-link-item">{{ c.name }}</a>{% endfor %}
                             </div>
                         </div>
+
                         <div class="user-nav-mobile-wrapper" id="cabinet-wrapper">
                             <nav class="user-nav-mobile">
                                 {% if user.is_authenticated %}
@@ -377,6 +507,7 @@
                                 {% endif %}
                             </nav>
                         </div>
+
                         <div class="cart-nav-mobile-wrapper" id="cart-wrapper">
                             <div class="cart-summary-mobile">
                                 {% if cart %}
@@ -394,6 +525,7 @@
                 </div>
             </div>
         </div>
+
         {% if site_settings.mobile_header_style == 'icons_plus_cat_full' %}
             <nav class="category-nav-header">
                 <a href="{% url 'shop:product_list_all' %}" class="category-link-item">{{ site_settings.all_products_text|default:'Все товары' }}</a>
@@ -469,14 +601,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-<script> if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; window.addEventListener('load', function() { window.scrollTo(0, 0); }); </script>
+<script>
+    if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+    }
+    window.addEventListener('load', function() {
+        window.scrollTo(0, 0);
+    });
+</script>
+
+<!-- AJAX Script -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const cartForms = document.querySelectorAll('.add-to-cart-form, .add-to-cart-form-detail');
+
         cartForms.forEach(form => {
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const btn = this.querySelector('button[type="submit"]');
+
                 fetch(this.action, {
                     method: 'POST',
                     body: new FormData(this),
@@ -485,21 +628,49 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+
+                        // === 1. ОБНОВЛЕНИЕ ДЕСКТОПНОЙ ШАПКИ ===
                         const desktopCartText = document.querySelector('.cart .user-nav-text');
-                        if (desktopCartText) desktopCartText.innerText = data.total_price + ' руб.';
+                        if (desktopCartText) {
+                            desktopCartText.innerText = data.total_price + ' руб.';
+                        }
+
+                        // === 2. ОБНОВЛЕНИЕ ВСЕХ БЕЙДЖЕЙ КОРЗИНЫ ===
                         const cartBadges = document.querySelectorAll('.cart-badge:not(.fav-badge)');
+
                         cartBadges.forEach(badge => {
-                            if (data.cart_len > 0) { badge.innerText = data.cart_len; badge.style.display = 'flex'; badge.classList.remove('hidden'); }
-                            else { badge.style.display = 'none'; badge.classList.add('hidden'); }
+                            if (data.cart_len > 0) {
+                                badge.innerText = data.cart_len;
+                                badge.style.display = 'flex';
+                                badge.classList.remove('hidden');
+                            } else {
+                                badge.style.display = 'none';
+                                badge.classList.add('hidden');
+                            }
                         });
+
+                        // === 3. ОБНОВЛЕНИЕ МОБИЛЬНОГО ТЕКСТА ===
                         const mobileCartText = document.querySelector('#cart-toggle .user-nav-text');
-                        if (mobileCartText) mobileCartText.innerText = 'Корзина';
+                        if (mobileCartText) {
+                            mobileCartText.innerText = 'Корзина';
+                        }
+
+                        // === 4. ОБНОВЛЕНИЕ МОБИЛЬНОГО ВЫПАДАЮЩЕГО МЕНЮ ===
                         const mobileSummary = document.querySelector('.cart-summary-mobile');
                         if (mobileSummary) {
-                            mobileSummary.innerHTML = `<p>Товаров: <strong>${data.cart_len}</strong></p><p>Сумма: <strong>${data.total_price} руб.</strong></p><a href="{% url 'cart:cart_detail' %}" class="btn btn-secondary" style="width:100%; margin-bottom:8px;">В корзину</a><a href="{% url 'orders:order_create' %}" class="btn" style="width:100%;">Оформить заказ</a>`;
+                            mobileSummary.innerHTML = `
+                                <p>Товаров в корзине: <strong>${data.cart_len}</strong></p>
+                                <p>На сумму: <strong>${data.total_price} руб.</strong></p>
+                                <a href="{% url 'cart:cart_detail' %}" class="btn btn-secondary" style="width: 100%; box-sizing: border-box; text-align: center; display: block; margin-bottom: 8px;">Перейти в корзину</a>
+                                <a href="{% url 'orders:order_create' %}" class="btn" style="width: 100%; box-sizing: border-box; text-align: center; display: block;">Оформить заказ</a>
+                            `;
                         }
+
+                        // === 5. АНИМАЦИЯ КНОПКИ ===
                         btn.classList.add('added');
-                        setTimeout(() => { btn.classList.remove('added'); }, 2000);
+                        setTimeout(() => {
+                            btn.classList.remove('added');
+                        }, 2000);
                     }
                 })
                 .catch(error => console.error('Error:', error));
@@ -507,24 +678,49 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 </script>
+
 <script>
     function toggleFavorite(btn, event) {
-        event.preventDefault(); event.stopPropagation();
+        event.preventDefault();
+        event.stopPropagation();
+
         const productId = btn.getAttribute('data-id');
         const url = "{% url 'favorites:toggle' %}";
+
         fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest' },
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             body: `product_id=${productId}`
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                if (data.added) { btn.classList.add('active'); } else { btn.classList.remove('active'); if (window.location.href.includes('favorites')) { btn.closest('.product-card').remove(); if (data.count === 0) location.reload(); } }
+                // 1. Меняем вид кнопки
+                if (data.added) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                    if (window.location.href.includes('favorites')) {
+                       btn.closest('.product-card').remove();
+                       if (data.count === 0) location.reload();
+                    }
+                }
+
+                // 2. Обновляем счетчик Избранного
                 const badges = document.querySelectorAll('.fav-badge');
                 badges.forEach(badge => {
                     badge.innerText = data.count;
-                    if (data.count > 0) { badge.classList.remove('hidden'); badge.style.display = 'flex'; } else { badge.classList.add('hidden'); badge.style.display = 'none'; }
+                    if (data.count > 0) {
+                        badge.classList.remove('hidden');
+                        badge.style.display = 'flex';
+                    } else {
+                        badge.classList.add('hidden');
+                        badge.style.display = 'none';
+                    }
                 });
             }
         })
