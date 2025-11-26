@@ -16,8 +16,8 @@
     <!-- Слайдер -->
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
 
-    <!-- CSS v46 - Возвращены сердечки на десктоп -->
-    <link rel="stylesheet" href="{% static 'shop/css/main.css' %}?v=2024_FINAL_46">
+    <!-- Основной CSS (Версия 48 - Финальная, с исправлением корзины) -->
+    <link rel="stylesheet" href="{% static 'shop/css/main.css' %}?v=2024_FINAL_48">
 
     <!-- ===================================================================== -->
     <!-- БЛОК 1: ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ -->
@@ -162,11 +162,15 @@
             .mobile-grid-col-4 .product-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 4px !important; }
 
             /* --- КАРТОЧКА (ОТСТУПЫ) --- */
-            .mobile-grid-col-0 .product-card, .mobile-grid-col-1 .product-card, .mobile-grid-col-2 .product-card,
-            .mobile-grid-col-3 .product-card, .mobile-grid-col-4 .product-card {
+            .mobile-grid-col-0 .product-card,
+            .mobile-grid-col-1 .product-card,
+            .mobile-grid-col-2 .product-card,
+            .mobile-grid-col-3 .product-card,
+            .mobile-grid-col-4 .product-card {
                 padding: 1px !important; border-radius: 6px !important; border: 1px solid #eee !important; background: #fff;
             }
 
+            /* Фото */
             .mobile-grid-col-0 .product-image-wrapper, .mobile-grid-col-1 .product-image-wrapper,
             .mobile-grid-col-2 .product-image-wrapper, .mobile-grid-col-3 .product-image-wrapper,
             .mobile-grid-col-4 .product-image-wrapper {
@@ -191,37 +195,55 @@
             }
 
             /* --- КНОПКИ --- */
-            .add-to-cart-btn-new { white-space: nowrap !important; }
+            .add-to-cart-btn-new {
+                 white-space: nowrap !important;
+                 width: 100% !important;
+                 margin: 0 !important;
+                 border-radius: 4px !important;
+                 display: flex !important;
+                 justify-content: center !important;
+                 align-items: center !important;
+            }
 
-            /* 1-2 Колонки */
+            /* 1-2 Колонки (Стандарт) */
             .mobile-grid-col-1 .add-to-cart-btn-new, .mobile-grid-col-2 .add-to-cart-btn-new,
             @media (max-width: 389px) { .mobile-grid-col-0 .add-to-cart-btn-new } {
                 min-height: 38px !important; padding: 0 !important; font-size: 0.9rem !important;
                 display: flex !important; justify-content: center !important; align-items: center !important;
             }
 
-            /* 3 Колонки (ВЫСОТА 24px) */
+            /* 3 Колонки (НИЗКАЯ 24px) */
             .mobile-grid-col-3 .add-to-cart-btn-new,
             @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .add-to-cart-btn-new } {
                 width: 100% !important; margin: 0 !important;
-                min-height: 24px !important; height: 24px !important; max-height: 24px !important;
+                /* УМЕНЬШИЛ ДО 24px */
+                min-height: 24px !important;
+                height: 24px !important;
+                max-height: 24px !important;
+
                 padding: 0 2px !important;
                 display: flex !important; justify-content: center !important; align-items: center !important;
-                border-radius: 4px !important; overflow: hidden !important;
+                border-radius: 4px !important;
+                overflow: hidden !important;
             }
 
+            /* Контент кнопки */
             .mobile-grid-col-3 .add-to-cart-btn-new .btn-content-normal,
             @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .add-to-cart-btn-new .btn-content-normal } {
-                display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important;
-                align-items: center !important; justify-content: center !important; width: 100% !important;
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: 100% !important;
             }
 
-            /* Текст кнопки (3 колонки) */
+            /* Текст кнопки (3 колонки) - МИНИАТЮРНЫЙ */
             .mobile-grid-col-3 .add-to-cart-btn-new .btn-text,
             .mobile-grid-col-3 .add-to-cart-btn-new .btn-content-success span,
             @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .btn-text, .mobile-grid-col-0 .btn-content-success span } {
                 display: inline-block !important;
-                font-size: 0.58rem !important;
+                font-size: 0.58rem !important;  /* ~9px */
                 white-space: nowrap !important;
                 line-height: 24px !important;
                 padding: 0 2px !important;
@@ -234,7 +256,7 @@
                 display: inline-block !important; flex-shrink: 0 !important; vertical-align: middle !important;
             }
 
-            /* Галочка успеха (3 колонки) - скрываем текст, оставляем галочку */
+            /* Галочка успеха (3 колонки) - только иконка */
             .mobile-grid-col-3 .add-to-cart-btn-new.added .btn-content-success span,
             @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .add-to-cart-btn-new.added .btn-content-success span } {
                 display: none !important;
@@ -244,10 +266,11 @@
                 width: 14px !important; height: 14px !important; margin: 0 !important;
             }
 
-            /* 4 Колонки */
+            /* 4 Колонки (Экстра узко 22px) */
             .mobile-grid-col-4 .add-to-cart-btn-new,
             @media (min-width: 590px) { .mobile-grid-col-0 .add-to-cart-btn-new } {
-                width: 100% !important; min-height: 22px !important; height: 22px !important; max-height: 22px !important;
+                width: 100% !important;
+                min-height: 22px !important; height: 22px !important; max-height: 22px !important;
                 padding: 0 !important; display: flex !important; justify-content: center !important; align-items: center !important;
                 border-radius: 3px !important; margin: 0 !important;
             }
@@ -258,18 +281,20 @@
                 width: 12px !important; height: 12px !important; margin: 0 !important; display: block !important;
             }
 
-            /* Шрифты */
+            /* Шрифты контента */
             .mobile-grid-col-3 .product-title, .mobile-grid-col-4 .product-title,
             @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .product-title } {
                 font-size: 0.65rem !important; line-height: 1.1 !important; height: 2.2em; overflow: hidden; margin: 2px 4px !important; text-align: center !important;
             }
+
             .mobile-grid-col-3 .product-price, .mobile-grid-col-4 .product-price,
             @media (min-width: 390px) { .mobile-grid-col-0 .product-price } {
                 font-size: 0.75rem !important; margin: 0 4px 4px 4px !important; text-align: center !important; font-weight: bold !important; display: block !important;
             }
+
             .mobile-grid-col-3 .product-rank-badge, .mobile-grid-col-4 .product-rank-badge, .mobile-grid-col-3 .product-similarity-badge, .mobile-grid-col-4 .product-similarity-badge { display: none !important; }
 
-            /* Сердечко (Мобильное) */
+            /* Сердечко (22px) */
             .fav-btn {
                 width: 22px !important; height: 22px !important; top: 4px !important; right: 4px !important;
                 background: rgba(255,255,255,0.9) !important; padding: 0 !important;
@@ -278,6 +303,7 @@
             }
             .fav-btn svg { width: 12px !important; height: 12px !important; stroke-width: 2 !important; margin: 0 !important; display: block !important; }
 
+            /* Переключение */
             .add-to-cart-btn-new .btn-content-success { display: none !important; }
             .add-to-cart-btn-new .btn-content-normal { display: flex !important; }
             .add-to-cart-btn-new.added .btn-content-normal { display: none !important; }
@@ -286,27 +312,24 @@
     </style>
 
     <!-- ===================================================================== -->
-    <!-- БЛОК 2: БЕЙДЖИ И ДЕСКТОПНЫЕ СТИЛИ СЕРДЕЧКА -->
+    <!-- БЛОК 2: БЕЙДЖИ (КРУЖОЧКИ) -->
     <!-- ===================================================================== -->
     <style>
         .icon-wrapper { position: relative; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; }
         .cart-badge { position: absolute; background-color: var(--button-bg-color, #e53935); color: var(--button-text-color, #fff); border-radius: 50%; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 1px 2px rgba(0,0,0,0.2); pointer-events: none; border: 1px solid #fff; }
 
-        /* --- [ИСПРАВЛЕНО] ГЛОБАЛЬНЫЕ (ДЕСКТОПНЫЕ) СТИЛИ ДЛЯ СЕРДЕЧКА --- */
+        /* ГЛОБАЛЬНЫЙ (Десктоп) СТИЛЬ СЕРДЕЧКА */
         .fav-btn {
-            position: absolute; /* Обязательно */
+            position: absolute;
             top: 10px;
             right: 10px;
             z-index: 20;
-
             width: 32px;
             height: 32px;
-
             background: rgba(255, 255, 255, 0.9);
             border-radius: 50%;
             border: none;
             box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-
             display: flex;
             align-items: center;
             justify-content: center;
@@ -315,19 +338,8 @@
             transition: transform 0.2s;
         }
         .fav-btn:hover { transform: scale(1.1); }
-
-        .fav-btn svg {
-            width: 18px;
-            height: 18px;
-            fill: none;
-            stroke: #333;
-            stroke-width: 2;
-            display: block;
-        }
-        .fav-btn.active svg {
-            fill: #ff4081;
-            stroke: #ff4081;
-        }
+        .fav-btn svg { width: 18px; height: 18px; fill: none; stroke: #333; stroke-width: 2; display: block; }
+        .fav-btn.active svg { fill: #ff4081; stroke: #ff4081; }
 
         @media (min-width: 993px) {
             .cart-badge { width: 16px; height: 16px; font-size: 10px; top: -8px; right: -8px; }
@@ -342,7 +354,6 @@
     </style>
 </head>
 
-<!-- [ВОССТАНОВЛЕНО] Класс для настроек шапки -->
 <body class="nav-style-{{ site_settings.navigation_style }}
              icon-anim-{{ site_settings.icon_animation_style|default:'scale' }}
              mobile-grid-col-{{ site_settings.mobile_product_grid }}
@@ -352,12 +363,16 @@
 <div class="site-wrapper">
     <header class="header" id="site-header">
         <div class="header-content">
+
+            <!-- ЛОГОТИП -->
             <div class="logo">
                 <a href="{% url 'shop:home' %}" style="font-size: var(--logo-font-size); color: var(--logo-color); font-family: var(--logo-font-family);">
                     <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="На главную"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                     <span class="logo-text">{{ site_settings.shop_name }}</span>
                 </a>
             </div>
+
+            <!-- ДЕСКТОПНАЯ НАВИГАЦИЯ -->
             <div class="desktop-nav">
                 <form class="search-form-desktop" action="{% url 'shop:search_results' %}" method="get"><input type="text" name="q" placeholder="Поиск по товарам..."><button type="submit" class="btn-primary">Найти</button></form>
                 <nav class="user-navigation">
@@ -367,6 +382,8 @@
                     {% else %}
                         <a href="{% url 'login' %}" class="user-nav-link"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg><span class="user-nav-text full-text">Войти</span></a>
                     {% endif %}
+
+                    <!-- Избранное -->
                     <a href="{% url 'favorites:list' %}" class="user-nav-link favorites-link">
                         <div class="icon-wrapper">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
@@ -374,6 +391,8 @@
                         </div>
                         <span class="user-nav-text full-text">Избранное</span>
                     </a>
+
+                    <!-- Корзина -->
                     <div class="cart">
                         <a href="{% url 'cart:cart_detail' %}" class="user-nav-link">
                             <div class="icon-wrapper">
@@ -389,6 +408,8 @@
                     </div>
                 </nav>
             </div>
+
+            <!-- МОБИЛЬНАЯ НАВИГАЦИЯ -->
             <div class="mobile-nav-container">
                 <nav class="user-navigation-mobile">
                     <a href="#" class="user-nav-link" id="search-toggle"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><span class="user-nav-text partial-text">Поиск</span></a>
@@ -542,17 +563,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.success) {
                         const desktopCartText = document.querySelector('.cart .user-nav-text');
                         if (desktopCartText) desktopCartText.innerText = data.total_price + ' руб.';
+
+                        // --- ИСПРАВЛЕННАЯ ЛОГИКА БЕЙДЖЕЙ ---
+                        // Обновляем все бейджи корзины
                         const cartBadges = document.querySelectorAll('.cart-badge:not(.fav-badge)');
                         cartBadges.forEach(badge => {
-                            if (data.cart_len > 0) { badge.innerText = data.cart_len; badge.style.display = 'flex'; badge.classList.remove('hidden'); }
-                            else { badge.style.display = 'none'; badge.classList.add('hidden'); }
+                            if (data.cart_len > 0) {
+                                badge.innerText = data.cart_len;
+                                badge.style.display = 'flex';
+                                badge.classList.remove('hidden');
+                            } else {
+                                badge.style.display = 'none';
+                                badge.classList.add('hidden');
+                            }
                         });
+
                         const mobileCartText = document.querySelector('#cart-toggle .user-nav-text');
                         if (mobileCartText) mobileCartText.innerText = 'Корзина';
+
                         const mobileSummary = document.querySelector('.cart-summary-mobile');
                         if (mobileSummary) {
                             mobileSummary.innerHTML = `<p>Товаров: <strong>${data.cart_len}</strong></p><p>Сумма: <strong>${data.total_price} руб.</strong></p><a href="{% url 'cart:cart_detail' %}" class="btn btn-secondary" style="width:100%; margin-bottom:8px;">В корзину</a><a href="{% url 'orders:order_create' %}" class="btn" style="width:100%;">Оформить заказ</a>`;
                         }
+
                         btn.classList.add('added');
                         setTimeout(() => { btn.classList.remove('added'); }, 2000);
                     }
