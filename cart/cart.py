@@ -66,21 +66,27 @@ class Cart:
         for product in products:
             cart[str(product.id)]['product'] = product
 
-        # Список ключей для удаления (мусор)
         keys_to_remove = []
 
         for item_id, item in cart.items():
-            # Если товар был удален из БД, у элемента не будет ключа 'product'
+            # Если товар был удален из БД
             if 'product' not in item:
                 keys_to_remove.append(item_id)
                 continue
 
-            item['price'] = Decimal(item['price'])
-            item['total_price'] = item['price'] * item['quantity']
-            yield item
+            # === ВАЖНОЕ ИСПРАВЛЕНИЕ ЗДЕСЬ ===
+            # Мы создаем КОПИЮ словаря для текущего товара.
+            # Это нужно, чтобы мы могли добавить туда Decimal (для шаблона),
+            # но НЕ загрязняли им основную сессию (которая принимает только JSON).
+            current_item = item.copy()
 
-        # --- ЧИСТКА МУСОРА ---
-        # Если мы нашли товары, которых нет в базе, удаляем их из сессии
+            current_item['price'] = Decimal(item['price'])
+            current_item['total_price'] = current_item['price'] * current_item['quantity']
+
+            yield current_item
+            # ================================
+
+        # Удаляем мусор (несуществующие товары)
         if keys_to_remove:
             for item_id in keys_to_remove:
                 del self.cart[item_id]
