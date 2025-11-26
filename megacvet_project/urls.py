@@ -36,6 +36,7 @@ urlpatterns = [
     path('cart/', include('cart.urls', namespace='cart')),
     path('orders/', include('orders.urls', namespace='orders')),
     path('', include('shop.urls', namespace='shop')),
+    path('favorites/', include('favorites.urls', namespace='favorites')),
 ]
 
 if settings.DEBUG is False:  # Используем is False для продакшена

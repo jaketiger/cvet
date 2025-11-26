@@ -5,6 +5,15 @@
         <div class="product-image-wrapper">
             <img src="{% if product.image_thumbnail %}{{ product.image_thumbnail.url }}{% else %}{% static 'shop/img/no_image.png' %}{% endif %}" alt="{{ product.name }}" class="product-image">
 
+            <!-- КНОПКА ИЗБРАННОГО (Чистая, стили берутся из main.css) -->
+            <button class="fav-btn {% if product.id in favorites.favorites %}active{% endif %}"
+                    data-id="{{ product.id }}"
+                    onclick="toggleFavorite(this, event)">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+            </button>
+
             {% if product.combined_rank %}
                 <div class="product-rank-badge">{{ product.combined_rank|floatformat:2 }}</div>
             {% endif %}
@@ -32,7 +41,6 @@
             <input type="hidden" name="quantity" value="1">
             <input type="hidden" name="update" value="False">
 
-            <!-- ИСПРАВЛЕНИЕ ЗДЕСЬ: white-space: nowrap и уменьшенный padding -->
             <button type="submit" class="add-to-cart-btn-new" style="width: 100%; min-height: 40px; padding: 8px 0; font-size: 0.9em; white-space: nowrap;">
                 <span class="btn-text">В корзину</span>
                 <span class="btn-icon">

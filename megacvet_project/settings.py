@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'orders',
     'users',
     'imagekit',
+    'favorites', # <-- Добавляем
     'django_q',  # <-- ДОБАВЛЕНО: Приложение для асинхронных задач
     'django.contrib.admin',
     'django.contrib.auth',
@@ -66,6 +67,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'cart.context_processors.cart',
+                'favorites.context_processors.favorites', # <-- Добавляем
                 'shop.context_processors.categories',
                 'shop.context_processors.site_settings',
                 'shop.context_processors.footer_pages',
@@ -141,4 +143,7 @@ Q_CLUSTER = {
     'queue_limit': 50,
     'orm': 'default', # Использовать стандартную БД Django для хранения задач
 }
+
+FAVORITES_SESSION_ID = 'favorites'
+
 

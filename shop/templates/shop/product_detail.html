@@ -10,17 +10,31 @@
 
         <!-- ЛЕВАЯ КОЛОНКА: ГАЛЕРЕЯ -->
         <div class="product-gallery-new">
-            <div class="main-image-container" id="main-image-zoom-container">
-                <!-- БЕЗОПАСНЫЙ ВЫВОД ФОТО -->
-                {% if product.image %}
-                    <img id="main-product-image"
-                         src="{{ product.image.url }}"
-                         alt="{{ product.name }}"
-                         onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'no-photo-placeholder\'>Фото отсутствует</div>'">
-                {% else %}
-                    <div class="no-photo-placeholder">Нет фото</div>
-                {% endif %}
-            </div>
+            <!-- 1. Добавляем style="position: relative;" -->
+<div class="main-image-container" id="main-image-zoom-container" style="position: relative;">
+
+    <!-- БЕЗОПАСНЫЙ ВЫВОД ФОТО -->
+    {% if product.image %}
+        <img id="main-product-image"
+             src="{{ product.image.url }}"
+             alt="{{ product.name }}"
+             onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'no-photo-placeholder\'>Фото отсутствует</div>'">
+    {% else %}
+        <div class="no-photo-placeholder">Нет фото</div>
+    {% endif %}
+
+    <!-- 2. ВСТАВЛЯЕМ КНОПКУ ИЗБРАННОГО СЮДА -->
+    <!-- Используем те же классы, что и в карточке -->
+    <button class="fav-btn {% if product.id in favorites.favorites %}active{% endif %}"
+            data-id="{{ product.id }}"
+            onclick="toggleFavorite(this, event)"
+            style="top: 15px; right: 15px; width: 45px; height: 45px;"> <!-- Чуть крупнее для детальной страницы -->
+        <svg viewBox="0 0 24 24" style="width: 24px; height: 24px;">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+        </svg>
+    </button>
+
+</div>
 
             {% with all_images=product.images.all %}
                 {% if product.image or all_images %}

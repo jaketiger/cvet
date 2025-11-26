@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Избранное{% endblock %}
+
+{% block content %}
+<div class="cart-page-container"> <!-- Используем контейнер корзины для стиля -->
+    <h1>Избранные товары</h1>
+
+    {% if favorites %}
+    <div class="product-grid">
+        {% for product in favorites %}
+            {% include "shop/includes/product_card.html" with product=product %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-cart-state">
+        <h2>В избранном пока пусто</h2>
+        <a href="{% url 'shop:product_list_all' %}" class="btn">Перейти в каталог</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
