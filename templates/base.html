@@ -206,7 +206,7 @@
             align-items: center;
             justify-content: center;
             line-height: 1;       /* Убирает лишние отступы сверху/снизу у шрифта */
-            padding-top: 1px;     /* Микро-коррекция (цифры часто визуально выше) */
+            padding-top: 0px;     /* Микро-коррекция (цифры часто визуально выше) */
 
             /* Цвета и оформление */
             background-color: var(--button-bg-color, #e53935);
@@ -823,25 +823,40 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- AJAX Script -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const cartForms = document.querySelectorAll('.add-to-cart-form, .add-to-cart-form-detail');
+        // 1. Ищем ВСЕ формы: добавление из каталога, из карточки и кнопки +/- в корзине
+        const cartForms = document.querySelectorAll('.add-to-cart-form, .add-to-cart-form-detail, .cart-qty-form');
+
         cartForms.forEach(form => {
             form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const btn = this.querySelector('button[type="submit"]');
+                e.preventDefault(); // Останавливаем стандартную отправку
+
+                // Определяем кнопку, на которую нажали (для анимации и логики)
+                const btn = e.submitter; // Это кнопка, вызвавшая сабмит
+
+                // 2. Собираем данные формы
+                let formData = new FormData(this);
+
+                // Если нажали на +/- (у кнопки есть name="quantity"), добавляем её значение вручную
+                // FormData сам по себе не захватывает value кнопки submit
+                if (btn && btn.name === 'quantity') {
+                    formData.append('quantity', btn.value);
+                }
 
                 fetch(this.action, {
                     method: 'POST',
-                    body: new FormData(this),
+                    body: formData,
                     headers: {'X-Requested-With': 'XMLHttpRequest'}
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Цена в шапке
+                        // === ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ===
+
+                        // 1. Цена в шапке (Десктоп)
                         const desktopCartText = document.querySelector('.cart .user-nav-text');
                         if (desktopCartText) desktopCartText.innerText = data.total_price + ' руб.';
 
-                        // Бейджи
+                        // 2. Бейджи (Красные кружки)
                         const badges = [document.getElementById('desktop-cart-badge'), document.getElementById('mobile-cart-badge')];
                         badges.forEach(badge => {
                             if(badge) {
@@ -850,15 +865,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                         });
 
-                        // Обновление меню корзины на мобильном
-
-                        // === 4. ОБНОВЛЕНИЕ МОБИЛЬНОГО ВЫПАДАЮЩЕГО МЕНЮ ===
+                        // 3. Мобильное меню корзины (С учетом настройки кнопок/текста)
                         const mobileSummary = document.querySelector('.cart-summary-mobile');
                         if (mobileSummary) {
-                            // Проверяем, какой режим сейчас включен в HTML (по наличию класса)
                             const isButtonMode = mobileSummary.classList.contains('mobile-menu-mode-buttons');
-
-                            // Формируем классы в зависимости от режима
                             const btnClass = isButtonMode ? 'btn' : '';
                             const btnSecondaryClass = isButtonMode ? 'btn btn-secondary' : '';
                             const styleWidth = isButtonMode ? 'style="width: 100%; box-sizing: border-box; text-align: center; display: block;"' : '';
@@ -872,12 +882,28 @@ document.addEventListener('DOMContentLoaded', function() {
                             `;
                         }
 
+                        // === ЛОГИКА ПОВЕДЕНИЯ ===
 
-                        // Анимация
-                        btn.classList.add('added');
-                        setTimeout(() => {
-                            btn.classList.remove('added');
-                        }, 2000);
+                        // 4. Если мы НА СТРАНИЦЕ КОРЗИНЫ -> Перезагружаем, чтобы обновить строки и итоги
+                        // (кроме случая, если это была кнопка "В корзину" из "Похожих товаров", но обычно в корзине только +/-)
+                        if (window.location.pathname.includes('/cart/') && !btn.classList.contains('add-to-cart-btn-new')) {
+                             location.reload();
+                             return;
+                        }
+
+                        // 5. СБРОС КОЛИЧЕСТВА НА 1 (Только если это не страница корзины)
+                        const qtyInput = this.querySelector('input[name="quantity"]');
+                        if (qtyInput && !window.location.pathname.includes('/cart/')) {
+                            qtyInput.value = 1;
+                        }
+
+                        // 6. АНИМАЦИЯ ГАЛОЧКИ (Только для кнопки добавления)
+                        if (btn && btn.classList.contains('add-to-cart-btn-new')) {
+                            btn.classList.add('added');
+                            setTimeout(() => {
+                                btn.classList.remove('added');
+                            }, 2000);
+                        }
                     }
                 })
                 .catch(error => console.error('Error:', error));
@@ -885,8 +911,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Функция для Избранного (оставляем как было)
     function toggleFavorite(btn, event) {
-        event.preventDefault(); event.stopPropagation();
+        event.preventDefault();
+        event.stopPropagation();
         const productId = btn.getAttribute('data-id');
 
         fetch("{% url 'favorites:toggle' %}", {
@@ -901,8 +929,9 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                if (data.added) btn.classList.add('active');
-                else {
+                if (data.added) {
+                    btn.classList.add('active');
+                } else {
                     btn.classList.remove('active');
                     if (window.location.href.includes('favorites')) {
                        btn.closest('.product-card').remove();
@@ -912,8 +941,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 const badges = document.querySelectorAll('.fav-badge');
                 badges.forEach(badge => {
                     badge.innerText = data.count;
-                    if (data.count > 0) { badge.classList.remove('hidden'); badge.style.display = 'flex'; }
-                    else { badge.classList.add('hidden'); badge.style.display = 'none'; }
+                    if (data.count > 0) {
+                        badge.classList.remove('hidden');
+                        badge.style.display = 'flex';
+                    } else {
+                        badge.classList.add('hidden');
+                        badge.style.display = 'none';
+                    }
                 });
             }
         })
