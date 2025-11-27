@@ -435,7 +435,62 @@
         {% endif %}
 
 
+/* --- СТИЛИ ДЛЯ ЛОГОТИПА-КАРТИНКИ --- */
 
+        /* Базовый стиль (Десктоп) */
+        .custom-logo-img {
+            display: block;
+            width: auto;        /* Ширина зависит от пропорций */
+            height: auto;       /* Высота зависит от пропорций */
+            max-height: 40px;   /* Ограничение высоты на ПК */
+            max-width: 100%;    /* Картинка не может быть шире контейнера */
+            object-fit: contain; /* Всегда показывать картинку целиком */
+        }
+
+        /* Планшеты */
+        @media (max-width: 992px) {
+            .custom-logo-img {
+                max-height: 30px;
+            }
+        }
+
+        /* ТЕЛЕФОНЫ (Самое важное исправление) */
+        @media (max-width: 600px) {
+
+            /* 1. Контейнер логотипа */
+            .logo {
+                flex: 0 1 auto !important; /* Разрешаем сжиматься, но не растягиваться */
+                min-width: 0 !important;   /* Критично для Flexbox: разрешает сжатие меньше контента */
+                margin-right: auto !important; /* Толкает иконки вправо */
+                padding-right: 10px !important; /* Зазор до иконок */
+                overflow: visible !important; /* Не обрезать тени или края */
+            }
+
+            /* 2. Ссылка внутри */
+            .logo a {
+                display: block !important; /* Блочный элемент */
+            }
+
+            /* 3. Сама картинка */
+            .custom-logo-img {
+                /* Жесткие ограничения */
+                max-height: 35px !important; /* Максимальная высота */
+                max-width: 100% !important;  /* Не шире родительского блока .logo */
+
+                width: auto !important;      /* Сохраняем пропорции */
+                height: auto !important;
+
+                /* Гарантия, что картинка впишется */
+                object-fit: contain !important;
+                object-position: left center !important; /* Прижать влево */
+            }
+
+            /* Если картинка есть, отключаем flex-column у ссылки (чтобы не ломать верстку) */
+            .logo a:has(.custom-logo-img) {
+                flex-direction: row !important;
+                align-items: center !important;
+            }
+        }
 
 
 
@@ -461,10 +516,18 @@
 <div class="site-wrapper">
     <header class="header" id="site-header">
         <div class="header-content">
+
+            <!-- ЛОГОТИП (ОБЩИЙ ДЛЯ ВСЕХ УСТРОЙСТВ) -->
             <div class="logo">
                 <a href="{% url 'shop:home' %}">
-                    <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                    <span class="logo-text">{{ site_settings.shop_name }}</span>
+                    {% if site_settings.logo_image %}
+                        <!-- Если загружена картинка -->
+                        <img src="{{ site_settings.logo_image.url }}" alt="{{ site_settings.shop_name }}" class="custom-logo-img">
+                    {% else %}
+                        <!-- Если картинки нет (Стандартный вид) -->
+                        <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                        <span class="logo-text">{{ site_settings.shop_name }}</span>
+                    {% endif %}
                 </a>
             </div>
 

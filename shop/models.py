@@ -230,6 +230,13 @@ class SiteSettings(SingletonModel):
 
     # Основные настройки
     shop_name = models.CharField("Название магазина", max_length=100, default="MegaCvet")
+    logo_image = models.ImageField(
+        "Логотип (Изображение)",
+        upload_to='logo/',
+        blank=True,
+        null=True,
+        help_text="Если загрузить картинку, она заменит текстовое название и стандартную иконку."
+    )
     contact_phone = models.CharField("Контактный телефон", max_length=50, blank=True)
     contact_phone_secondary = models.CharField("Телефон (Дополнительный)", max_length=50, blank=True)
     pickup_address = models.TextField("Адрес самовывоза", blank=True, help_text="Отображается на странице Контакты")

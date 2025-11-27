@@ -170,6 +170,7 @@ class SiteSettingsAdmin(SingletonModelAdmin):
             'description': "Ключевая информация о вашем магазине.",
             'fields': (
                 'shop_name',
+                'logo_image',
                 ('contact_phone', 'contact_phone_secondary'),
                 ('pickup_address', 'working_hours'),
                 'map_embed_code',
