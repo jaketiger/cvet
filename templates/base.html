@@ -23,11 +23,39 @@
         /* 1. ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ                  */
         /* ========================================= */
         :root {
+            /* ========================================= */
+            /* 1. БАЗА ШРИФТОВ (Восстановленный список)  */
+            /* ========================================= */
             --font-roboto: 'Roboto', sans-serif;
             --font-montserrat: 'Montserrat', sans-serif;
+            --font-open-sans: 'Open Sans', sans-serif;
+            --font-lora: 'Lora', serif;
+            --font-merriweather: 'Merriweather', serif;
+            --font-playfair-display: 'Playfair Display', serif;
+            --font-lobster: 'Lobster', cursive;
+            --font-pacifico: 'Pacifico', cursive;
 
+            /* ========================================= */
+            /* 2. ПРИВЯЗКА К АДМИНКЕ                     */
+            /* ========================================= */
+
+            /* Основной шрифт */
             --default-font-family: var(--font-{{ site_settings.default_font_family|default:'roboto' }});
+
+            /* Шрифт заголовков */
             --heading-font-family: var(--font-{{ site_settings.heading_font_family|default:'montserrat' }});
+
+            /* Логотип */
+            --logo-font-family: var(--font-{{ site_settings.logo_font_family|default:site_settings.default_font_family|default:'roboto' }});
+
+            /* Категории */
+            --category-font-family: var(--font-{{ site_settings.category_font_family|default:site_settings.default_font_family|default:'roboto' }});
+
+            /* Футер */
+            --footer-font-family: var(--font-{{ site_settings.footer_font_family|default:site_settings.default_font_family|default:'roboto' }});
+
+
+
 
             --default-text-color: {{ site_settings.default_text_color|default:'#333333' }};
             --accent-color: {{ site_settings.accent_color|default:'#e53935' }};
