@@ -19,6 +19,7 @@ body {
 .site-wrapper {
     max-width: 1200px;
     margin: 20px auto;
+
     background-color: rgba(255, 255, 255, 0.95);
     border-radius: 8px;
     padding: 10px 20px;
@@ -141,7 +142,9 @@ a:active, button:active, .product-card:active { transform: scale(0.98); opacity:
 */
 .header { position: relative; z-index: 1001; }
 .header-content { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding: 10px 0; gap: 20px; }
-.logo { flex-shrink: 0; }
+
+
+.logo { flex-shrink: 1; margin-left: 6px !important; }
 .logo a { font-weight: bold; display: flex; align-items: center; gap: 8px; }
 .logo-icon {
     width: var(--icon-size, 22px);
@@ -495,12 +498,16 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
 
     /* 1. Контейнер: Разрешаем ему растягиваться от содержимого */
     .swiper-container {
-        width: calc(100% + 30px) !important;
-        margin-left: -15px !important;
-        margin-right: -15px !important;
-        margin-top: 0px !important;
+        /* Ширина = 100% + левый отступ (10) + правый отступ (10) = 20px */
+        width: calc(100% + 8px) !important;
 
-        /* Отключаем все ограничения высоты */
+        /* Сдвигаем влево и вправо ровно на размер отступа родителя */
+        margin-left: -4px !important;
+        margin-right: -4px !important;
+
+        margin-top: 0 !important;
+
+        /* Остальные настройки высоты */
         height: auto !important;
         min-height: auto !important;
         aspect-ratio: auto !important;
@@ -966,16 +973,31 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
 
 @media (max-width: 992px) {
     .site-wrapper { margin: 10px; padding: 10px 15px; }
-    .mobile-view-adaptive .site-wrapper { padding: 8px; border-radius: 6px; margin: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    .mobile-view-adaptive .site-wrapper {padding-left: 4px !important; padding-right: 4px !important; border-radius: 6px; box-sizing: border-box !important; max-width: 100% !important; width: auto !important; margin: 6px !important; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+
     .mobile-view-adaptive .header { background-color: transparent; }
     .mobile-view-adaptive .header-content { border-bottom: 2px solid #eee; padding: 10px 0; }
+
+    .header {
+                /* Компенсируем 10px отступов родителя */
+                width: calc(100% + 8px) !important;
+                margin-left: -4px !important;
+                margin-right: -4px !important;
+
+                /* Внутренние отступы, чтобы контент не прилип */
+
+
+                border-radius: 0px 0px 0 0 !important;
+            }
+
     .mobile-view-adaptive .content-wrapper { padding: 0; }
     .desktop-nav { display: none; }
     .mobile-nav-container { display: block; }
     .content-wrapper > .category-nav-desktop { display: none; }
     .mobile-header-icons_plus_cat_full .header .category-nav-header { display: flex; margin: 10px 0 0 0; padding: 10px; font-size: 0.9em; gap: 5px 10px; border-top: 1px solid #eee; }
     .header-content { flex-wrap: nowrap; }
-    .logo { flex-grow: 1; margin-right: auto; }
+    .logo { flex-grow: 1; margin-left: 6px !important;  margin-right: auto; }
     .user-navigation-mobile { display: flex; align-items: center; gap: 5px; }
     .user-navigation-mobile .user-nav-link { padding: 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
     .user-navigation-mobile .user-nav-text { font-size: 0.7em; display: none; }
