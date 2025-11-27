@@ -227,8 +227,11 @@ a:active, button:active, .product-card:active { transform: scale(0.98); opacity:
 }
 
 
-/* КНОПКИ (Исключаем accordion-header) */
-.btn, button:not(.accordion-header), input[type="submit"],
+/* КНОПКИ (Исключаем accordion-header И fav-btn) */
+.btn, button:not(.accordion-header):not(.fav-btn),  /* <--- ВОТ ЭТА СТРОКА ИЗМЕНИЛАСЬ */
+input[type="submit"],
+a.btn-primary, a.btn-secondary, a.btn-danger,
+/* ... остальные селекторы ... */
 a.btn-primary, a.btn-secondary, a.btn-danger,
 .btn-submit, .remove-btn,
 .mobile-menu-mode-buttons a,
@@ -257,7 +260,7 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     color: var(--button-text-color, #fff);
 }
 
-.btn:hover, button:not(.accordion-header):hover, input[type="submit"]:hover, a.btn-primary:hover, .btn-submit:hover, .add-to-cart-btn:hover, .mobile-menu-mode-buttons a:hover {
+.btn:hover, button:not(.accordion-header):not(.fav-btn):hover, input[type="submit"]:hover, a.btn-primary:hover, .btn-submit:hover, .add-to-cart-btn:hover, .mobile-menu-mode-buttons a:hover {
     background-color: var(--button-hover-bg-color, #000);
     transform: translateY(-2px);
 }
@@ -280,51 +283,51 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
 .btn:disabled, button:disabled, input[type="submit"]:disabled { background-color: #ccc; cursor: not-allowed; opacity: 0.7; transform: none; }
 
 /* --- ВСЕ ВАШИ ПРЕСЕТЫ (ВОССТАНОВЛЕНЫ) --- */
-.btn-preset-pill .btn, .btn-preset-pill button:not(.accordion-header), .btn-preset-pill input[type="submit"], .btn-preset-pill a.btn-primary, .btn-preset-pill .btn-secondary, .btn-preset-pill .btn-danger, .btn-preset-pill .btn-submit, .btn-preset-pill .remove-btn, .btn-preset-pill .mobile-menu-mode-buttons a, .btn-preset-pill .mobile-dropdown-content .btn { border-radius: 50px; }
-.btn-preset-soft .btn, .btn-preset-soft button:not(.accordion-header), .btn-preset-soft input[type="submit"], .btn-preset-soft a.btn-primary, .btn-preset-soft .btn-submit, .btn-preset-soft .mobile-menu-mode-buttons a, .btn-preset-soft .mobile-dropdown-content .btn { background-color: #f0f0f3; color: #333; box-shadow: 5px 5px 10px #d1d9e6, -5px -5px 10px #ffffff; border-radius: 10px; }
+.btn-preset-pill .btn, .btn-preset-pill button:not(.accordion-header):not(.fav-btn), .btn-preset-pill input[type="submit"], .btn-preset-pill a.btn-primary, .btn-preset-pill .btn-secondary, .btn-preset-pill .btn-danger, .btn-preset-pill .btn-submit, .btn-preset-pill .remove-btn, .btn-preset-pill .mobile-menu-mode-buttons a, .btn-preset-pill .mobile-dropdown-content .btn { border-radius: 50px; }
+.btn-preset-soft .btn, .btn-preset-soft button:not(.accordion-header):not(.fav-btn), .btn-preset-soft input[type="submit"], .btn-preset-soft a.btn-primary, .btn-preset-soft .btn-submit, .btn-preset-soft .mobile-menu-mode-buttons a, .btn-preset-soft .mobile-dropdown-content .btn { background-color: #f0f0f3; color: #333; box-shadow: 5px 5px 10px #d1d9e6, -5px -5px 10px #ffffff; border-radius: 10px; }
 .btn-preset-soft .btn-secondary { background-color: #e0e0e0; color: #555; box-shadow: 5px 5px 10px #bebebe, -5px -5px 10px #ffffff; }
 .btn-preset-soft .btn-danger, .btn-preset-soft .remove-btn { background-color: #ffccd5; color: #d32f2f; box-shadow: 5px 5px 10px #e6b3bc, -5px -5px 10px #fff; }
-.btn-preset-soft .btn:hover, .btn-preset-soft button:not(.accordion-header):hover, .btn-preset-soft a:hover { transform: translateY(-2px); box-shadow: 2px 2px 5px #d1d9e6, -2px -2px 5px #ffffff; }
-.btn-preset-gradient .btn, .btn-preset-gradient button:not(.accordion-header), .btn-preset-gradient input[type="submit"], .btn-preset-gradient a.btn-primary, .btn-preset-gradient .btn-secondary, .btn-preset-gradient .btn-danger, .btn-preset-gradient .btn-submit, .btn-preset-gradient .remove-btn, .btn-preset-gradient .mobile-menu-mode-buttons a, .btn-preset-gradient .mobile-dropdown-content .btn { background: transparent; color: white; z-index: 1; border: none; }
-.btn-preset-gradient .btn::before, .btn-preset-gradient button:not(.accordion-header)::before, .btn-preset-gradient input[type="submit"]::before, .btn-preset-gradient a.btn-primary::before, .btn-preset-gradient .btn-secondary::before, .btn-preset-gradient .btn-danger::before, .btn-preset-gradient .btn-submit::before, .btn-preset-gradient .remove-btn::before, .btn-preset-gradient .mobile-menu-mode-buttons a::before, .btn-preset-gradient .mobile-dropdown-content .btn::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-size: 200% 200%; z-index: -1; transition: opacity 0.3s ease; background: linear-gradient(45deg, var(--button-bg-color, #333), var(--button-accent-color, #e53935)); }
+.btn-preset-soft .btn:hover, .btn-preset-soft button:not(.accordion-header):not(.fav-btn):hover, .btn-preset-soft a:hover { transform: translateY(-2px); box-shadow: 2px 2px 5px #d1d9e6, -2px -2px 5px #ffffff; }
+.btn-preset-gradient .btn, .btn-preset-gradient button:not(.accordion-header):not(.fav-btn), .btn-preset-gradient input[type="submit"], .btn-preset-gradient a.btn-primary, .btn-preset-gradient .btn-secondary, .btn-preset-gradient .btn-danger, .btn-preset-gradient .btn-submit, .btn-preset-gradient .remove-btn, .btn-preset-gradient .mobile-menu-mode-buttons a, .btn-preset-gradient .mobile-dropdown-content .btn { background: transparent; color: white; z-index: 1; border: none; }
+.btn-preset-gradient .btn::before, .btn-preset-gradient button:not(.accordion-header):not(.fav-btn)::before, .btn-preset-gradient input[type="submit"]::before, .btn-preset-gradient a.btn-primary::before, .btn-preset-gradient .btn-secondary::before, .btn-preset-gradient .btn-danger::before, .btn-preset-gradient .btn-submit::before, .btn-preset-gradient .remove-btn::before, .btn-preset-gradient .mobile-menu-mode-buttons a::before, .btn-preset-gradient .mobile-dropdown-content .btn::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-size: 200% 200%; z-index: -1; transition: opacity 0.3s ease; background: linear-gradient(45deg, var(--button-bg-color, #333), var(--button-accent-color, #e53935)); }
 .btn-preset-gradient .btn-secondary::before { background: linear-gradient(45deg, #6c757d, #495057); }
 .btn-preset-gradient .btn-danger::before, .btn-preset-gradient .remove-btn::before { background: linear-gradient(45deg, #dc3545, #a71d2a); }
-.btn-preset-gradient .btn:hover::before, .btn-preset-gradient button:not(.accordion-header):hover::before, .btn-preset-gradient a:hover::before { background: linear-gradient(45deg, var(--button-accent-color, #e53935), var(--button-bg-color, #333)); }
+.btn-preset-gradient .btn:hover::before, .btn-preset-gradient button:not(.accordion-header):not(.fav-btn):hover::before, .btn-preset-gradient a:hover::before { background: linear-gradient(45deg, var(--button-accent-color, #e53935), var(--button-bg-color, #333)); }
 .btn-preset-gradient .btn-secondary:hover::before { background: linear-gradient(45deg, #495057, #6c757d); }
 .btn-preset-gradient .btn-danger:hover::before { background: linear-gradient(45deg, #a71d2a, #dc3545); }
-.btn-preset-glass_frosted .btn, .btn-preset-glass_frosted button:not(.accordion-header), .btn-preset-glass_frosted input[type="submit"], .btn-preset-glass_frosted a.btn-primary, .btn-preset-glass_frosted .btn-submit, .btn-preset-glass_frosted .add-to-cart-btn, .btn-preset-glass_frosted .mobile-menu-mode-buttons a, .btn-preset-glass_frosted .mobile-dropdown-content .btn { background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); color: #333; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-weight: 700; }
+.btn-preset-glass_frosted .btn, .btn-preset-glass_frosted button:not(.accordion-header):not(.fav-btn), .btn-preset-glass_frosted input[type="submit"], .btn-preset-glass_frosted a.btn-primary, .btn-preset-glass_frosted .btn-submit, .btn-preset-glass_frosted .add-to-cart-btn, .btn-preset-glass_frosted .mobile-menu-mode-buttons a, .btn-preset-glass_frosted .mobile-dropdown-content .btn { background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); color: #333; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-weight: 700; }
 .btn-preset-glass_frosted .btn-secondary { background: rgba(0, 0, 0, 0.15); border: 1px solid rgba(0, 0, 0, 0.2); color: #fff; }
 .btn-preset-glass_frosted .btn-danger, .btn-preset-glass_frosted .remove-btn { background: rgba(220, 53, 69, 0.25); border: 1px solid rgba(220, 53, 69, 0.5); color: #a71d2a; }
-.btn-preset-glass_frosted .btn:hover, .btn-preset-glass_frosted button:not(.accordion-header):hover, .btn-preset-glass_frosted a:hover { background: rgba(255, 255, 255, 0.4); color: var(--button-accent-color, #e53935); }
+.btn-preset-glass_frosted .btn:hover, .btn-preset-glass_frosted button:not(.accordion-header):not(.fav-btn):hover, .btn-preset-glass_frosted a:hover { background: rgba(255, 255, 255, 0.4); color: var(--button-accent-color, #e53935); }
 .btn-preset-glass_frosted .btn-secondary:hover { background: rgba(0, 0, 0, 0.3); }
 .btn-preset-glass_frosted .btn-danger:hover { background: rgba(220, 53, 69, 0.4); }
 @keyframes neonPulse { 0% { box-shadow: 0 0 5px var(--button-accent-color, #e53935), inset 0 0 5px var(--button-accent-color, #e53935); } 50% { box-shadow: 0 0 20px var(--button-accent-color, #e53935), inset 0 0 10px var(--button-accent-color, #e53935); } 100% { box-shadow: 0 0 5px var(--button-accent-color, #e53935), inset 0 0 5px var(--button-accent-color, #e53935); } }
 @keyframes neonPulseGray { 0% { box-shadow: 0 0 5px #888, inset 0 0 5px #888; } 50% { box-shadow: 0 0 15px #888, inset 0 0 8px #888; } 100% { box-shadow: 0 0 5px #888, inset 0 0 5px #888; } }
 @keyframes neonPulseRed { 0% { box-shadow: 0 0 5px #dc3545; } 50% { box-shadow: 0 0 15px #dc3545; } 100% { box-shadow: 0 0 5px #dc3545; } }
-.btn-preset-neon_pulse .btn, .btn-preset-neon_pulse button:not(.accordion-header), .btn-preset-neon_pulse input[type="submit"], .btn-preset-neon_pulse .add-to-cart-btn-new, .btn-preset-neon_pulse a.btn-primary, .btn-preset-neon_pulse .btn-submit, .btn-preset-neon_pulse .mobile-menu-mode-buttons a, .btn-preset-neon_pulse .mobile-dropdown-content .btn { background-color: #111; color: var(--button-accent-color, #e53935); border: 2px solid var(--button-accent-color, #e53935); box-shadow: 0 0 8px var(--button-accent-color, #e53935); text-shadow: 0 0 5px var(--button-accent-color, #e53935); text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; }
+.btn-preset-neon_pulse .btn, .btn-preset-neon_pulse button:not(.accordion-header):not(.fav-btn), .btn-preset-neon_pulse input[type="submit"], .btn-preset-neon_pulse .add-to-cart-btn-new, .btn-preset-neon_pulse a.btn-primary, .btn-preset-neon_pulse .btn-submit, .btn-preset-neon_pulse .mobile-menu-mode-buttons a, .btn-preset-neon_pulse .mobile-dropdown-content .btn { background-color: #111; color: var(--button-accent-color, #e53935); border: 2px solid var(--button-accent-color, #e53935); box-shadow: 0 0 8px var(--button-accent-color, #e53935); text-shadow: 0 0 5px var(--button-accent-color, #e53935); text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; }
 .btn-preset-neon_pulse .btn-secondary { background-color: #111; color: #ccc; border: 2px solid #ccc; box-shadow: 0 0 5px #ccc; text-shadow: 0 0 3px #ccc; }
 .btn-preset-neon_pulse .btn-danger, .btn-preset-neon_pulse .remove-btn { background-color: #111; color: #dc3545; border: 2px solid #dc3545; box-shadow: 0 0 5px #dc3545; text-shadow: 0 0 3px #dc3545; }
-.btn-preset-neon_pulse .btn:hover, .btn-preset-neon_pulse button:not(.accordion-header):hover, .btn-preset-neon_pulse a:hover, .btn-preset-neon_pulse .add-to-cart-btn-new:hover { background-color: var(--button-accent-color, #e53935); color: #000; text-shadow: none; animation: neonPulse 1.5s infinite alternate; }
+.btn-preset-neon_pulse .btn:hover, .btn-preset-neon_pulse button:not(.accordion-header):not(.fav-btn):hover, .btn-preset-neon_pulse a:hover, .btn-preset-neon_pulse .add-to-cart-btn-new:hover { background-color: var(--button-accent-color, #e53935); color: #000; text-shadow: none; animation: neonPulse 1.5s infinite alternate; }
 .btn-preset-neon_pulse .btn-secondary:hover { background-color: #ccc; color: #000; animation: neonPulseGray 1.5s infinite alternate; }
 .btn-preset-neon_pulse .btn-danger:hover { background-color: #dc3545; color: #000; animation: neonPulseRed 1.5s infinite alternate; }
-.btn-preset-brutal .btn, .btn-preset-brutal button:not(.accordion-header), .btn-preset-brutal input[type="submit"], .btn-preset-brutal .add-to-cart-btn-new, .btn-preset-brutal a.btn-primary, .btn-preset-brutal .btn-secondary, .btn-preset-brutal .btn-danger, .btn-preset-brutal .remove-btn, .btn-preset-brutal .btn-submit, .btn-preset-brutal .mobile-menu-mode-buttons a, .btn-preset-brutal .mobile-dropdown-content .btn { border: 3px solid #000; border-radius: 0; box-shadow: 4px 4px 0 #000; font-weight: 900; text-transform: uppercase; transition: all 0.1s; }
+.btn-preset-brutal .btn, .btn-preset-brutal button:not(.accordion-header):not(.fav-btn), .btn-preset-brutal input[type="submit"], .btn-preset-brutal .add-to-cart-btn-new, .btn-preset-brutal a.btn-primary, .btn-preset-brutal .btn-secondary, .btn-preset-brutal .btn-danger, .btn-preset-brutal .remove-btn, .btn-preset-brutal .btn-submit, .btn-preset-brutal .mobile-menu-mode-buttons a, .btn-preset-brutal .mobile-dropdown-content .btn { border: 3px solid #000; border-radius: 0; box-shadow: 4px 4px 0 #000; font-weight: 900; text-transform: uppercase; transition: all 0.1s; }
 .btn-preset-brutal .btn, .btn-preset-brutal .btn-submit, .btn-preset-brutal .mobile-menu-mode-buttons a, .btn-preset-brutal .add-to-cart-btn-new { background-color: #fff; color: #000; }
 .btn-preset-brutal .btn-secondary { background-color: #e9ecef; color: #000; }
 .btn-preset-brutal .btn-danger, .btn-preset-brutal .remove-btn { background-color: #ffebee; color: #c62828; }
-.btn-preset-brutal .btn:hover, .btn-preset-brutal button:not(.accordion-header):hover, .btn-preset-brutal a:hover, .btn-preset-brutal .add-to-cart-btn-new:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #000; background-color: var(--button-accent-color, #e53935); color: #fff; }
+.btn-preset-brutal .btn:hover, .btn-preset-brutal button:not(.accordion-header):not(.fav-btn):hover, .btn-preset-brutal a:hover, .btn-preset-brutal .add-to-cart-btn-new:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #000; background-color: var(--button-accent-color, #e53935); color: #fff; }
 .btn-preset-brutal .btn-secondary:hover { background-color: #ced4da; }
 .btn-preset-brutal .btn-danger:hover { background-color: #ef5350; color: #fff; }
-.btn-preset-pushable_3d .btn, .btn-preset-pushable_3d button:not(.accordion-header), .btn-preset-pushable_3d input[type="submit"], .btn-preset-pushable_3d a.btn, .btn-preset-pushable_3d .add-to-cart-btn-small, .btn-preset-pushable_3d .product-card button, .btn-preset-pushable_3d .add-to-cart-btn-new { border: none; border-radius: 8px; box-shadow: 0 4px 0 0 #333; transition: transform 0.1s ease, box-shadow 0.1s ease; }
-.btn-preset-pushable_3d .btn:active, .btn-preset-pushable_3d button:not(.accordion-header):active, .btn-preset-pushable_3d input[type="submit"]:active, .btn-preset-pushable_3d a.btn:active, .btn-preset-pushable_3d .add-to-cart-btn-small:active, .btn-preset-pushable_3d .product-card button:active, .btn-preset-pushable_3d .add-to-cart-btn-new:active { transform: translateY(4px); box-shadow: 0 0px 0 0 #333; }
+.btn-preset-pushable_3d .btn, .btn-preset-pushable_3d button:not(.accordion-header):not(.fav-btn), .btn-preset-pushable_3d input[type="submit"], .btn-preset-pushable_3d a.btn, .btn-preset-pushable_3d .add-to-cart-btn-small, .btn-preset-pushable_3d .product-card button, .btn-preset-pushable_3d .add-to-cart-btn-new { border: none; border-radius: 8px; box-shadow: 0 4px 0 0 #333; transition: transform 0.1s ease, box-shadow 0.1s ease; }
+.btn-preset-pushable_3d .btn:active, .btn-preset-pushable_3d button:not(.accordion-header):not(.fav-btn):active, .btn-preset-pushable_3d input[type="submit"]:active, .btn-preset-pushable_3d a.btn:active, .btn-preset-pushable_3d .add-to-cart-btn-small:active, .btn-preset-pushable_3d .product-card button:active, .btn-preset-pushable_3d .add-to-cart-btn-new:active { transform: translateY(4px); box-shadow: 0 0px 0 0 #333; }
 .btn-preset-pushable_3d .btn-secondary { box-shadow: 0 4px 0 0 #495057; }
 .btn-preset-pushable_3d .btn-secondary:active { box-shadow: 0 0px 0 0 #495057; }
 .btn-preset-pushable_3d .btn-danger, .btn-preset-pushable_3d .remove-btn { box-shadow: 0 4px 0 0 #a71d2a; }
 .btn-preset-pushable_3d .btn-danger:active, .btn-preset-pushable_3d .remove-btn:active { box-shadow: 0 0px 0 0 #a71d2a; }
-.btn-preset-shine_hover .btn, .btn-preset-shine_hover button:not(.accordion-header), .btn-preset-shine_hover input[type="submit"], .btn-preset-shine_hover a.btn, .btn-preset-shine_hover .add-to-cart-btn-small, .btn-preset-shine_hover .product-card button, .btn-preset-shine_hover .add-to-cart-btn-new { overflow: hidden; }
-.btn-preset-shine_hover .btn::before, .btn-preset-shine_hover button:not(.accordion-header)::before, .btn-preset-shine_hover input[type="submit"]::before, .btn-preset-shine_hover a.btn::before, .btn-preset-shine_hover .add-to-cart-btn-small::before, .btn-preset-shine_hover .product-card button::before, .btn-preset-shine_hover .add-to-cart-btn-new::before { content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent); transform: skewX(-25deg); transition: left 0.6s ease; }
-.btn-preset-shine_hover .btn:hover::before, .btn-preset-shine_hover button:not(.accordion-header):hover::before, .btn-preset-shine_hover input[type="submit"]:hover::before, .btn-preset-shine_hover a.btn:hover::before, .btn-preset-shine_hover .add-to-cart-btn-small:hover::before, .btn-preset-shine_hover .product-card button:hover::before, .btn-preset-shine_hover .add-to-cart-btn-new:hover::before { left: 125%; }
-.btn-preset-outline_fill .btn, .btn-preset-outline_fill button:not(.accordion-header), .btn-preset-outline_fill input[type="submit"], .btn-preset-outline_fill a.btn, .btn-preset-outline_fill .add-to-cart-btn-small, .btn-preset-outline_fill .product-card button, .btn-preset-outline_fill .add-to-cart-btn-new { background-color: transparent; border: 2px solid var(--button-bg-color, #333); color: var(--button-bg-color, #333); transition: color 0.3s ease, background-color 0.3s ease; }
-.btn-preset-outline_fill .btn:hover, .btn-preset-outline_fill button:not(.accordion-header):hover, .btn-preset-outline_fill input[type="submit"]:hover, .btn-preset-outline_fill a.btn:hover, .btn-preset-outline_fill .add-to-cart-btn-small:hover, .btn-preset-outline_fill .product-card button:hover, .btn-preset-outline_fill .add-to-cart-btn-new:hover { background-color: var(--button-bg-color, #333); color: var(--button-text-color, #fff); }
+.btn-preset-shine_hover .btn, .btn-preset-shine_hover button:not(.accordion-header):not(.fav-btn), .btn-preset-shine_hover input[type="submit"], .btn-preset-shine_hover a.btn, .btn-preset-shine_hover .add-to-cart-btn-small, .btn-preset-shine_hover .product-card button, .btn-preset-shine_hover .add-to-cart-btn-new { overflow: hidden; }
+.btn-preset-shine_hover .btn::before, .btn-preset-shine_hover button:not(.accordion-header):not(.fav-btn)::before, .btn-preset-shine_hover input[type="submit"]::before, .btn-preset-shine_hover a.btn::before, .btn-preset-shine_hover .add-to-cart-btn-small::before, .btn-preset-shine_hover .product-card button::before, .btn-preset-shine_hover .add-to-cart-btn-new::before { content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent); transform: skewX(-25deg); transition: left 0.6s ease; }
+.btn-preset-shine_hover .btn:hover::before, .btn-preset-shine_hover button:not(.accordion-header):not(.fav-btn):hover::before, .btn-preset-shine_hover input[type="submit"]:hover::before, .btn-preset-shine_hover a.btn:hover::before, .btn-preset-shine_hover .add-to-cart-btn-small:hover::before, .btn-preset-shine_hover .product-card button:hover::before, .btn-preset-shine_hover .add-to-cart-btn-new:hover::before { left: 125%; }
+.btn-preset-outline_fill .btn, .btn-preset-outline_fill button:not(.accordion-header):not(.fav-btn), .btn-preset-outline_fill input[type="submit"], .btn-preset-outline_fill a.btn, .btn-preset-outline_fill .add-to-cart-btn-small, .btn-preset-outline_fill .product-card button, .btn-preset-outline_fill .add-to-cart-btn-new { background-color: transparent; border: 2px solid var(--button-bg-color, #333); color: var(--button-bg-color, #333); transition: color 0.3s ease, background-color 0.3s ease; }
+.btn-preset-outline_fill .btn:hover, .btn-preset-outline_fill button:not(.accordion-header):not(.fav-btn):hover, .btn-preset-outline_fill input[type="submit"]:hover, .btn-preset-outline_fill a.btn:hover, .btn-preset-outline_fill .add-to-cart-btn-small:hover, .btn-preset-outline_fill .product-card button:hover, .btn-preset-outline_fill .add-to-cart-btn-new:hover { background-color: var(--button-bg-color, #333); color: var(--button-text-color, #fff); }
 .btn-preset-outline_fill .btn-secondary { border-color: #6c757d; color: #6c757d; }
 .btn-preset-outline_fill .btn-secondary:hover { background-color: #6c757d; color: #fff; }
 .btn-preset-outline_fill .btn-danger, .btn-preset-outline_fill .remove-btn { border-color: #dc3545; color: #dc3545; }
@@ -645,6 +648,9 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     transform: translateY(0);
 }
 
+
+
+
 /* 5. Аккордеон */
 .accordion-new {
     border-top: 1px solid #eee;
@@ -835,26 +841,49 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
 /* === [конец] СТИЛИ ДЛЯ ПРЕИМУЩЕСТВ (ИКОНКИ+ ТУЛТИПЫ) === */
 /* ======================================================= */
 
-.back-link-new {
-    display: inline-flex; /* Чтобы выглядела как кнопка/ссылка */
-    align-items: center;
-    gap: 0.5rem;
-    color: #777;
-    text-decoration: none;
-    transition: color 0.2s ease, transform 0.2s ease;
-    font-size: 1em;
-}
-.back-link-new:hover {
-    color: var(--accent-color, #e53935);
-    transform: translateX(-5px);
-}
-.back-link-new::before {
-    content: "←";
-    display: inline-block;
-    margin-right: 5px;
-    font-size: 1.2em;
-    line-height: 1;
-}
+/* Кнопка "Вернуться в каталог" */
+    .back-link-new {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #777;
+        text-decoration: none;
+        font-size: 1em;
+        margin-top: 20px;
+
+        /* Анимация */
+        transition: color 0.2s ease, transform 0.2s ease;
+
+        /* ВАЖНО: Убираем любые фоны и рамки */
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* При наведении */
+    .back-link-new:hover {
+        /* Меняем цвет на акцентный (красный) */
+        color: var(--accent-color, #e53935);
+
+        /* Сдвигаем немного влево для эффекта возврата */
+        transform: translateX(-5px);
+
+        /* ГАРАНТИРОВАННО убираем фон при наведении */
+        background: transparent !important;
+        background-color: transparent !important;
+        text-decoration: none !important;
+    }
+
+    /* Стрелочка */
+    .back-link-new::before {
+        content: "←";
+        display: inline-block;
+        margin-right: 5px;
+        font-size: 1.2em;
+        line-height: 1;
+        /* Убираем фон у самой стрелочки, если вдруг он там есть */
+        background: transparent !important;
+    }
 
 
 
@@ -964,14 +993,15 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     @media (min-width: 590px) {
         .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 12px !important; }
     }
+
     /* 2. Большие телефоны (390px - 589px) -> 3 колонки */
     @media (min-width: 390px) and (max-width: 589px) {
-        .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important; }
+        .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
         .mobile-grid-col-0 .product-title { font-size: 0.85rem !important; }
     }
     /* 3. Узкие телефоны (меньше 390px) -> 2 колонки */
     @media (max-width: 389px) {
-        .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+        .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; }
     }
 
     /* Остальные режимы (фиксированные из админки) */
@@ -985,16 +1015,21 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     .mobile-grid-col-2 .product-title { font-size: 0.9rem !important; margin-bottom: 6px !important; line-height: 1.25 !important; height: 2.5em; }
     .mobile-grid-col-2 .product-price { font-size: 1rem !important; }
     .mobile-grid-col-2 .add-to-cart-btn-small { padding: 8px 0 !important; font-size: 0.9rem !important; }
+
     .mobile-grid-col-3 .product-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 6px !important; }
     .mobile-grid-col-3 .product-card { padding: 5px !important; }
     .mobile-grid-col-3 .product-title { font-size: 0.75rem !important; margin-bottom: 4px !important; line-height: 1.2 !important; height: 2.4em; }
     .mobile-grid-col-3 .product-price { font-size: 0.85rem !important; }
+
     .mobile-grid-col-3 .add-to-cart-btn-small { padding: 5px 0 !important; font-size: 0.75rem !important; }
+
     .mobile-grid-col-4 .product-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 4px !important; }
     .mobile-grid-col-4 .product-card { padding: 3px !important; border-radius: 4px !important; }
     .mobile-grid-col-4 .product-title { font-size: 0.65rem !important; margin-bottom: 2px !important; line-height: 1.1 !important; height: 2.2em; }
     .mobile-grid-col-4 .product-price { font-size: 0.75rem !important; }
     .mobile-grid-col-4 .add-to-cart-btn-small { padding: 3px 0 !important; font-size: 0.65rem !important; }
+
+
 
     /* =============================================== */
     /* === [ИСПРАВЛЕНО] АДАПТИВ ДЕТАЛЬНОЙ СТРАНИЦЫ === */
@@ -1395,47 +1430,56 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
 
 
 
-/* Сердечко на карточке товара */
+/* --- СТИЛИ ДЛЯ СЕРДЕЧКА (ИЗБРАННОЕ) --- */
 .fav-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 35px;
-    height: 35px;
+    position: absolute !important;
+    /* НОВЫЕ КООРДИНАТЫ (Ближе к углу) */
+    top: 6px;
+    right: 6px;
+
+    /* Размеры */
+    width: 28px;
+    height: 28px;
+
+    /* Оформление - Белый круг */
     background: rgba(255, 255, 255, 0.9);
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 10; /* Чтобы было поверх фото */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    transition: transform 0.2s, background-color 0.2s;
     border: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+
+    /* Центрирование иконки */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
     padding: 0;
+    margin: 0;
+    cursor: pointer;
+    z-index: 10;
+
+    transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 .fav-btn:hover {
     transform: scale(1.1);
     background: #fff;
 }
-
+/* УМЕНЬШИЛИ ИКОНКУ */
 .fav-btn svg {
-    width: 20px;
-    height: 20px;
-    fill: none; /* Пустое внутри */
-    stroke: #333; /* Серый контур */
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: #333; /* Темно-серый контур */
     stroke-width: 2;
     transition: all 0.3s ease;
 }
 
-/* Активное состояние (добавлено в избранное) */
+/* Активное состояние */
 .fav-btn.active svg {
     fill: #ff4081;   /* Розовая заливка */
     stroke: #ff4081; /* Розовый контур */
 }
 
-/* Иконка в шапке (стиль такой же как у корзины) */
-.favorites-link {
-    position: relative;
-}
+
+
+

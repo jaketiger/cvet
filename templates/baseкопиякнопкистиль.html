@@ -67,22 +67,8 @@
             /* Настройки шапки (Mobile) */
             --mobile-header-rgb: {{ site_settings.mobile_header_bg_rgb|default:'255, 255, 255' }};
             --mobile-header-alpha: {% if site_settings.mobile_header_bg_mode == 'transparent' %}0{% else %}0.98{% endif %};
-
-
             --mobile-btn-bg-color: rgba({{ site_settings.mobile_dropdown_button_bg_rgb|default:'255, 0, 0' }}, {{ site_settings.mobile_dropdown_button_opacity_css }});
             --mobile-btn-text-color: {{ site_settings.mobile_dropdown_button_text_color_css }};
-
-
-/* ЛОГИКА СКРУГЛЕНИЯ МОБИЛЬНЫХ КНОПОК */
-            {% if site_settings.mobile_dropdown_inherit_radius %}
-                /* Если галочка стоит - берем ГЛОБАЛЬНОЕ скругление */
-                --mobile-btn-radius: {{ site_settings.button_border_radius|default:5 }}px;
-            {% else %}
-                /* Если галочка снята - берем СВОЕ скругление (или 0, если пусто) */
-                --mobile-btn-radius: {{ site_settings.mobile_dropdown_button_border_radius|default:0 }}px;
-            {% endif %}
-
-
 
             --product-zoom-factor: {{ site_settings.product_image_zoom_factor|default:2.0 }};
 
@@ -134,14 +120,9 @@
         .header { transition: background-color 0.3s ease, box-shadow 0.3s ease, backdrop-filter 0.3s ease; width: 100%; }
 
         /* --- СТИЛИ ДЛЯ КНОПОК КАРТОЧКИ --- */
-        /* Глобальный стиль для контейнера действий (Десктоп) */
-
-        .product-card-actions, .add-to-cart-form { padding: 0 !important; margin: 0 25px 25px 25px !important; }
+        .product-card-actions, .add-to-cart-form { padding: 0 !important; margin: 0 10px 10px 10px !important; }
 /*        .add-to-cart-btn-new { width: 100% !important; border-radius: 4px !important; white-space: nowrap !important; min-height: 40px; }  */
         .add-to-cart-btn-new { width: 100% !important; border-radius: var(--button-border-radius) !important; ... }
-
-
-
 
 
         .add-to-cart-btn-new .btn-content-success { display: none !important; }
@@ -149,15 +130,15 @@
         .add-to-cart-btn-new.added .btn-content-normal { display: none !important; }
         .add-to-cart-btn-new.added .btn-content-success { display: flex !important; justify-content: center; align-items: center; }
 
-/*       Сердечко перенес в main.css
+        /* Сердечко */
         .fav-btn { position: absolute !important; top: 10px !important; right: 10px !important; z-index: 20 !important; width: 32px !important; height: 32px !important; background: rgba(255, 255, 255, 0.9) !important; border-radius: 50% !important; border: none !important; box-shadow: 0 2px 5px rgba(0,0,0,0.15) !important; display: flex !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; padding: 0 !important; transition: transform 0.2s; }
         .fav-btn:hover { transform: scale(1.1); }
         .fav-btn svg { width: 18px !important; height: 18px !important; fill: none; stroke: #333; stroke-width: 2; display: block !important; }
         .fav-btn.active svg { fill: #ff4081; stroke: #ff4081; }
-*/
+
         /* Бейджи */
         .icon-wrapper { position: relative; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; }
-        .cart-badge { position: absolute; width: 15px; height: 15px; font-size: 9px; background-color: var(--button-bg-color, #e53935); color: var(--button-text-color, #fff); top: -6px; right: -6px; border-radius: 50%; border: none !important; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; pointer-events: none; }
+        .cart-badge { position: absolute; width: 15px; height: 15px; font-size: 9px; background-color: var(--button-bg-color, #e53935); color: var(--button-text-color, #fff); top: -6px; right: -6px; border-radius: 50%; border: 2px solid #fff; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; pointer-events: none; }
         .cart-badge.hidden { display: none !important; }
 
         /* --- [FIX] УБИРАЕМ СИНЕЕ ВЫДЕЛЕНИЕ АККОРДЕОНА НА МОБИЛЬНОМ --- */
@@ -289,75 +270,27 @@
                 border-radius: 0 0 var(--button-border-radius) var(--button-border-radius) !important;
             }
 
+            /* 3 Колонки */
+            .mobile-grid-col-3 .add-to-cart-btn-new,
+            @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .add-to-cart-btn-new } {
+                width: 100% !important; margin: 0 !important;
+                min-height: 30px !important; height: 30px !important; max-height: 30px !important;
+                padding: 0 !important; display: flex !important; justify-content: center !important; align-items: center !important;
+                /* Скругление только снизу, берем из настроек */
+                border-radius: 0 0 var(--button-border-radius) var(--button-border-radius) !important;
+                overflow: hidden !important;
+            }
 
-
-
-            /* ============================================================ */
-            /* === 3 КОЛОНКИ (СУПЕР-СИЛЬНЫЙ ФИКС ОТСТУПОВ) === */
-            /* ============================================================ */
-
-
-
-            //* 1. Сброс отступов */
-        html body.mobile-grid-col-0 .product-card-actions,
-        html body.mobile-grid-col-0 .add-to-cart-form {
-            margin: 0 !important; padding: 0 !important; width: 100% !important;
-        }
-
-        /* 2. Сама кнопка */
-        html body.mobile-grid-col-0 .add-to-cart-btn-new {
-            width: 100% !important;
-            height: 32px !important; min-height: 32px !important;
-            padding: 0 !important;
-
-            /* ИСПРАВЛЕНО: Берем скругление из настроек админки */
-            border-radius: var(--button-border-radius) !important;
-
-            display: flex !important; justify-content: center !important; align-items: center !important;
-        }
-
-        /* 3. Текст: 11.6px, без иконки */
-        html body.mobile-grid-col-0 .add-to-cart-btn-new .btn-content-normal .btn-text {
-            font-size: 11.6px !important; white-space: nowrap !important; display: block !important; line-height: 32px !important; letter-spacing: 0 !important;
-        }
-        html body.mobile-grid-col-0 .add-to-cart-btn-new .btn-content-normal svg {
-            display: none !important; width: 0 !important;
-        }
-
-        /* 4. Галочка успеха */
-        html body.mobile-grid-col-0 .add-to-cart-btn-new.added .btn-content-success svg {
-            display: block !important; width: 16px !important; height: 16px !important; margin: 0 auto !important;
-        }
-        html body.mobile-grid-col-0 .add-to-cart-btn-new.added .btn-text { display: none !important; }
-    }
-
-    /* ЯВНЫЙ РЕЖИМ 3-Х КОЛОНОК (Если выбран в админке принудительно) */
-    @media (max-width: 992px) {
-        html body.mobile-grid-col-3 .product-card-actions,
-        html body.mobile-grid-col-3 .add-to-cart-form {
-            margin: 0 !important; padding: 0 !important; width: 100% !important;
-        }
-        html body.mobile-grid-col-3 .add-to-cart-btn-new {
-            width: 100% !important; height: 32px !important; min-height: 32px !important; padding: 0 !important;
-
-            /* ИСПРАВЛЕНО: Берем скругление из настроек админки */
-            border-radius: var(--button-border-radius) !important;
-
-            display: flex !important; justify-content: center !important; align-items: center !important;
-        }
-        html body.mobile-grid-col-3 .add-to-cart-btn-new .btn-content-normal .btn-text {
-            font-size: 9px !important; white-space: nowrap !important; display: block !important; line-height: 32px !important; letter-spacing: 0 !important;
-        }
-        html body.mobile-grid-col-3 .add-to-cart-btn-new .btn-content-normal svg { display: none !important; width: 0 !important; }
-        html body.mobile-grid-col-3 .add-to-cart-btn-new.added .btn-content-success svg { display: block !important; width: 16px !important; height: 16px !important; margin: 0 auto !important; }
-        html body.mobile-grid-col-3 .add-to-cart-btn-new.added .btn-text { display: none !important; }
-
-
-
-
-
-
-
+            /* ... стили текста и иконок внутри 3-х колонок оставляем как были ... */
+            .mobile-grid-col-3 .add-to-cart-btn-new .btn-text,
+            .mobile-grid-col-3 .add-to-cart-btn-new .btn-content-success span,
+            @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .btn-text, .mobile-grid-col-0 .btn-content-success span } {
+                display: inline-block !important; font-size: 0.65rem !important; white-space: nowrap !important; line-height: 30px !important; padding: 0 2px !important;
+            }
+            .mobile-grid-col-3 .add-to-cart-btn-new svg,
+            @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .add-to-cart-btn-new svg } {
+                width: 12px !important; height: 12px !important; margin-right: 2px !important; display: inline-block !important; flex-shrink: 0 !important; vertical-align: middle !important;
+            }
 
             /* 4 Колонки */
             .mobile-grid-col-4 .add-to-cart-btn-new,
@@ -464,68 +397,9 @@
         }
 
 
-        /* Стили для выпадающего меню */
-        .mobile-dropdown-content {
-            font-family: var(--font-{{ site_settings.mobile_dropdown_font_family|default:site_settings.default_font_family|default:'roboto' }});
-            font-size: {{ site_settings.mobile_dropdown_font_size|default:site_settings.default_font_size|default:16 }}px;
-            color: {{ site_settings.mobile_dropdown_font_color|default:'var(--default-text-color)' }};
-            font-weight: var(--mobile-dropdown-font-weight);
-            font-style: var(--mobile-dropdown-font-style);
-        }
-
-        .mobile-dropdown-content a:not(.btn):not(.btn-secondary):not(.category-link-item),
-        .mobile-menu-mode-text .category-link-item {
-             color: {{ site_settings.mobile_dropdown_font_color|default:'var(--default-text-color)' }} !important;
-             text-decoration: none;
-        }
-
-        /* ОБЩИЕ СТИЛИ ДЛЯ ВСЕХ КНОПОК В МОБИЛЬНОМ МЕНЮ */
-        .mobile-dropdown-content button,
-        .mobile-dropdown-content .btn,
-        .mobile-menu-mode-buttons .category-link-item {
-            --button-bg-color: var(--mobile-btn-bg-color);
-            --button-text-color: var(--mobile-btn-text-color);
-
-            display: block;
-            width: 100%;
-            box-sizing: border-box;
-            margin-bottom: 8px;
-            text-align: center;
-            padding: 10px;
-            text-decoration: none;
-            cursor: pointer;
-
-            /* ПРИНУДИТЕЛЬНО ПРИМЕНЯЕМ ЦВЕТА И РАДИУС */
-            background: var(--mobile-btn-bg-color) !important;
-            color: var(--mobile-btn-text-color) !important;
-            border-radius: var(--mobile-btn-radius) !important;
-            border: none !important;
-        }
-
-        /* Дополнительная страховка для кнопок, если заданы специфичные настройки цветов */
-        {% if site_settings.mobile_dropdown_button_bg_color or site_settings.mobile_dropdown_button_text_color %}
-            .mobile-dropdown-content button,
-            .mobile-dropdown-content .btn,
-            .mobile-menu-mode-buttons .category-link-item {
-                background: var(--mobile-btn-bg-color) !important;
-                background-image: none !important;
-                color: var(--mobile-btn-text-color) !important;
-                border: none !important;
-                box-shadow: none !important;
-                text-shadow: none !important;
-
-                border-radius: var(--mobile-btn-radius) !important;
-            }
-            /* Убираем псевдоэлементы от глобальных стилей */
-            .mobile-dropdown-content button::before, .mobile-dropdown-content button::after,
-            .mobile-dropdown-content .btn::before, .mobile-dropdown-content .btn::after,
-            .mobile-menu-mode-buttons .category-link-item::before, .mobile-menu-mode-buttons .category-link-item::after {
-                display: none !important;
-            }
-        {% endif %}
-
-
-
+        .mobile-dropdown-content { font-family: var(--font-{{ site_settings.mobile_dropdown_font_family|default:site_settings.default_font_family|default:'roboto' }}); color: {{ site_settings.mobile_dropdown_font_color|default:'var(--default-text-color)' }}; }
+        .mobile-dropdown-content a:not(.btn) { color: inherit; text-decoration: none; }
+        .mobile-dropdown-content .btn { background: var(--mobile-btn-bg-color) !important; color: var(--mobile-btn-text-color) !important; }
     </style>
 </head>
 
@@ -612,60 +486,31 @@
                                 {% for c in categories %}<a href="{{ c.get_absolute_url }}" class="category-link-item">{{ c.name }}</a>{% endfor %}
                             </div>
                         </div>
-
-
                         <div class="user-nav-mobile-wrapper" id="cabinet-wrapper">
-                            <!-- Добавляем класс режима отображения (кнопки или текст) -->
-                            <nav class="user-nav-mobile {% if site_settings.mobile_dropdown_view_mode == 'buttons' %}mobile-menu-mode-buttons{% else %}mobile-menu-mode-text{% endif %}">
+                            <nav class="user-nav-mobile">
                                 {% if user.is_authenticated %}
                                     <p class="user-greeting">Здравствуйте, {{ user.first_name|default:user.username }}!</p>
-
-                                    <!-- Ссылка: Если режим кнопок - добавляем класс btn, иначе - просто ссылка -->
-                                    <a href="{% url 'shop:cabinet' %}" class="{% if site_settings.mobile_dropdown_view_mode == 'buttons' %}btn{% endif %}">Личный кабинет</a>
-
-                                    <form id="logout-form-mobile" action="{% url 'logout' %}" method="post" style="display: contents;">
-                                        {% csrf_token %}
-                                        <a href="#" onclick="document.getElementById('logout-form-mobile').submit(); return false;" class="{% if site_settings.mobile_dropdown_view_mode == 'buttons' %}btn btn-secondary{% endif %}">Выйти</a>
-                                    </form>
+                                    <a href="{% url 'shop:cabinet' %}" class="btn">Личный кабинет</a>
+                                    <form id="logout-form-mobile" action="{% url 'logout' %}" method="post" style="display: contents;"><a href="#" onclick="document.getElementById('logout-form-mobile').submit(); return false;" class="btn btn-secondary">Выйти</a></form>
                                 {% else %}
-                                    <a href="{% url 'login' %}" class="{% if site_settings.mobile_dropdown_view_mode == 'buttons' %}btn{% endif %}">Войти</a>
-                                    <a href="{% url 'users:register' %}" class="{% if site_settings.mobile_dropdown_view_mode == 'buttons' %}btn btn-secondary{% endif %}">Регистрация</a>
+                                    <a href="{% url 'login' %}" class="btn">Войти</a>
+                                    <a href="{% url 'users:register' %}" class="btn btn-secondary">Регистрация</a>
                                 {% endif %}
                             </nav>
                         </div>
-
-
-
                         <div class="cart-nav-mobile-wrapper" id="cart-wrapper">
-                            <div class="cart-summary-mobile {% if site_settings.mobile_dropdown_view_mode == 'buttons' %}mobile-menu-mode-buttons{% else %}mobile-menu-mode-text{% endif %}">
+                            <div class="cart-summary-mobile">
                                 {% if cart %}
-                                    <p>В корзине: <strong>{{ cart|length }}</strong> на <strong>{{ cart.get_total_price }} руб.</strong></p>
-
-                                    {% if site_settings.mobile_dropdown_view_mode == 'buttons' %}
-                                        <!-- РЕЖИМ КНОПОК -->
-                                        <a href="{% url 'cart:cart_detail' %}" class="btn btn-secondary" style="width:100%; margin-bottom:8px;">Перейти в корзину</a>
-                                        <a href="{% url 'orders:order_create' %}" class="btn" style="width:100%;">Оформить заказ</a>
-                                    {% else %}
-                                        <!-- РЕЖИМ ТЕКСТА -->
-                                        <a href="{% url 'cart:cart_detail' %}">Перейти в корзину</a>
-                                        <a href="{% url 'orders:order_create' %}">Оформить заказ</a>
-                                    {% endif %}
-
+                                    <p>Товаров: <strong>{{ cart|length }}</strong></p>
+                                    <p>Сумма: <strong>{{ cart.get_total_price }} руб.</strong></p>
+                                    <a href="{% url 'cart:cart_detail' %}" class="btn btn-secondary" style="width:100%; margin-bottom:8px;">В корзину</a>
+                                    <a href="{% url 'orders:order_create' %}" class="btn" style="width:100%;">Оформить заказ</a>
                                 {% else %}
                                     <p>Ваша корзина пуста</p>
-
-                                    {% if site_settings.mobile_dropdown_view_mode == 'buttons' %}
-                                        <a href="{% url 'shop:product_list_all' %}" class="btn" style="width:100%;">К покупкам</a>
-                                    {% else %}
-                                        <a href="{% url 'shop:product_list_all' %}">К покупкам</a>
-                                    {% endif %}
+                                    <a href="{% url 'shop:product_list_all' %}" class="btn">К покупкам</a>
                                 {% endif %}
                             </div>
                         </div>
-
-
-
-
                     </div>
                 </div>
             </div>
@@ -783,27 +628,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
 
                         // Обновление меню корзины на мобильном
-
-                        // === 4. ОБНОВЛЕНИЕ МОБИЛЬНОГО ВЫПАДАЮЩЕГО МЕНЮ ===
                         const mobileSummary = document.querySelector('.cart-summary-mobile');
                         if (mobileSummary) {
-                            // Проверяем, какой режим сейчас включен в HTML (по наличию класса)
-                            const isButtonMode = mobileSummary.classList.contains('mobile-menu-mode-buttons');
-
-                            // Формируем классы в зависимости от режима
-                            const btnClass = isButtonMode ? 'btn' : '';
-                            const btnSecondaryClass = isButtonMode ? 'btn btn-secondary' : '';
-                            const styleWidth = isButtonMode ? 'style="width: 100%; box-sizing: border-box; text-align: center; display: block;"' : '';
-                            const styleMargin = isButtonMode ? 'margin-bottom: 8px;' : '';
-
                             mobileSummary.innerHTML = `
                                 <p>Товаров в корзине: <strong>${data.cart_len}</strong></p>
                                 <p>На сумму: <strong>${data.total_price} руб.</strong></p>
-                                <a href="{% url 'cart:cart_detail' %}" class="${btnSecondaryClass}" ${styleWidth} style="${styleMargin}">Перейти в корзину</a>
-                                <a href="{% url 'orders:order_create' %}" class="${btnClass}" ${styleWidth}>Оформить заказ</a>
+                                <a href="{% url 'cart:cart_detail' %}" class="btn btn-secondary" style="width: 100%; box-sizing: border-box; text-align: center; display: block; margin-bottom: 8px;">Перейти в корзину</a>
+                                <a href="{% url 'orders:order_create' %}" class="btn" style="width: 100%; box-sizing: border-box; text-align: center; display: block;">Оформить заказ</a>
                             `;
                         }
-
 
                         // Анимация
                         btn.classList.add('added');
@@ -854,8 +687,5 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 {% block extra_scripts %}{% endblock %}
-
-
-
 </body>
 </html>

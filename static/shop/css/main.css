@@ -648,6 +648,9 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     transform: translateY(0);
 }
 
+
+
+
 /* 5. Аккордеон */
 .accordion-new {
     border-top: 1px solid #eee;
@@ -838,26 +841,49 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
 /* === [конец] СТИЛИ ДЛЯ ПРЕИМУЩЕСТВ (ИКОНКИ+ ТУЛТИПЫ) === */
 /* ======================================================= */
 
-.back-link-new {
-    display: inline-flex; /* Чтобы выглядела как кнопка/ссылка */
-    align-items: center;
-    gap: 0.5rem;
-    color: #777;
-    text-decoration: none;
-    transition: color 0.2s ease, transform 0.2s ease;
-    font-size: 1em;
-}
-.back-link-new:hover {
-    color: var(--accent-color, #e53935);
-    transform: translateX(-5px);
-}
-.back-link-new::before {
-    content: "←";
-    display: inline-block;
-    margin-right: 5px;
-    font-size: 1.2em;
-    line-height: 1;
-}
+/* Кнопка "Вернуться в каталог" */
+    .back-link-new {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #777;
+        text-decoration: none;
+        font-size: 1em;
+        margin-top: 20px;
+
+        /* Анимация */
+        transition: color 0.2s ease, transform 0.2s ease;
+
+        /* ВАЖНО: Убираем любые фоны и рамки */
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* При наведении */
+    .back-link-new:hover {
+        /* Меняем цвет на акцентный (красный) */
+        color: var(--accent-color, #e53935);
+
+        /* Сдвигаем немного влево для эффекта возврата */
+        transform: translateX(-5px);
+
+        /* ГАРАНТИРОВАННО убираем фон при наведении */
+        background: transparent !important;
+        background-color: transparent !important;
+        text-decoration: none !important;
+    }
+
+    /* Стрелочка */
+    .back-link-new::before {
+        content: "←";
+        display: inline-block;
+        margin-right: 5px;
+        font-size: 1.2em;
+        line-height: 1;
+        /* Убираем фон у самой стрелочки, если вдруг он там есть */
+        background: transparent !important;
+    }
 
 
 
@@ -967,14 +993,15 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     @media (min-width: 590px) {
         .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 12px !important; }
     }
+
     /* 2. Большие телефоны (390px - 589px) -> 3 колонки */
     @media (min-width: 390px) and (max-width: 589px) {
-        .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important; }
+        .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
         .mobile-grid-col-0 .product-title { font-size: 0.85rem !important; }
     }
     /* 3. Узкие телефоны (меньше 390px) -> 2 колонки */
     @media (max-width: 389px) {
-        .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+        .mobile-grid-col-0 .product-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; }
     }
 
     /* Остальные режимы (фиксированные из админки) */
@@ -988,16 +1015,21 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     .mobile-grid-col-2 .product-title { font-size: 0.9rem !important; margin-bottom: 6px !important; line-height: 1.25 !important; height: 2.5em; }
     .mobile-grid-col-2 .product-price { font-size: 1rem !important; }
     .mobile-grid-col-2 .add-to-cart-btn-small { padding: 8px 0 !important; font-size: 0.9rem !important; }
+
     .mobile-grid-col-3 .product-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 6px !important; }
     .mobile-grid-col-3 .product-card { padding: 5px !important; }
     .mobile-grid-col-3 .product-title { font-size: 0.75rem !important; margin-bottom: 4px !important; line-height: 1.2 !important; height: 2.4em; }
     .mobile-grid-col-3 .product-price { font-size: 0.85rem !important; }
+
     .mobile-grid-col-3 .add-to-cart-btn-small { padding: 5px 0 !important; font-size: 0.75rem !important; }
+
     .mobile-grid-col-4 .product-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 4px !important; }
     .mobile-grid-col-4 .product-card { padding: 3px !important; border-radius: 4px !important; }
     .mobile-grid-col-4 .product-title { font-size: 0.65rem !important; margin-bottom: 2px !important; line-height: 1.1 !important; height: 2.2em; }
     .mobile-grid-col-4 .product-price { font-size: 0.75rem !important; }
     .mobile-grid-col-4 .add-to-cart-btn-small { padding: 3px 0 !important; font-size: 0.65rem !important; }
+
+
 
     /* =============================================== */
     /* === [ИСПРАВЛЕНО] АДАПТИВ ДЕТАЛЬНОЙ СТРАНИЦЫ === */
@@ -1400,13 +1432,14 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
 
 /* --- СТИЛИ ДЛЯ СЕРДЕЧКА (ИЗБРАННОЕ) --- */
 .fav-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
+    position: absolute !important;
+    /* НОВЫЕ КООРДИНАТЫ (Ближе к углу) */
+    top: 6px;
+    right: 6px;
 
     /* Размеры */
-    width: 35px;
-    height: 35px;
+    width: 28px;
+    height: 28px;
 
     /* Оформление - Белый круг */
     background: rgba(255, 255, 255, 0.9);
@@ -1415,9 +1448,9 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 
     /* Центрирование иконки */
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 
     padding: 0;
     margin: 0;
@@ -1431,10 +1464,10 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
     transform: scale(1.1);
     background: #fff;
 }
-
+/* УМЕНЬШИЛИ ИКОНКУ */
 .fav-btn svg {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     fill: none;
     stroke: #333; /* Темно-серый контур */
     stroke-width: 2;

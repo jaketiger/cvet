@@ -350,8 +350,19 @@ class SiteSettings(SingletonModel):
     mobile_dropdown_font_color = models.CharField("Цвет текста (ВСЕ)", max_length=7, blank=True, default='')
     mobile_dropdown_button_bg_color = models.CharField("Цвет фона кнопок (ВСЕ)", max_length=7, blank=True, default='')
     mobile_dropdown_button_text_color = models.CharField("Цвет текста кнопок (ВСЕ)", max_length=7, blank=True, default='')
-    mobile_dropdown_button_border_radius = models.PositiveSmallIntegerField("Скругление кнопок (px)", blank=True, null=True)
-    mobile_dropdown_button_opacity = models.FloatField("Прозрачность кнопок", default=100, blank=True, null=True, validators=[MinValueValidator(0), MaxValueValidator(100)], help_text=HELP_OPACITY)
+
+#    mobile_dropdown_button_border_radius = models.PositiveSmallIntegerField("Скругление кнопок (px)", blank=True, null=True)
+#    mobile_dropdown_button_opacity = models.FloatField("Прозрачность кнопок", default=100, blank=True, null=True, validators=[MinValueValidator(0), MaxValueValidator(100)], help_text=HELP_OPACITY)
+    mobile_dropdown_inherit_radius = models.BooleanField("Использовать глобальное скругление?", default=True,
+                                                         help_text="Если галочка стоит, скругление будет таким же, как у всех кнопок на сайте. Если снята — используется значение из поля ниже.")
+    mobile_dropdown_button_border_radius = models.PositiveSmallIntegerField("Скругление кнопок (px)", blank=True,
+                                                                            null=True,
+                                                                            help_text="Сработает, только если галочка слева снята.")
+    mobile_dropdown_button_opacity = models.FloatField("Прозрачность кнопок", default=100, blank=True, null=True,
+                                                       validators=[MinValueValidator(0), MaxValueValidator(100)],
+                                                       help_text="100% - непрозрачные, 0% - полностью прозрачные.")
+
+
 
     # Статические страницы
     static_page_title_color = models.CharField("Цвет заголовков H1", max_length=7, blank=True)

@@ -270,7 +270,11 @@ class SiteSettingsAdmin(SingletonModelAdmin):
                 ('mobile_dropdown_font_family', 'mobile_dropdown_font_size', 'mobile_dropdown_font_style'),
                 'mobile_dropdown_button_bg_color',
                 'mobile_dropdown_button_text_color',
-                ('mobile_dropdown_button_border_radius', 'mobile_dropdown_button_opacity'),
+
+                # --- ИЗМЕНЕНИЯ ЗДЕСЬ (Группируем галочку и поле в одну строку) ---
+                ('mobile_dropdown_inherit_radius', 'mobile_dropdown_button_border_radius'),
+
+                'mobile_dropdown_button_opacity',
             )
         }),
         ('Стилизация статичных страниц', {

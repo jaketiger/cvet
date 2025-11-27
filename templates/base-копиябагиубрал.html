@@ -72,17 +72,7 @@
             --mobile-btn-bg-color: rgba({{ site_settings.mobile_dropdown_button_bg_rgb|default:'255, 0, 0' }}, {{ site_settings.mobile_dropdown_button_opacity_css }});
             --mobile-btn-text-color: {{ site_settings.mobile_dropdown_button_text_color_css }};
 
-
-/* ЛОГИКА СКРУГЛЕНИЯ МОБИЛЬНЫХ КНОПОК */
-            {% if site_settings.mobile_dropdown_inherit_radius %}
-                /* Если галочка стоит - берем ГЛОБАЛЬНОЕ скругление */
-                --mobile-btn-radius: {{ site_settings.button_border_radius|default:5 }}px;
-            {% else %}
-                /* Если галочка снята - берем СВОЕ скругление (или 0, если пусто) */
-                --mobile-btn-radius: {{ site_settings.mobile_dropdown_button_border_radius|default:0 }}px;
-            {% endif %}
-
-
+            --mobile-btn-radius: {{ site_settings.mobile_dropdown_button_border_radius|default:site_settings.button_border_radius|default:5 }}px;
 
             --product-zoom-factor: {{ site_settings.product_image_zoom_factor|default:2.0 }};
 
@@ -134,14 +124,9 @@
         .header { transition: background-color 0.3s ease, box-shadow 0.3s ease, backdrop-filter 0.3s ease; width: 100%; }
 
         /* --- СТИЛИ ДЛЯ КНОПОК КАРТОЧКИ --- */
-        /* Глобальный стиль для контейнера действий (Десктоп) */
-
-        .product-card-actions, .add-to-cart-form { padding: 0 !important; margin: 0 25px 25px 25px !important; }
+        .product-card-actions, .add-to-cart-form { padding: 0 !important; margin: 0 10px 10px 10px !important; }
 /*        .add-to-cart-btn-new { width: 100% !important; border-radius: 4px !important; white-space: nowrap !important; min-height: 40px; }  */
         .add-to-cart-btn-new { width: 100% !important; border-radius: var(--button-border-radius) !important; ... }
-
-
-
 
 
         .add-to-cart-btn-new .btn-content-success { display: none !important; }
@@ -149,15 +134,15 @@
         .add-to-cart-btn-new.added .btn-content-normal { display: none !important; }
         .add-to-cart-btn-new.added .btn-content-success { display: flex !important; justify-content: center; align-items: center; }
 
-/*       Сердечко перенес в main.css
+        /* Сердечко */
         .fav-btn { position: absolute !important; top: 10px !important; right: 10px !important; z-index: 20 !important; width: 32px !important; height: 32px !important; background: rgba(255, 255, 255, 0.9) !important; border-radius: 50% !important; border: none !important; box-shadow: 0 2px 5px rgba(0,0,0,0.15) !important; display: flex !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; padding: 0 !important; transition: transform 0.2s; }
         .fav-btn:hover { transform: scale(1.1); }
         .fav-btn svg { width: 18px !important; height: 18px !important; fill: none; stroke: #333; stroke-width: 2; display: block !important; }
         .fav-btn.active svg { fill: #ff4081; stroke: #ff4081; }
-*/
+
         /* Бейджи */
         .icon-wrapper { position: relative; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; }
-        .cart-badge { position: absolute; width: 15px; height: 15px; font-size: 9px; background-color: var(--button-bg-color, #e53935); color: var(--button-text-color, #fff); top: -6px; right: -6px; border-radius: 50%; border: none !important; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; pointer-events: none; }
+        .cart-badge { position: absolute; width: 15px; height: 15px; font-size: 9px; background-color: var(--button-bg-color, #e53935); color: var(--button-text-color, #fff); top: -6px; right: -6px; border-radius: 50%; border: 2px solid #fff; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; pointer-events: none; }
         .cart-badge.hidden { display: none !important; }
 
         /* --- [FIX] УБИРАЕМ СИНЕЕ ВЫДЕЛЕНИЕ АККОРДЕОНА НА МОБИЛЬНОМ --- */
@@ -289,75 +274,27 @@
                 border-radius: 0 0 var(--button-border-radius) var(--button-border-radius) !important;
             }
 
+            /* 3 Колонки */
+            .mobile-grid-col-3 .add-to-cart-btn-new,
+            @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .add-to-cart-btn-new } {
+                width: 100% !important; margin: 0 !important;
+                min-height: 30px !important; height: 30px !important; max-height: 30px !important;
+                padding: 0 !important; display: flex !important; justify-content: center !important; align-items: center !important;
+                /* Скругление только снизу, берем из настроек */
+                border-radius: 0 0 var(--button-border-radius) var(--button-border-radius) !important;
+                overflow: hidden !important;
+            }
 
-
-
-            /* ============================================================ */
-            /* === 3 КОЛОНКИ (СУПЕР-СИЛЬНЫЙ ФИКС ОТСТУПОВ) === */
-            /* ============================================================ */
-
-
-
-            //* 1. Сброс отступов */
-        html body.mobile-grid-col-0 .product-card-actions,
-        html body.mobile-grid-col-0 .add-to-cart-form {
-            margin: 0 !important; padding: 0 !important; width: 100% !important;
-        }
-
-        /* 2. Сама кнопка */
-        html body.mobile-grid-col-0 .add-to-cart-btn-new {
-            width: 100% !important;
-            height: 32px !important; min-height: 32px !important;
-            padding: 0 !important;
-
-            /* ИСПРАВЛЕНО: Берем скругление из настроек админки */
-            border-radius: var(--button-border-radius) !important;
-
-            display: flex !important; justify-content: center !important; align-items: center !important;
-        }
-
-        /* 3. Текст: 11.6px, без иконки */
-        html body.mobile-grid-col-0 .add-to-cart-btn-new .btn-content-normal .btn-text {
-            font-size: 11.6px !important; white-space: nowrap !important; display: block !important; line-height: 32px !important; letter-spacing: 0 !important;
-        }
-        html body.mobile-grid-col-0 .add-to-cart-btn-new .btn-content-normal svg {
-            display: none !important; width: 0 !important;
-        }
-
-        /* 4. Галочка успеха */
-        html body.mobile-grid-col-0 .add-to-cart-btn-new.added .btn-content-success svg {
-            display: block !important; width: 16px !important; height: 16px !important; margin: 0 auto !important;
-        }
-        html body.mobile-grid-col-0 .add-to-cart-btn-new.added .btn-text { display: none !important; }
-    }
-
-    /* ЯВНЫЙ РЕЖИМ 3-Х КОЛОНОК (Если выбран в админке принудительно) */
-    @media (max-width: 992px) {
-        html body.mobile-grid-col-3 .product-card-actions,
-        html body.mobile-grid-col-3 .add-to-cart-form {
-            margin: 0 !important; padding: 0 !important; width: 100% !important;
-        }
-        html body.mobile-grid-col-3 .add-to-cart-btn-new {
-            width: 100% !important; height: 32px !important; min-height: 32px !important; padding: 0 !important;
-
-            /* ИСПРАВЛЕНО: Берем скругление из настроек админки */
-            border-radius: var(--button-border-radius) !important;
-
-            display: flex !important; justify-content: center !important; align-items: center !important;
-        }
-        html body.mobile-grid-col-3 .add-to-cart-btn-new .btn-content-normal .btn-text {
-            font-size: 9px !important; white-space: nowrap !important; display: block !important; line-height: 32px !important; letter-spacing: 0 !important;
-        }
-        html body.mobile-grid-col-3 .add-to-cart-btn-new .btn-content-normal svg { display: none !important; width: 0 !important; }
-        html body.mobile-grid-col-3 .add-to-cart-btn-new.added .btn-content-success svg { display: block !important; width: 16px !important; height: 16px !important; margin: 0 auto !important; }
-        html body.mobile-grid-col-3 .add-to-cart-btn-new.added .btn-text { display: none !important; }
-
-
-
-
-
-
-
+            /* ... стили текста и иконок внутри 3-х колонок оставляем как были ... */
+            .mobile-grid-col-3 .add-to-cart-btn-new .btn-text,
+            .mobile-grid-col-3 .add-to-cart-btn-new .btn-content-success span,
+            @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .btn-text, .mobile-grid-col-0 .btn-content-success span } {
+                display: inline-block !important; font-size: 0.65rem !important; white-space: nowrap !important; line-height: 30px !important; padding: 0 2px !important;
+            }
+            .mobile-grid-col-3 .add-to-cart-btn-new svg,
+            @media (min-width: 390px) and (max-width: 589px) { .mobile-grid-col-0 .add-to-cart-btn-new svg } {
+                width: 12px !important; height: 12px !important; margin-right: 2px !important; display: inline-block !important; flex-shrink: 0 !important; vertical-align: middle !important;
+            }
 
             /* 4 Колонки */
             .mobile-grid-col-4 .add-to-cart-btn-new,
@@ -854,8 +791,5 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 {% block extra_scripts %}{% endblock %}
-
-
-
 </body>
 </html>

@@ -44,10 +44,10 @@
                         {% endif %}
                     </div>
 
-                    <!-- 3. ПРАВЫЙ БЛОК (Действия) -->
+                    <!-- 3. ПРАВЫЙ БЛОК -->
                     <div class="cart-item-actions">
 
-                        <!-- ЦЕНА (Запрещен перенос строк) -->
+                        <!-- ЦЕНА -->
                         <div class="cart-item-price">
                             {{ item.total_price }}&nbsp;₽
                             {% if item.quantity > 1 %}
@@ -59,33 +59,45 @@
                         <form action="{% url 'cart:cart_add' product.id %}" method="post" class="cart-qty-form">
                             {% csrf_token %}
                             <input type="hidden" name="variant_id" value="{{ item.variant_id|default_if_none:'' }}">
-                            {{ item.update_quantity_form.update }}
+
+                            <!-- ГЛАВНОЕ: Жестко говорим "ОБНОВИТЬ" количество, а не добавить -->
+                            <input type="hidden" name="update" value="True">
 
                             <div class="qty-control-neat">
                                 {% if item.quantity <= 1 %}
-                                    <button type="button" class="qty-btn minus" disabled style="opacity: 0.5; cursor: default;">−</button>
+                                    <!-- Если 1 шт, минус неактивен, отправлять нечего -->
+                                    <button type="button" class="qty-btn minus" disabled style="opacity: 0.3; cursor: default;">−</button>
                                 {% else %}
+                                    <!-- Значение: текущее МИНУС 1 -->
                                     <button type="submit" name="quantity" value="{{ item.quantity|add:'-1' }}" class="qty-btn minus">−</button>
                                 {% endif %}
 
                                 <span class="qty-value">{{ item.quantity }}</span>
 
+                                <!-- Значение: текущее ПЛЮС 1 -->
                                 <button type="submit" name="quantity" value="{{ item.quantity|add:'1' }}" class="qty-btn plus">+</button>
                             </div>
                         </form>
 
-                        <!-- УДАЛИТЬ (Используем стандартный стиль btn-danger) -->
+                        <!-- УДАЛИТЬ -->
                         <form action="{% url 'cart:cart_remove' product.id %}" method="post" class="delete-form">
                             {% csrf_token %}
                             <input type="hidden" name="variant_id" value="{{ item.variant_id|default_if_none:'' }}">
 
-                            <button type="submit" class="btn btn-danger delete-btn-responsive">
+                            <!--
+                                ХИТРОСТЬ: Используем тег <a> вместо <button>.
+                                Глобальные стили main.css применяются к button, но не к a.
+                                onclick отправляет форму.
+                            -->
+                            <a href="#" onclick="event.preventDefault(); this.closest('form').submit();" class="btn-clean-delete">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <polyline points="3 6 5 6 21 6"></polyline>
                                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                    <line x1="14" y1="11" x2="14" y2="17"></line>
                                 </svg>
-                                <span class="btn-text">Удалить</span>
-                            </button>
+                                <span class="delete-text">Удалить</span>
+                            </a>
                         </form>
                     </div>
                 </div>
@@ -119,6 +131,7 @@
 
     {% else %}
     <div class="empty-cart-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
         <h2>Ваша корзина пуста</h2>
         <a href="{% url 'shop:product_list_all' %}" class="btn">Перейти в каталог</a>
     </div>
@@ -131,7 +144,6 @@
     .page-title { margin-bottom: 30px; font-weight: bold; }
     .cart-layout { display: grid; grid-template-columns: 1fr 300px; gap: 30px; align-items: start; }
 
-    /* Карточка */
     .cart-item-card {
         display: flex; align-items: center; background: #fff; border-radius: 12px; padding: 20px;
         margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #eee; gap: 20px;
@@ -144,26 +156,24 @@
     .category-label { font-size: 0.85rem; color: #888; background: #f8f8f8; padding: 2px 8px; border-radius: 4px; display: inline-block; }
     .stock-error-msg { color: #dc3545; font-size: 0.8em; font-weight: bold; }
 
-    /* Правый блок (Десктоп: столбик) */
+    /* Правый блок */
     .cart-item-actions {
         display: flex; flex-direction: column; align-items: flex-end;
         gap: 12px; min-width: 140px;
     }
-
-    /* Цена */
     .cart-item-price {
         font-size: 1.2rem; font-weight: bold; color: #333; text-align: right;
-        white-space: nowrap; /* Запрет переноса на всех устройствах */
+        white-space: nowrap;
     }
     .price-per-item { font-size: 0.75rem; color: #999; display: block; }
 
-    /* Кнопки +/- */
     .qty-control-neat {
         display: flex; align-items: center; background: #fff;
         border: 1px solid #ddd; border-radius: 6px; padding: 2px;
     }
     .qty-value { width: 32px; text-align: center; font-weight: 600; font-size: 0.95rem; }
 
+    /* Кнопки +/- (Сброс стилей кнопки) */
     .qty-btn {
         background: transparent !important; border: none !important; box-shadow: none !important;
         width: 32px !important; height: 32px !important; padding: 0 !important;
@@ -175,15 +185,37 @@
         color: var(--accent-color, #e53935) !important;
     }
 
-    /* Кнопка Удалить (Десктоп: текст + иконка) */
-    .delete-btn-responsive {
-        display: inline-flex; align-items: center; gap: 8px;
-        padding: 8px 16px; /* Нормальные размеры */
-        white-space: nowrap;
+    /* === ССЫЛКА-КНОПКА УДАЛИТЬ (ТЕПЕРЬ 100% БЕЗ ФОНА) === */
+    .btn-clean-delete {
+        /* Стили ссылки, чтобы она выглядела как текст/иконка */
+        text-decoration: none !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+
+        color: #999; /* Серый цвет */
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+
+    /* Убираем псевдоэлементы, если они прилетают из глобального CSS */
+    .btn-clean-delete::before,
+    .btn-clean-delete::after {
+        display: none !important;
+        content: none !important;
+    }
+
+    .btn-clean-delete:hover {
+        color: #dc3545; /* Красный при наведении */
     }
 
     /* Сайдбар */
     .summary-card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); position: sticky; top: 100px; }
+    .summary-card h3 { margin-top: 0; margin-bottom: 20px; font-size: 1.3rem; font-weight: bold; color: #333; }
     .summary-row { display: flex; justify-content: space-between; margin-bottom: 10px; color: #555; }
     .summary-total { display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: bold; margin: 20px 0; }
     .total-price { color: var(--accent-color, #e53935); }
@@ -201,7 +233,6 @@
         .cart-items-list { order: 1; }
         .summary-card { position: static; }
 
-        /* Сетка карточки */
         .cart-item-card {
             display: grid; grid-template-columns: 70px 1fr;
             grid-template-areas: "img info" "img actions";
@@ -212,50 +243,43 @@
         .cart-item-info { grid-area: info; margin-bottom: 0; }
         .cart-item-title { font-size: 0.95rem; margin-bottom: 2px; }
 
-        /* Строка действий (в один ряд) */
         .cart-item-actions {
-            grid-area: actions;
-            flex-direction: row;
-            flex-wrap: nowrap; /* Жесткий запрет переноса */
-            align-items: center;
-            justify-content: space-between;
+            grid-area: actions; flex-direction: row; flex-wrap: nowrap;
+            align-items: center; justify-content: space-between;
             width: 100%; margin-top: 2px; padding-top: 5px; border-top: 1px dashed #eee;
         }
 
-        /* Цена */
         .cart-item-price {
-            order: 1; font-size: 1rem; text-align: left;
-            margin-right: auto; /* Толкаем все остальное вправо */
+            order: 1; font-size: 1rem; text-align: left; white-space: nowrap !important;
+            margin-right: auto;
         }
         .price-per-item { display: none; }
 
-        /* Кнопки +/- */
-        .cart-qty-form { order: 2; margin-right: 8px; flex-shrink: 0; }
+        .cart-qty-form { order: 2; margin-right: 5px; flex-shrink: 0; }
         .qty-btn { width: 26px !important; height: 26px !important; font-size: 1rem !important; }
-        .qty-value { width: 22px !important; font-size: 0.9rem; }
+        .qty-value { width: 24px !important; font-size: 0.9rem; }
 
-        /* Кнопка Удалить (Мобильная версия) */
         .delete-form { order: 3; flex-shrink: 0; }
 
-        /* 1. Скрываем текст "Удалить" */
-        .delete-btn-responsive .btn-text { display: none !important; }
+        /* Скрываем текст на мобильном */
+        .delete-text { display: none !important; }
 
-        /* 2. Превращаем кнопку в квадрат с иконкой */
-        .delete-btn-responsive {
+        /* Мобильная иконка */
+        .btn-clean-delete {
+            padding: 0 !important;
+            margin: 0 !important;
             width: 30px !important;
             height: 30px !important;
-            padding: 0 !important;
+
             display: flex !important;
-            justify-content: center !important;
+            justify-content: flex-end !important; /* Прижать вправо */
             align-items: center !important;
-            /* Фон и цвет сохраняются от класса btn-danger, только размер меняем */
+
+            color: var(--accent-color, #dc3545) !important; /* Красный цвет */
         }
 
-        /* Уменьшаем иконку внутри */
-        .delete-btn-responsive svg {
-            width: 16px !important;
-            height: 16px !important;
-        }
+        .btn-clean-delete svg { width: 20px !important; height: 20px !important; }
+        .btn-clean-delete:active { opacity: 0.6; }
     }
 </style>
 {% endblock %}
