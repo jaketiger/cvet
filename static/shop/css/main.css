@@ -424,9 +424,53 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
 .footer { max-width: 1200px; margin: 40px auto 20px auto; padding: 20px 40px; text-align: center; color: var(--footer-text-color, #555); font-family: var(--footer-font-family, sans-serif); font-size: var(--footer-font-size, 14px); opacity: 0.9; }
 .footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 15px; margin-bottom: 15px; }
 .footer-links a { color: var(--footer-text-color, #555); }
-.swiper-container { width: 100%; height: 55vh; min-height: 300px; max-height: 600px; color: white; border-radius: 8px; overflow: hidden; background: #eee; margin-top: 30px; position: relative; }
+
+/*
+.swiper-container { width: 100%; height: 55vh; min-height: 300px; max-height: 600px; color: white; border-radius: 0px; overflow: hidden; background: #eee; margin-top: 30px; position: relative; }
 .swiper-slide { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; background-color: transparent; }
 .swiper-slide-image { width: 100%; height: 100%; object-fit: contain; object-position: center; font-family: 'object-fit: contain; object-position: center;'; }
+*/
+
+/* 1. КОНТЕЙНЕР СЛАЙДЕРА */
+.swiper-container {
+    /* Растягиваем на всю ширину (с компенсацией отступов) */
+    width: calc(100% + 80px);
+    margin-left: -40px;
+    margin-right: -40px;
+    margin-top: -20px;
+    margin-bottom: 30px;
+
+    /* ГЛАВНОЕ: Убираем ограничения высоты */
+    height: auto !important;
+    min-height: 0 !important;
+
+    /* Убираем принудительные пропорции */
+    aspect-ratio: auto !important;
+
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+}
+
+/* 2. САМ СЛАЙД (Обертка картинки) */
+.swiper-slide {
+    /* Слайд должен быть резиновым по высоте */
+    height: auto !important;
+    display: flex; /* Убирает лишние отступы снизу */
+}
+
+/* 3. КАРТИНКА */
+.swiper-slide-image {
+    width: 100%;
+
+    /* ГЛАВНОЕ: Высота авто = сохранение родных пропорций картинки */
+    height: auto !important;
+
+    display: block;
+    object-fit: cover;
+}
+
+
 .slide-content-wrapper { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; padding: 40px; box-sizing: border-box; }
 .slide-content { padding: 25px 45px; border-radius: 8px; max-width: 90%; }
 .slide-content h1 { font-size: 2.8em; margin: 0 0 10px 0; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
@@ -448,11 +492,43 @@ a.btn-primary, a.btn-secondary, a.btn-danger,
 
 /* --- МОБИЛЬНЫЙ БАННЕР (ФИКС ОТСТУПОВ И СТРЕЛОК) --- */
 @media (max-width: 992px) {
-    .swiper-container { height: auto !important; min-height: auto !important; aspect-ratio: 16 / 9; }
-    .swiper-slide-image { position: absolute; top: 0; left: 0; height: 100% !important; }
-    .slide-content h1 { font-size: 1.5em; }
-    .slide-content p { font-size: 1em; }
-    .slide-content { padding: 15px; }
+
+    /* 1. Контейнер: Разрешаем ему растягиваться от содержимого */
+    .swiper-container {
+        width: calc(100% + 30px) !important;
+        margin-left: -15px !important;
+        margin-right: -15px !important;
+        margin-top: 0px !important;
+
+        /* Отключаем все ограничения высоты */
+        height: auto !important;
+        min-height: auto !important;
+        aspect-ratio: auto !important;
+
+        border-radius: 0 !important;
+    }
+
+    /* 2. Слайд: Тоже должен быть резиновым */
+    .swiper-slide {
+        height: auto !important;
+        display: flex;
+        align-items: flex-start; /* Прижимаем к верху */
+    }
+
+    /* 3. КАРТИНКА (ГЛАВНОЕ ИСПРАВЛЕНИЕ) */
+    /* Раньше тут было position: absolute, из-за чего высота была 0 */
+    .swiper-slide-image {
+        position: relative !important; /* Возвращаем картинку в поток */
+        width: 100% !important;
+        height: auto !important;       /* Высота зависит от ширины картинки */
+        object-fit: contain !important;
+    }
+
+    /* Уменьшаем текст на баннере для мобильного, если он есть */
+    .slide-content h1 { font-size: 1.2em; }
+    .slide-content p { font-size: 0.9em; }
+    .slide-content { padding: 10px; }
+}
 
     /* Уменьшаем стрелки */
     .swiper-button-next, .swiper-button-prev { width: 30px !important; height: 30px !important; }
