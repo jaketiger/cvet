@@ -112,14 +112,43 @@
 
             --product-zoom-factor: {{ site_settings.product_image_zoom_factor|default:2.0 }};
 
-/* --- СТИЛИЗАЦИЯ СТАТИЧНЫХ СТРАНИЦ --- */
+            /* --- СТИЛИЗАЦИЯ СТАТИЧНЫХ СТРАНИЦ --- */
             --static-title-color: {{ site_settings.static_page_title_color|default:'var(--default-text-color)' }};
             --static-subtitle-color: {{ site_settings.static_page_subtitle_color|default:'var(--default-text-color)' }};
             --static-icon-color: {{ site_settings.static_page_icon_color|default:'var(--accent-color)' }};
             --static-link-color: {{ site_settings.static_page_link_color|default:'var(--accent-color)' }};
             --static-link-hover-color: {{ site_settings.static_page_link_hover_color|default:'#333333' }};
 
+        /* --- ЗАГОЛОВКИ КАТАЛОГА И ПОПУЛЯРНЫХ (ДОБАВЛЕНО) --- */
+            --catalog-title-color: {{ site_settings.catalog_title_color|default:'var(--default-text-color)' }};
+            --catalog-title-font: var(--font-{{ site_settings.catalog_title_font_family|default:'roboto' }});
+            --catalog-title-weight: {% if site_settings.catalog_title_font_style == 'bold' %}bold{% else %}normal{% endif %};
+            --catalog-title-style: {% if site_settings.catalog_title_font_style == 'italic' %}italic{% else %}normal{% endif %};
+
+            --popular-title-color: {{ site_settings.popular_title_color|default:'var(--default-text-color)' }};
+            --popular-title-font: var(--font-{{ site_settings.popular_title_font_family|default:'roboto' }});
+            /* Вот эта строка отвечает за жирность "Популярных": */
+            --popular-title-weight: {% if site_settings.popular_title_font_style == 'bold' %}bold{% else %}normal{% endif %};
+            --popular-title-style: {% if site_settings.popular_title_font_style == 'italic' %}italic{% else %}normal{% endif %};
+
+
         }
+
+        /* Классы для применения настроек из админки к заголовкам */
+        .custom-catalog-title {
+            color: var(--catalog-title-color) !important;
+            font-family: var(--catalog-title-font) !important;
+            font-weight: var(--catalog-title-weight) !important;
+            font-style: var(--catalog-title-style) !important;
+        }
+
+        .custom-popular-title {
+            color: var(--popular-title-color) !important;
+            font-family: var(--popular-title-font) !important;
+            font-weight: var(--popular-title-weight) !important;
+            font-style: var(--popular-title-style) !important;
+        }
+
 
         /* ========================================= */
         /* 2. ПРИМЕНЕНИЕ СТИЛЕЙ                      */
@@ -197,6 +226,23 @@
         .cart-badge.hidden { display: none !important; }
 
         .accordion-header, .accordion-item { -webkit-tap-highlight-color: transparent !important; }
+
+
+/* Применяем стили к заголовкам */
+        .custom-catalog-title {
+            color: var(--catalog-title-color) !important;
+            font-family: var(--catalog-title-font) !important;
+            font-weight: var(--catalog-title-weight) !important;
+            font-style: var(--catalog-title-style) !important;
+        }
+
+        .custom-popular-title {
+            color: var(--popular-title-color) !important;
+            font-family: var(--popular-title-font) !important;
+            font-weight: var(--popular-title-weight) !important;
+            font-style: var(--popular-title-style) !important;
+        }
+
 
 
         /* ========================================= */
@@ -387,6 +433,14 @@
             }
             .mobile-dropdown-content button::before, .mobile-dropdown-content button::after, .mobile-dropdown-content .btn::before, .mobile-dropdown-content .btn::after, .mobile-menu-mode-buttons .category-link-item::before, .mobile-menu-mode-buttons .category-link-item::after { display: none !important; }
         {% endif %}
+
+
+
+
+
+
+
+
 </style>
 
 
@@ -555,8 +609,10 @@
 
 <footer class="footer">
     <div class="footer-links" {% if footer_pages|length > site_settings.collapse_footer_threshold %}data-collapse="true"{% endif %}>
-        {% for page in footer_pages %}<a href="{{ page.get_absolute_url }}" class="footer-link-item">{{ page.title }}</a>{% endfor %}
-        <a href="{% url 'shop:contacts' %}" class="footer-link-item">Контакты</a>
+        <!-- Теперь контакты выведутся внутри этого цикла, так как мы добавили их в админку -->
+        {% for page in footer_pages %}
+            <a href="{{ page.get_absolute_url }}" class="footer-link-item">{{ page.title }}</a>
+        {% endfor %}
     </div>
     <p>&copy; {% now "Y" %} {{ site_settings.shop_name }}. Все права защищены.</p>
 </footer>

@@ -12,15 +12,8 @@
 {% endblock %}
 
 {% block content %}
-    <!-- Добавлен класс responsive-title для адаптивности -->
-    <h1 class="responsive-title" style="
-        {% if not current_category %}
-            color: {{ site_settings.catalog_title_color|default:'inherit' }};
-            font-family: var(--font-{{ site_settings.catalog_title_font_family|default:site_settings.default_font_family|default:'roboto' }});
-            font-weight: {% if site_settings.catalog_title_font_style == 'bold' %}bold{% else %}normal{% endif %};
-            font-style: {% if site_settings.catalog_title_font_style == 'italic' %}italic{% else %}normal{% endif %};
-        {% endif %}
-    ">
+    <!-- ИСПРАВЛЕНИЕ: Используем класс custom-catalog-title для применения настроек из админки -->
+    <h1 class="responsive-title custom-catalog-title" style="margin-bottom: 20px;">
         {% if current_category %}
             {{ current_category.name }}
         {% else %}

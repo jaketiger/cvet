@@ -1,11 +1,14 @@
 <!-- shop/templates/shop/contacts.html -->
 {% extends "base.html" %}
 
-{% block title %}{{ site_settings.contacts_page_title|default:'Контакты' }} - {{ site_settings.shop_name }}{% endblock %}
+<!-- 1. ИЗМЕНЕНИЕ: Используем custom_title для названия вкладки -->
+{% block title %}{{ custom_title }} - {{ site_settings.shop_name }}{% endblock %}
 
 {% block content %}
 <div class="static-page-container">
-    <h1 class="static-page-title">{{ site_settings.contacts_page_title|default:'Контактная информация' }}</h1>
+
+    <!-- 2. ИЗМЕНЕНИЕ: Используем custom_title для заголовка страницы -->
+    <h1 class="static-page-title">{{ custom_title }}</h1>
 
     <!-- 1. ТЕКСТОВАЯ ИНФОРМАЦИЯ (ТЕПЕРЬ СВЕРХУ) -->
     <div class="contact-grid">
@@ -67,6 +70,7 @@
 </div>
 
 <style>
+    /* Локальные переменные, если вдруг base.html не подгрузил глобальные */
     :root {
         --static-title-color: {{ site_settings.static_page_title_color|default:'var(--heading-font-family)' }};
         --static-subtitle-color: {{ site_settings.static_page_subtitle_color|default:'var(--accent-color)' }};

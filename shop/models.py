@@ -452,6 +452,11 @@ class FooterPage(models.Model):
         return self.title
 
     def get_absolute_url(self):
+        # --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
+        # Если slug равен 'contacts', ведем на специальную страницу контактов
+        if self.slug == 'contacts':
+            return reverse('shop:contacts')
+        # Иначе ведем на обычную текстовую страницу
         return reverse('shop:footer_page_detail', args=[self.slug])
 
     def get_page_title(self):

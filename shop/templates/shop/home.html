@@ -33,18 +33,13 @@
                 </div>
             {% endfor %}
         </div>
+        <!-- Точки пагинации (если нужны) -->
         <div class="swiper-pagination"></div>
     </div>
     {% endif %}
 
-    <h2 class="responsive-title" style="
-        text-align: center;
-        margin: 40px 0;
-        color: {{ site_settings.popular_title_color|default:'inherit' }};
-        font-family: var(--font-{{ site_settings.popular_title_font_family|default:site_settings.default_font_family|default:'roboto' }});
-        font-weight: {% if site_settings.popular_title_font_style == 'bold' %}bold{% else %}normal{% endif %};
-        font-style: {% if site_settings.popular_title_font_style == 'italic' %}italic{% else %}normal{% endif %};
-    ">
+    <!-- ИСПРАВЛЕНИЕ: Используем класс custom-popular-title для применения настроек из админки -->
+    <h2 class="responsive-title custom-popular-title" style="text-align: center; margin: 40px 0;">
         {{ site_settings.popular_title|default:'Популярные букеты' }}
     </h2>
 
@@ -70,16 +65,11 @@
                     disableOnInteraction: false,
                 },
                 loop: true,
-            // Блок navigation удален
-            //    navigation: {
-            //        nextEl: '.swiper-button-next',
-            //        prevEl: '.swiper-button-prev',
-            //    },
-            // точки (пагинация) внизу удален
-            //    pagination: {
-            //        el: '.swiper-pagination',
-            //        clickable: true,
-            //    },
+                // Пагинация (точки)
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true,
+                },
                 grabCursor: true,
                 effect: effectName.startsWith('creative') ? 'creative' : effectName,
             };

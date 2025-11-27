@@ -105,9 +105,21 @@ def profile_edit(request):
 
 
 def contact_page(request):
-    # ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ page_config, ЧТОБЫ ОНА СОВПАДАЛА С ШАБЛОНОМ
     page_config = SiteSettings.get_solo()
-    return render(request, 'shop/contacts.html', {'page_config': page_config})
+
+    # Пытаемся найти страницу в футере, чтобы взять её название
+    try:
+        footer_page = FooterPage.objects.get(slug='contacts')
+        # Если нашли, используем её заголовок
+        custom_title = footer_page.get_page_title()
+    except FooterPage.DoesNotExist:
+        # Если не нашли (например, удалили из админки), берем из настроек
+        custom_title = page_config.contacts_page_title
+
+    return render(request, 'shop/contacts.html', {
+        'page_config': page_config,
+        'custom_title': custom_title,  # Передаем новый заголовок
+    })
 
 
 def footer_page_detail(request, slug):
