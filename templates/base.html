@@ -184,6 +184,10 @@
             body.desktop-header-sticky_all .header.is-scrolled,
             body.desktop-header-sticky_header .header.is-scrolled {
                 background-color: rgba(255, 255, 255, var(--header-scroll-opacity-desktop)) !important;
+
+                /* ДОБАВЛЕНО РАЗМЫТИЕ */
+                -webkit-backdrop-filter: blur(var(--blur-desktop, 10px)) !important;
+                backdrop-filter: blur(var(--blur-desktop, 10px)) !important;
             }
 
             body.desktop-header-sticky_all .category-nav-desktop { position: sticky; z-index: 1090; margin-top: 0; border-radius: 0 0 5px 5px; }
