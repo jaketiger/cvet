@@ -362,14 +362,37 @@ class SiteSettings(SingletonModel):
                                                        validators=[MinValueValidator(0), MaxValueValidator(100)],
                                                        help_text="100% - непрозрачные, 0% - полностью прозрачные.")
 
-
-
     # Статические страницы
-    static_page_title_color = models.CharField("Цвет заголовков H1", max_length=7, blank=True)
-    static_page_subtitle_color = models.CharField("Цвет подзаголовков H3", max_length=7, blank=True)
-    static_page_icon_color = models.CharField("Цвет иконок", max_length=7, blank=True)
-    static_page_link_color = models.CharField("Цвет ссылок (телефоны)", max_length=7, blank=True)
-    static_page_link_hover_color = models.CharField("Цвет ссылок при наведении", max_length=7, blank=True)
+    static_page_title_color = models.CharField(
+        "Цвет заголовков H1",
+        max_length=7,
+        blank=True,
+        help_text="Меняет цвет заголовков на страницах 'Контакты', 'О нас' и текстовых страницах."
+    )
+    static_page_subtitle_color = models.CharField(
+        "Цвет подзаголовков H3",
+        max_length=7,
+        blank=True,
+        help_text="Цвет заголовков блоков (например, 'Адрес', 'Телефон', 'Режим работы')."
+    )
+    static_page_icon_color = models.CharField(
+        "Цвет иконок",
+        max_length=7,
+        blank=True,
+        help_text="Цвет SVG иконок (телефон, маркер карты, часы) на странице контактов."
+    )
+    static_page_link_color = models.CharField(
+        "Цвет ссылок",
+        max_length=7,
+        blank=True,
+        help_text="Цвет кликабельных элементов (номера телефонов, email)."
+    )
+    static_page_link_hover_color = models.CharField(
+        "Цвет ссылок при наведении",
+        max_length=7,
+        blank=True,
+        help_text="В какой цвет окрашивается ссылка, когда на неё наводят мышку."
+    )
 
     class Meta:
         verbose_name = "Настройки сайта"

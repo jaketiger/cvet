@@ -73,6 +73,7 @@
 
             --accent-color: {{ site_settings.accent_color|default:'#e53935' }};
             --button-bg-color: {{ site_settings.button_bg_color|default:'var(--accent-color)' }};
+            --button-accent-color: {{ site_settings.button_accent_color|default:site_settings.accent_color|default:'#e53935' }};
             --button-text-color: {{ site_settings.button_text_color|default:'#FFFFFF' }};
             --button-border-radius: {{ site_settings.button_border_radius|default:5 }}px;
 
@@ -110,6 +111,14 @@
             {% endif %}
 
             --product-zoom-factor: {{ site_settings.product_image_zoom_factor|default:2.0 }};
+
+/* --- СТИЛИЗАЦИЯ СТАТИЧНЫХ СТРАНИЦ --- */
+            --static-title-color: {{ site_settings.static_page_title_color|default:'var(--default-text-color)' }};
+            --static-subtitle-color: {{ site_settings.static_page_subtitle_color|default:'var(--default-text-color)' }};
+            --static-icon-color: {{ site_settings.static_page_icon_color|default:'var(--accent-color)' }};
+            --static-link-color: {{ site_settings.static_page_link_color|default:'var(--accent-color)' }};
+            --static-link-hover-color: {{ site_settings.static_page_link_hover_color|default:'#333333' }};
+
         }
 
         /* ========================================= */
@@ -188,6 +197,46 @@
         .cart-badge.hidden { display: none !important; }
 
         .accordion-header, .accordion-item { -webkit-tap-highlight-color: transparent !important; }
+
+
+        /* ========================================= */
+        /*  СТИЛИ ДЛЯ СТАТИЧНЫХ СТРАНИЦ И КОНТАКТОВ  */
+        /* ========================================= */
+
+        /* Заголовки H1 на страницах (Контакты, О нас и т.д.) */
+        .static-page-content h1,
+        .contacts-container h1,
+        .site-wrapper h1 {
+            color: var(--static-title-color) !important;
+        }
+
+        /* Подзаголовки H3 (например, "Адрес", "Телефон") */
+        .static-page-content h3,
+        .contacts-container h3,
+        .contact-item h3 {
+            color: var(--static-subtitle-color) !important;
+        }
+
+        /* Иконки (SVG) в контактах */
+        .contact-item svg,
+        .static-page-content svg {
+            stroke: var(--static-icon-color) !important;
+            color: var(--static-icon-color) !important;
+        }
+
+        /* Ссылки (телефоны, email) */
+        .contact-item a,
+        .static-page-content a:not(.btn) {
+            color: var(--static-link-color) !important;
+            transition: color 0.2s ease;
+        }
+
+        /* Ссылки при наведении */
+        .contact-item a:hover,
+        .static-page-content a:not(.btn):hover {
+            color: var(--static-link-hover-color) !important;
+        }
+
 
         /* ========================================= */
         /* 3. АДАПТАЦИЯ (Media Queries)             */
@@ -281,7 +330,7 @@
         @media (min-width: 390px) and (max-width: 589px) {
             html body.mobile-grid-col-0 .product-card-actions, html body.mobile-grid-col-0 .add-to-cart-form { margin: 0 !important; padding: 0 !important; width: 100% !important; }
             html body.mobile-grid-col-0 .add-to-cart-btn-new { width: 100% !important; height: 32px !important; min-height: 32px !important; padding: 0 !important; border-radius: var(--button-border-radius) !important; display: flex !important; justify-content: center !important; align-items: center !important; }
-            html body.mobile-grid-col-0 .add-to-cart-btn-new .btn-content-normal .btn-text { font-size: 9px !important; white-space: nowrap !important; display: block !important; line-height: 32px !important; letter-spacing: 0 !important; }
+            html body.mobile-grid-col-0 .add-to-cart-btn-new .btn-content-normal .btn-text { font-size: 13px !important; white-space: nowrap !important; display: block !important; line-height: 32px !important; letter-spacing: 0 !important; }
             html body.mobile-grid-col-0 .add-to-cart-btn-new .btn-content-normal svg { display: none !important; width: 0 !important; }
             html body.mobile-grid-col-0 .add-to-cart-btn-new.added .btn-content-success svg { display: block !important; width: 16px !important; height: 16px !important; margin: 0 auto !important; }
             html body.mobile-grid-col-0 .add-to-cart-btn-new.added .btn-text { display: none !important; }
@@ -316,6 +365,7 @@
         .mobile-dropdown-content .btn,
         .mobile-menu-mode-buttons .category-link-item {
             --button-bg-color: var(--mobile-btn-bg-color);
+            --button-accent-color: {{ site_settings.button_accent_color|default:site_settings.accent_color|default:'#e53935' }};
             --button-text-color: var(--mobile-btn-text-color);
 
             display: block; width: 100%; box-sizing: border-box; margin-bottom: 8px; text-align: center; padding: 10px; text-decoration: none; cursor: pointer;
