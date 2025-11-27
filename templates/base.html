@@ -60,8 +60,12 @@
 
             {% if site_settings.desktop_header_scroll_enabled %}
                 --header-scroll-opacity-desktop: {{ site_settings.desktop_header_opacity_css|default:'0.9' }};
+                /* unlocalize гарантирует точку вместо запятой, если это дробное число */
+                {% load l10n %}
+                --blur-desktop: {{ site_settings.desktop_header_blur|unlocalize|default:0 }}px;
             {% else %}
                 --header-scroll-opacity-desktop: 0.98;
+                --blur-desktop: 0px;
             {% endif %}
 
             /* Настройки шапки (Mobile) */
@@ -181,14 +185,15 @@
                 box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             }
 
+            /* --- ИСПРАВЛЕННЫЙ БЛОК --- */
             body.desktop-header-sticky_all .header.is-scrolled,
             body.desktop-header-sticky_header .header.is-scrolled {
-                background-color: rgba(255, 255, 255, var(--header-scroll-opacity-desktop)) !important;
+                    background-color: rgba(255, 255, 255, var(--header-scroll-opacity-desktop)) !important;
 
-                /* ДОБАВЛЕНО РАЗМЫТИЕ */
-                -webkit-backdrop-filter: blur(var(--blur-desktop, 10px)) !important;
-                backdrop-filter: blur(var(--blur-desktop, 10px)) !important;
-            }
+            /* Убрали 10px, теперь строго то, что в админке */
+            -webkit-backdrop-filter: blur(var(--blur-desktop)) !important;
+            backdrop-filter: blur(var(--blur-desktop)) !important;
+}
 
             body.desktop-header-sticky_all .category-nav-desktop { position: sticky; z-index: 1090; margin-top: 0; border-radius: 0 0 5px 5px; }
             body.desktop-header-sticky_nav .category-nav-desktop { position: sticky; top: 10px; z-index: 1100; }
