@@ -1,36 +1,26 @@
 # shop/admin.py
 
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.models import User
-from .models import Category, Product, Profile, SiteSettings, FooterPage, ProductImage, Banner, Benefit, Postcard
-from solo.admin import SingletonModelAdmin
-from adminsortable2.admin import SortableAdminMixin
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django.urls import path, reverse
-import subprocess
-import os
-import zipfile
-import io
+from django.shortcuts import redirect
 from django.conf import settings
 from django.http import FileResponse
-from django.shortcuts import redirect
+from django.core.management import call_command  # Импорт для запуска команд
+import os
+import subprocess
+import zipfile
+import io
+
+from solo.admin import SingletonModelAdmin
+from adminsortable2.admin import SortableAdminMixin
+
+from .models import (
+    Category, Product, SiteSettings, FooterPage,
+    ProductImage, Banner, Benefit, Postcard
+)
 from .forms import SiteSettingsForm, BannerAdminForm
-from django.utils.safestring import mark_safe
-
-
-class ProfileInline(admin.StackedInline):
-    model = Profile
-    can_delete = False
-    verbose_name_plural = 'Дополнительные поля профиля'
-
-
-class UserAdmin(BaseUserAdmin):
-    inlines = (ProfileInline,)
-
-
-admin.site.unregister(User)
-admin.site.register(User, UserAdmin)
 
 
 @admin.register(Postcard)
@@ -54,7 +44,6 @@ class BannerAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_editable = ('is_active',)
     search_fields = ('title', 'subtitle')
 
-    # ... ваши fieldsets ...
     fieldsets = (
         ('Контент', {'fields': ('title', 'subtitle', 'button_text', 'link', 'content_position')}),
         ('Стилизация текста', {'fields': ('background_opacity', 'font_color', 'font_family')}),
@@ -64,20 +53,19 @@ class BannerAdmin(SortableAdminMixin, admin.ModelAdmin):
     readonly_fields = ('image_preview',)
 
     def image_preview(self, obj):
-        if obj.image: return format_html('<img src="{}" width="200" />', obj.image.url)
+        if obj.image:
+            return format_html('<img src="{}" width="200" />', obj.image.url)
         return "Нет фото"
 
     image_preview.short_description = 'Превью'
 
-    # --- ДОБАВЛЕННЫЙ МЕТОД ---
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
-        # Переопределяем метку (Label)
         form.base_fields['image'].label = "Изображение (адаптивно)"
-        # Переопределяем подсказку (Help Text)
         form.base_fields[
-            'image'].help_text = "Рекомендуется горизонтальное фото (например, 1600x600 или 1920x800). Изображение будет автоматически адаптироваться под размер экрана. Используйте одинаковый формат для всех баннеров для лучшего вида"
+            'image'].help_text = "Рекомендуется горизонтальное фото (например, 1600x600). Изображение будет автоматически адаптироваться под размер экрана."
         return form
+
 
 @admin.register(Category)
 class CategoryAdmin(SortableAdminMixin, admin.ModelAdmin):
@@ -93,7 +81,8 @@ class ProductImageInline(admin.TabularInline):
     readonly_fields = ('image_preview',)
 
     def image_preview(self, obj):
-        if obj.image_thumbnail: return format_html('<img src="{}" />', obj.image_thumbnail.url)
+        if obj.image_thumbnail:
+            return format_html('<img src="{}" />', obj.image_thumbnail.url)
         return "Нет фото"
 
     image_preview.short_description = 'Превью'
@@ -101,31 +90,27 @@ class ProductImageInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['name', 'slug', 'price', 'stock', 'available', 'is_featured']
+    list_display = ['sku', 'name', 'price', 'stock', 'available', 'is_featured']
     list_filter = ['available', 'is_featured', 'created', 'updated']
     list_editable = ['price', 'stock', 'available', 'is_featured']
     prepopulated_fields = {'slug': ('name',)}
-    search_fields = ['name', 'slug']
+    search_fields = ['name', 'slug', 'sku']
     filter_horizontal = ('category',)
+
     fieldsets = (
-        (None, {'fields': ('name', 'slug', 'category')}),
+        (None, {'fields': ('name', 'slug', 'sku', 'category')}),
         ('Основное изображение', {'fields': ('image', 'image_preview_detail')}),
-        ('Блок "Состав" (под фото)', {'fields': ('composition_title', 'composition')}),
-        ('Блок "Описание" (справа от фото)', {'fields': ('description_title', 'description')}),
+        ('Блок "Состав"', {'fields': ('composition_title', 'composition')}),
+        ('Блок "Описание"', {'fields': ('description_title', 'description')}),
         ('Цена и наличие', {'fields': ('price', 'stock')}),
         ('Статус', {'fields': ('available', 'is_featured')}),
     )
     readonly_fields = ('image_preview_detail',)
     inlines = [ProductImageInline]
 
-    def image_preview_list(self, obj):
-        if obj.image_thumbnail: return format_html('<img src="{}" width="50" />', obj.image_thumbnail.url)
-        return "Нет фото"
-
-    image_preview_list.short_description = 'Фото'
-
     def image_preview_detail(self, obj):
-        if obj.image: return format_html('<img src="{}" width="200" />', obj.image.url)
+        if obj.image:
+            return format_html('<img src="{}" width="200" />', obj.image.url)
         return "Нет фото"
 
     image_preview_detail.short_description = 'Превью основного изображения'
@@ -170,7 +155,16 @@ class SiteSettingsAdmin(SingletonModelAdmin):
             'description': "Ключевая информация о вашем магазине.",
             'fields': (
                 'shop_name',
+                # Настройки Артикулов
+                'sku_start_number',
+                'apply_sku_logic_button',  # <-- Кнопка
+
+                # Настройки Заказов
+                'order_start_number',
+                'apply_order_logic_button',  # <-- Кнопка
+
                 'logo_image',
+                'image_preview',  # <-- Превью логотипа
                 ('contact_phone', 'contact_phone_secondary'),
                 ('pickup_address', 'working_hours'),
                 'map_embed_code',
@@ -180,19 +174,6 @@ class SiteSettingsAdmin(SingletonModelAdmin):
                 ('site_sheet_bg_color', 'site_sheet_opacity', 'site_sheet_blur'),
             )
         }),
-
-        # --- ГРУППА: РЕДАКТИРОВАНИЕ КАРТОЧКИ ТОВАРА ---
-        # ЭТОТ БЛОК УДАЛЕН ИЗ-ЗА УДАЛЕНИЯ ПОЛЕЙ ИЗ МОДЕЛИ
-        # ('Редактирование карточки товара (Фото и Кнопки)', {
-        #     'classes': ('collapse',),
-        #     'description': "Настройки отображения фото и элементов управления.",
-        #     'fields': (
-        #         'product_image_zoom_factor',
-        #         'product_button_size',
-        #     )
-        # }),
-        # -----------------------------------------------
-
         ('Настройки поведения шапки (Header)', {
             'classes': ('collapse',),
             'description': "Управление фиксацией, прозрачностью и фоном.",
@@ -271,10 +252,7 @@ class SiteSettingsAdmin(SingletonModelAdmin):
                 ('mobile_dropdown_font_family', 'mobile_dropdown_font_size', 'mobile_dropdown_font_style'),
                 'mobile_dropdown_button_bg_color',
                 'mobile_dropdown_button_text_color',
-
-                # --- ИЗМЕНЕНИЯ ЗДЕСЬ (Группируем галочку и поле в одну строку) ---
                 ('mobile_dropdown_inherit_radius', 'mobile_dropdown_button_border_radius'),
-
                 'mobile_dropdown_button_opacity',
             )
         }),
@@ -292,12 +270,26 @@ class SiteSettingsAdmin(SingletonModelAdmin):
 
     change_form_template = "admin/shop/sitesettings/change_form.html"
 
+    # Объявляем поля только для чтения
+    readonly_fields = ('apply_sku_logic_button', 'apply_order_logic_button', 'image_preview')
+
+    # === ВОТ ФУНКЦИЯ, КОТОРАЯ БЫЛА ПРОПУЩЕНА ===
+    def image_preview(self, obj):
+        if obj.logo_image:
+            return format_html('<img src="{}" width="150" />', obj.logo_image.url)
+        return "Логотип не загружен"
+
+    image_preview.short_description = "Превью логотипа"
+
+    # ============================================
+
     def save_model(self, request, obj, form, change):
         if obj.mobile_font_scale is not None:
             if obj.mobile_font_scale > 50 or obj.mobile_font_scale < -50:
                 obj.mobile_font_scale = 0
         super().save_model(request, obj, form, change)
 
+    # --- ЛОГИКА КНОПОК И URLS ---
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
@@ -305,8 +297,45 @@ class SiteSettingsAdmin(SingletonModelAdmin):
             path('backup/media/', self.admin_site.admin_view(self.download_media_view), name='site_backup_media'),
             path('backup/env/', self.admin_site.admin_view(self.download_env_view), name='site_backup_env'),
             path('backup/config/', self.admin_site.admin_view(self.download_config_view), name='site_backup_config'),
+            path('run-fix-skus/', self.admin_site.admin_view(self.run_fix_skus), name='run_fix_skus'),
+            path('run-fix-orders/', self.admin_site.admin_view(self.run_fix_orders), name='run_fix_orders'),
         ]
         return custom_urls + urls
+
+    def apply_sku_logic_button(self, obj):
+        return format_html(
+            '<a class="button" href="run-fix-skus/" style="background:#28a745; color:white; padding:5px 10px; border-radius:4px;">'
+            '▶ Применить к старым товарам</a> '
+            '<span style="color:#666; margin-left:10px;">(Нажмите, если изменили начальный номер)</span>'
+        )
+
+    apply_sku_logic_button.short_description = "Обновление артикулов"
+
+    def apply_order_logic_button(self, obj):
+        return format_html(
+            '<a class="button" href="run-fix-orders/" style="background:#dc3545; color:white; padding:5px 10px; border-radius:4px;" '
+            'onclick="return confirm(\'ВНИМАНИЕ! Это изменит номера существующих заказов. Вы уверены?\')">'
+            '⚠ Обновить номера старых заказов</a> '
+            '<span style="color:#666; margin-left:10px;">(Внимание: номера изменятся!)</span>'
+        )
+
+    apply_order_logic_button.short_description = "Обновление заказов"
+
+    def run_fix_skus(self, request):
+        try:
+            call_command('fix_skus')
+            self.message_user(request, "Артикулы успешно обновлены!", level='success')
+        except Exception as e:
+            self.message_user(request, f"Ошибка при обновлении артикулов: {e}", level='error')
+        return redirect(reverse('admin:shop_sitesettings_change', args=[SiteSettings.objects.get().pk]))
+
+    def run_fix_orders(self, request):
+        try:
+            call_command('fix_order_ids', force=True)
+            self.message_user(request, "Номера заказов успешно пересчитаны!", level='success')
+        except Exception as e:
+            self.message_user(request, f"Ошибка при обновлении заказов: {e}", level='error')
+        return redirect(reverse('admin:shop_sitesettings_change', args=[SiteSettings.objects.get().pk]))
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
@@ -358,4 +387,3 @@ class SiteSettingsAdmin(SingletonModelAdmin):
         else:
             self.message_user(request, "Файл ecosystem.config.js не найден.", level='warning')
             return redirect(reverse('admin:shop_sitesettings_change', args=[SiteSettings.objects.get().pk]))
-

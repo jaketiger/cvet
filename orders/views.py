@@ -9,7 +9,8 @@ from django_q.tasks import async_task
 from .models import Order, OrderItem
 from .forms import OrderCreateForm
 from cart.cart import Cart
-from shop.models import Profile, SiteSettings, Product, Postcard  # <-- Добавил Postcard
+from users.models import Profile
+from shop.models import SiteSettings, Product, Postcard
 
 
 @transaction.atomic

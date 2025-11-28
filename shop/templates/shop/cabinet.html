@@ -5,78 +5,318 @@
 {% block title %}Личный кабинет{% endblock %}
 
 {% block content %}
-<div class="cabinet-container">
+<!-- Библиотека для салюта -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-    {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-                <li class="{% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+<div class="cabinet-wrapper fade-in-up">
 
-    <div class="cabinet-header">
-        <h1>Личный кабинет, {{ user.first_name|default:user.username }}!</h1>
-        <a href="{% url 'shop:profile_edit' %}" class="btn btn-primary">Редактировать профиль</a>
+    <!-- === 1. ПРИВЕТСТВЕННЫЙ БАННЕР === -->
+    <div class="welcome-banner">
+        <div class="banner-content">
+            {% if not orders %}
+                <!-- Текст для нового пользователя -->
+                <h1 class="animate-text">Добро пожаловать, {{ user.first_name|default:user.username }}! 🎉</h1>
+                <p>Мы рады, что вы теперь с нами. Ваш цветочный путь начинается здесь.</p>
+            {% else %}
+                <!-- Текст для постоянного клиента -->
+                <h1>С возвращением, {{ user.first_name|default:user.username }}! 👋</h1>
+                <p>Рады видеть вас снова. Вот история ваших покупок.</p>
+            {% endif %}
+        </div>
+        <!-- Декоративные элементы фона -->
+        <div class="banner-decoration"></div>
     </div>
 
-    <hr>
-    <h3>Ваша история заказов</h3>
+    <div class="cabinet-grid">
 
-    {% if orders %}
-        <div class="orders-list">
-            <table class="orders-table">
-                <thead>
-                    <tr>
-                        <th># Заказа</th>
-                        <th>Дата</th>
-                        <th>Сумма</th>
-                        <th>Статус</th>
-                        <th>Оплата</th>
-                        <th style="text-align: right;">Действия</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for order in orders %}
-                        <tr class="order-item">
-                            <td data-label="# Заказа:"><a href="{% url 'shop:order_detail' order.id %}">{{ order.id }}</a></td>
-                            <td data-label="Дата:">{{ order.created|date:"d.m.Y, H:i" }}</td>
-                            <td data-label="Сумма:">{{ order.get_total_cost }} руб.</td>
-                            <td data-label="Статус:">
-                                <span class="status-{{ order.status }}">{{ order.get_status_display }}</span>
-                            </td>
-                            <td data-label="Оплата:">
-                                {% if order.paid %}
-                                    <span class="status-paid">Оплачен</span>
-                                {% else %}
-                                    <span class="status-unpaid">Ожидает оплаты</span>
-                                {% endif %}
-                            </td>
-                            <td class="order-actions">
-                                <div class="cabinet-actions-row">
-                                    <a href="{% url 'shop:order_detail' order.id %}" class="btn btn-secondary action-btn">Просмотр</a>
+        <!-- === ЛЕВАЯ КОЛОНКА: ИНФОРМАЦИЯ О ПРОФИЛЕ === -->
+        <div class="cabinet-sidebar">
 
-                                    {% if order.can_be_cancelled %}
-                                        <form action="{% url 'shop:cancel_order' order.id %}" method="post" style="display: inline-block; margin: 0;">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-danger remove-btn action-btn" onclick="return confirm('Вы уверены, что хотите отменить заказ #{{ order.id }}?')">
-                                                Отменить
-                                            </button>
-                                        </form>
-                                    {% else %}
-                                        {# Пустой блок, если нужен был плейсхолдер #}
-                                        {# <div class="action-btn-placeholder"></div> #}
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <!-- Карточка: Мои данные -->
+            <div class="info-card">
+                <div class="card-header">
+                    <h3>Мои данные</h3>
+                    <a href="{% url 'shop:profile_edit' %}" class="icon-link" title="Редактировать">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </a>
+                </div>
+                <div class="user-details">
+                    <div class="user-avatar-placeholder">
+                        {{ user.first_name|first|default:user.username|first|upper }}
+                    </div>
+                    <div class="detail-row">
+                        <strong>{{ user.first_name }} {{ user.last_name }}</strong>
+                    </div>
+                    <div class="detail-row email">
+                        {{ user.email }}
+                    </div>
+                    <div class="detail-row phone">
+                        {{ user.profile.phone|default:"Телефон не указан" }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Карточка: Доставка -->
+            <div class="info-card">
+                <div class="card-header">
+                    <h3>Доставка</h3>
+                    <a href="{% url 'shop:profile_edit' %}" class="icon-link" title="Редактировать адрес">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </a>
+                </div>
+                <div class="address-details">
+                    {% if user.profile.city or user.profile.address %}
+                        <p class="addr-city">{{ user.profile.city }}</p>
+                        <p class="addr-street">{{ user.profile.address }}</p>
+                        <p class="addr-zip">{{ user.profile.postal_code }}</p>
+                    {% else %}
+                        <p class="text-muted">Адрес доставки еще не заполнен.</p>
+                        <a href="{% url 'shop:profile_edit' %}" class="btn-text">Добавить адрес →</a>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-    {% else %}
-        <p>У вас еще нет ни одного заказа.</p>
-        <a href="{% url 'shop:product_list_all' %}" class="btn btn-primary">Перейти к покупкам</a>
-    {% endif %}
+
+        <!-- === ПРАВАЯ КОЛОНКА: ИСТОРИЯ ЗАКАЗОВ === -->
+        <div class="cabinet-main">
+            {% if orders %}
+                <h2 class="section-title">История заказов</h2>
+                <div class="orders-list">
+                    {% for order in orders %}
+                        <!-- Карточка заказа -->
+                        <div class="order-card">
+                            <div class="order-header">
+                                <div class="order-id">
+                                    <span class="label">Заказ</span> #{{ order.id }}
+                                </div>
+                                <div class="order-date">{{ order.created|date:"d E Y" }}</div>
+                            </div>
+
+                            <div class="order-body">
+                                <div class="order-status status-{{ order.status }}">
+                                    {{ order.get_status_display }}
+                                </div>
+                                <div class="order-total">
+                                    {{ order.get_total_cost }} ₽
+                                </div>
+                            </div>
+
+                            <!-- Ссылка на весь блок -->
+                            <a href="{% url 'shop:order_detail' order.id %}" class="order-link-overlay"></a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+
+                <!-- === EMPTY STATE (НЕТ ЗАКАЗОВ) === -->
+                <div class="empty-welcome-state">
+                    <div class="illustration">
+                        🎁
+                    </div>
+                    <h2>Ваш цветочный путь начинается!</h2>
+                    <p>Сейчас ваша история заказов пуста, но это отличный повод выбрать свой первый идеальный букет для себя или близких.</p>
+
+                    <!-- КНОПКА: Используем глобальные классы btn btn-primary -->
+                    <a href="{% url 'shop:product_list_all' %}" class="btn btn-primary custom-btn-size">
+                        Перейти в каталог
+                    </a>
+                </div>
+
+            {% endif %}
+        </div>
+    </div>
 </div>
+
+<!-- ================== СТИЛИ CSS ================== -->
+<style>
+    /* Анимация появления */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+
+    /* Общий контейнер */
+    .cabinet-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        font-family: var(--default-font-family, sans-serif);
+    }
+
+    /* 1. БАННЕР */
+    .welcome-banner {
+        background: linear-gradient(120deg, #ff9a9e 0%, #fecfef 100%);
+        border-radius: 20px;
+        padding: 40px;
+        color: #fff;
+        margin-bottom: 40px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(255, 154, 158, 0.3);
+    }
+    .welcome-banner h1 { margin: 0 0 10px 0; font-size: 2.2rem; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .welcome-banner p { margin: 0; font-size: 1.1rem; opacity: 0.95; }
+
+    /* Декор баннера */
+    .banner-decoration {
+        position: absolute; top: -50%; right: -10%;
+        width: 300px; height: 300px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    .banner-decoration::before {
+        content: ""; position: absolute; top: 50%; left: -50%;
+        width: 200px; height: 200px; background: rgba(255,255,255,0.15); border-radius: 50%;
+    }
+
+    /* 2. СЕТКА */
+    .cabinet-grid {
+        display: grid;
+        grid-template-columns: 300px 1fr; /* Сайдбар 300px, остальное контент */
+        gap: 40px;
+    }
+    @media (max-width: 850px) {
+        .cabinet-grid { grid-template-columns: 1fr; }
+    }
+
+    /* 3. КАРТОЧКИ (Сайдбар) */
+    .info-card {
+        background: #fff;
+        border: 1px solid #f0f0f0;
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    }
+    .card-header {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 20px; border-bottom: 1px solid #f9f9f9; padding-bottom: 10px;
+    }
+    .card-header h3 { margin: 0; font-size: 1.1rem; color: #333; font-weight: 700; }
+
+    .icon-link { color: #999; transition: color 0.2s; }
+    .icon-link:hover { color: var(--accent-color, #e53935); }
+
+    .user-avatar-placeholder {
+        width: 60px; height: 60px; background: #f0f2f5; color: #333;
+        border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem; font-weight: bold; margin-bottom: 15px;
+    }
+
+    .detail-row { margin-bottom: 5px; color: #333; }
+    .detail-row.email { color: #777; font-size: 0.9rem; }
+    .detail-row.phone { margin-top: 10px; font-weight: 500; }
+
+    .address-details p { margin: 0 0 5px 0; color: #555; }
+
+    /* Ссылки */
+    .btn-text {
+        color: var(--accent-color, #e53935); text-decoration: none;
+        font-size: 0.9rem; font-weight: 600; display: inline-block; margin-top: 10px;
+    }
+    .btn-text:hover { text-decoration: underline; }
+
+    /* 4. СПИСОК ЗАКАЗОВ (Основной контент) */
+    .section-title { margin-top: 0; margin-bottom: 20px; font-size: 1.5rem; color: #222; font-weight: 700; }
+    .orders-list { display: flex; flex-direction: column; gap: 15px; }
+
+    .order-card {
+        background: #fff; border: 1px solid #eee; border-radius: 12px;
+        padding: 20px; position: relative; transition: all 0.2s;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .order-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.06); border-color: #ddd; }
+    .order-link-overlay { position: absolute; inset: 0; cursor: pointer; }
+
+    .order-id { font-weight: 700; font-size: 1.1rem; color: #333; }
+    .order-id .label { font-weight: 400; color: #888; font-size: 0.9rem; }
+    .order-date { color: #999; font-size: 0.85rem; margin-top: 4px; }
+
+    .order-status {
+        padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+        text-transform: uppercase; margin-bottom: 5px; text-align: right; display: inline-block;
+    }
+    /* Цвета статусов */
+    .status-created, .status-processing { background: #fff8e1; color: #f57c00; }
+    .status-shipped { background: #e3f2fd; color: #1976d2; }
+    .status-delivered { background: #e8f5e9; color: #388e3c; }
+    .status-cancelled { background: #ffebee; color: #d32f2f; }
+
+    .order-total { font-weight: 700; font-size: 1.2rem; color: #333; text-align: right; }
+
+    /* 5. EMPTY STATE (НЕТ ЗАКАЗОВ) */
+    .empty-welcome-state {
+        text-align: center;
+        padding: 80px 20px;
+        background: #fff;
+        border-radius: 20px;
+        border: 2px dashed #f0f0f0;
+    }
+    .illustration {
+        font-size: 4rem; margin-bottom: 20px;
+        animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .empty-welcome-state h2 { font-size: 1.8rem; margin-bottom: 10px; color: #333; }
+    .empty-welcome-state p { color: #666; max-width: 450px; margin: 0 auto 30px auto; line-height: 1.6; }
+
+    /* --- СТИЛИ ДЛЯ КНОПКИ (РАЗМЕР И ОТСТУПЫ) --- */
+    /* Цвета и тени подтянутся из класса btn-primary автоматически */
+    .custom-btn-size {
+        padding: 15px 40px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-top: 20px;
+    }
+</style>
+
+<!-- ================== JAVASCRIPT: САЛЮТ ================== -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Проверяем наличие блока пустого состояния (значит, новый юзер)
+        const welcomeBlock = document.querySelector('.empty-welcome-state');
+
+        if (welcomeBlock) {
+            // Задержка перед запуском
+            setTimeout(() => {
+                var duration = 7 * 1000; // Салют длится 7 секунд
+                var animationEnd = Date.now() + duration;
+
+                // ВАЖНО: zIndex: 9999 обеспечивает показ ПОВЕРХ всего сайта
+                var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999, useWorker: false };
+
+                function randomInRange(min, max) {
+                  return Math.random() * (max - min) + min;
+                }
+
+                var interval = setInterval(function() {
+                  var timeLeft = animationEnd - Date.now();
+
+                  if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                  }
+
+                  var particleCount = 100 * (timeLeft / duration);
+
+                  // Запускаем конфетти с двух сторон экрана
+                  confetti(Object.assign({}, defaults, {
+                      particleCount,
+                      origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+                  }));
+                  confetti(Object.assign({}, defaults, {
+                      particleCount,
+                      origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+                  }));
+                }, 250);
+            }, 500);
+        }
+    });
+</script>
 {% endblock %}

@@ -19,11 +19,10 @@ class OrderCreateForm(forms.ModelForm):
         widget=forms.RadioSelect
     )
 
-    # Явно указываем, что эти поля не обязательны для проверки Django
     recipient_name = forms.CharField(required=False)
     recipient_phone = forms.CharField(required=False)
-    last_name = forms.CharField(required=False)  # <--- ВАЖНО: Фамилия теперь не обязательна
-    email = forms.EmailField(required=False)  # <--- ВАЖНО: Email тоже (если вдруг пустой)
+    last_name = forms.CharField(required=False)
+    email = forms.EmailField(required=False)
 
     class Meta:
         model = Order
@@ -32,49 +31,67 @@ class OrderCreateForm(forms.ModelForm):
             'first_name', 'last_name', 'email', 'phone',
             'address', 'postal_code', 'city',
             'postcard', 'postcard_text', 'custom_postcard_image',
-            'recipient_name', 'recipient_phone'
+            'recipient_name', 'recipient_phone',
+            'delivery_date', 'delivery_time'
         ]
         widgets = {
+            'delivery_date': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={
+                    'class': 'form-control datepicker-input',
+                    'placeholder': 'Нажмите для выбора даты',
+                    'autocomplete': 'off'
+                }
+            ),
+            'delivery_time': forms.Select(attrs={'class': 'form-control'}),
             'postcard_text': forms.Textarea(attrs={'rows': 3}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            if 'class' not in field.widget.attrs:
+                field.widget.attrs['class'] = 'form-control'
 
         try:
             self.fields['postcard'].queryset = Postcard.objects.filter(is_active=True)
         except:
             pass
 
-        # Отключаем обязательность адреса (проверим вручную)
         self.fields['address'].required = False
         self.fields['city'].required = False
         self.fields['postal_code'].required = False
 
-        for field in self.fields:
-            if field not in ['delivery_option', 'postcard', 'custom_postcard_image']:
-                self.fields[field].widget.attrs.update({'class': 'form-control'})
+        # === ИЗМЕНЕНИЕ: Делаем поля необязательными по умолчанию ===
+        # Мы проверим их наличие вручную в методе clean, если нужна доставка
+        self.fields['delivery_date'].required = False
+        self.fields['delivery_time'].required = False
 
     def clean(self):
         cleaned_data = super().clean()
         delivery_option = cleaned_data.get('delivery_option')
 
-        # 1. Заполняем пропуски (чтобы база не ругалась на NOT NULL)
         if not cleaned_data.get('last_name'):
             cleaned_data['last_name'] = '-'
-
         if not cleaned_data.get('email'):
-            # Если email не введен, генерируем фейковый или берем из юзера во view
             cleaned_data['email'] = 'no-email@provided.com'
 
-        # 2. Логика доставки
+        # Логика валидации
         if delivery_option == 'delivery':
+            # Если ДОСТАВКА — требуем адрес и дату/время
             if not cleaned_data.get('address'):
                 self.add_error('address', 'Укажите улицу и дом.')
             if not cleaned_data.get('city'):
                 self.add_error('city', 'Укажите город.')
+
+            # === Проверка даты для доставки ===
+            if not cleaned_data.get('delivery_date'):
+                self.add_error('delivery_date', 'Выберите дату доставки.')
+            if not cleaned_data.get('delivery_time'):
+                self.add_error('delivery_time', 'Выберите время доставки.')
+
         else:
-            # Для самовывоза ставим заглушки
+            # Если САМОВЫВОЗ — заполняем заглушками
             if not cleaned_data.get('address'):
                 cleaned_data['address'] = 'Самовывоз'
             if not cleaned_data.get('city'):
@@ -82,10 +99,13 @@ class OrderCreateForm(forms.ModelForm):
             if not cleaned_data.get('postal_code'):
                 cleaned_data['postal_code'] = '000000'
 
-        # 3. Логика получателя
+            # При самовывозе дату можно не указывать (или можно требовать, по вашему желанию)
+            # Если хотите требовать дату и при самовывозе (когда заберут) - раскомментируйте строки ниже:
+            # if not cleaned_data.get('delivery_date'):
+            #     self.add_error('delivery_date', 'Укажите дату самовывоза.')
+
         r_name = cleaned_data.get('recipient_name')
         r_phone = cleaned_data.get('recipient_phone')
-        # Если начали вводить имя получателя, требуем телефон
         if r_name and not r_phone:
             self.add_error('recipient_phone', 'Укажите телефон получателя.')
 

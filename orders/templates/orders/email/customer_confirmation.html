@@ -14,8 +14,14 @@
 
         <hr style="border: 0; border-top: 1px solid #eee;">
 
-        <!-- ДЕТАЛИ ДОСТАВКИ -->
         <h3>Информация о доставке:</h3>
+
+        <!-- ДАТА И ВРЕМЯ -->
+        {% if order.delivery_date %}
+            <p><strong>Дата:</strong> {{ order.delivery_date|date:"d.m.Y" }}</p>
+        {% endif %}
+        <p><strong>Время:</strong> {{ order.get_delivery_time_display }}</p>
+
         {% if order.delivery_option == 'delivery' %}
             <p><strong>Тип:</strong> Курьерская доставка</p>
             <p><strong>Адрес:</strong> {{ order.address }} ({{ order.city }})</p>
@@ -34,7 +40,6 @@
 
         <hr style="border: 0; border-top: 1px solid #eee;">
 
-        <!-- ТОВАРЫ -->
         <h3>Состав заказа:</h3>
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
             {% for item in order.items.all %}
@@ -48,7 +53,6 @@
             {% endfor %}
         </table>
 
-        <!-- ОТКРЫТКА -->
         {% if order.postcard or order.custom_postcard_image %}
         <div style="background-color: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
             <strong>+ Открытка:</strong>
@@ -69,15 +73,11 @@
         </div>
         {% endif %}
 
-        <!-- ИТОГО -->
         <div style="text-align: right; font-size: 1.1em;">
             <p style="margin: 5px 0;">Товары: {{ order.get_items_cost }} руб.</p>
-
-            <!-- ПРОВЕРКА: Показываем доставку ТОЛЬКО если выбрана 'delivery' -->
             {% if order.delivery_option == 'delivery' %}
                 <p style="margin: 5px 0;">Доставка: {{ order.delivery_cost }} руб.</p>
             {% endif %}
-
             <h3 style="margin-top: 10px; color: #e53935;">Итого: {{ order.get_total_cost }} руб.</h3>
         </div>
 
@@ -88,6 +88,5 @@
             С любовью, команда {{ site_settings.shop_name }}.
         </p>
     </div>
-
 </body>
 </html>

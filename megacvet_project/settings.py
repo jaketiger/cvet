@@ -119,7 +119,7 @@ LOGOUT_REDIRECT_URL = '/'
 ACCOUNT_LOGOUT_ON_GET = True
 
 AUTHENTICATION_BACKENDS = [
-    'users.backends.EmailBackend',
+    'users.backends.EmailOrPhoneBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 

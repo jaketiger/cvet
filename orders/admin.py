@@ -12,12 +12,12 @@ from django_q.tasks import async_task
 class OrderItemForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Поле "Цена" в этой форме не является обязательным для заполнения
         self.fields['price'].required = False
 
 
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
+    raw_id_fields = ['product']
     form = OrderItemForm
     fields = ('product', 'price', 'quantity')
     autocomplete_fields = ['product']
@@ -26,27 +26,40 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    # 1. Настройки отображения списка
     list_display = (
         'id',
         'first_name', 'last_name',
-        'recipient_display',        # <--- Кто получает
+        'recipient_display',
+        'delivery_date_fmt',
+        'delivery_time',
         'status', 'paid',
         'delivery_option',
-        'postcard_status_column',   # <--- Статус открытки
+        'postcard_status_column',
         'get_total_cost_display',
         'created'
     )
-    list_filter = ('status', 'paid', 'created', 'updated', 'delivery_option')
-    search_fields = ('id', 'first_name', 'last_name', 'email', 'phone', 'recipient_name', 'recipient_phone')
 
-    # 2. Настройки страницы редактирования
+    list_filter = ('status', 'paid', 'created', 'updated', 'delivery_date', 'delivery_option')
+
+    # === ИЗМЕНЕНИЕ: ПОИСК ПО ТОВАРАМ И АРТИКУЛАМ ===
+    search_fields = (
+        'id',
+        'first_name', 'last_name', 'email', 'phone',
+        'recipient_name', 'recipient_phone', 'address',
+        # Поиск по товарам внутри заказа
+        'items__product__name',
+        'items__product__sku'
+    )
+    # ===============================================
+
     inlines = [OrderItemInline]
     readonly_fields = (
         'id', 'user', 'created', 'updated',
         'get_items_cost_display', 'get_total_cost_display',
         'postcard_preview', 'custom_postcard_preview'
     )
+
+    change_form_template = "admin/orders/order/change_form.html"
 
     fieldsets = (
         ('Основная информация', {
@@ -55,15 +68,20 @@ class OrderAdmin(admin.ModelAdmin):
         ('Заказчик', {
             'fields': ('user', 'first_name', 'last_name', 'email', 'phone')
         }),
-        # --- БЛОК ПОЛУЧАТЕЛЯ ---
         ('Получатель (если отличается)', {
             'fields': ('recipient_name', 'recipient_phone'),
             'description': 'Заполняется только если клиент выбрал опцию "Другой человек".'
         }),
-        # -----------------------
-        ('Доставка', {
+        ('Адрес доставки', {
             'fields': ('address', 'postal_code', 'city')
         }),
+
+        # Блок даты и времени (Открыт)
+        ('📅 Дата и Время доставки (Установлено клиентом)', {
+            'fields': ('delivery_date', 'delivery_time'),
+            'description': 'Данные установлены клиентом при оформлении. Изменяйте их только после согласования с покупателем!'
+        }),
+
         ('Открытка', {
             'fields': (
                 'postcard',
@@ -73,35 +91,38 @@ class OrderAdmin(admin.ModelAdmin):
                 'postcard_text'
             )
         }),
-        ('Стоимость и даты', {
+        ('Стоимость и технические даты', {
             'fields': ('get_items_cost_display', 'get_total_cost_display', 'created', 'updated')
         }),
     )
 
-    change_form_template = "admin/orders/order/change_form.html"
+    def delivery_date_fmt(self, obj):
+        if obj.delivery_date:
+            return obj.delivery_date.strftime('%d.%m.%Y')
+        return "-"
 
-    # --- Методы для отображения ---
+    delivery_date_fmt.short_description = "Дата доставки"
 
-    # Отображение получателя в списке
     def recipient_display(self, obj):
         if obj.recipient_name:
             return f"🎁 {obj.recipient_name}"
         return "👤 Заказчик"
+
     recipient_display.short_description = "Получатель"
 
-    # Статус открытки (иконки)
     def postcard_status_column(self, obj):
         if obj.custom_postcard_image:
             return format_html('<span style="color: purple; font-weight: bold;">📸 Своё фото</span>')
         elif obj.postcard:
             if obj.postcard.price > 0:
-                return format_html('<span style="color: green;">💰 {} ({}р)</span>', obj.postcard.title, obj.postcard.price)
+                return format_html('<span style="color: green;">💰 {} ({}р)</span>', obj.postcard.title,
+                                   obj.postcard.price)
             else:
                 return format_html('<span style="color: #666;">🎁 {} (Беспл.)</span>', obj.postcard.title)
         return "-"
+
     postcard_status_column.short_description = "Открытка"
 
-    # Превью открытки из базы
     def postcard_preview(self, obj):
         if obj.postcard and obj.postcard.image:
             price_tag = f"Цена: {obj.postcard.price} руб." if obj.postcard.price > 0 else "БЕСПЛАТНО"
@@ -111,9 +132,9 @@ class OrderAdmin(admin.ModelAdmin):
                 price_tag, obj.postcard.image.url
             )
         return "-"
+
     postcard_preview.short_description = "Превью (Каталог)"
 
-    # Превью пользовательской открытки
     def custom_postcard_preview(self, obj):
         if obj.custom_postcard_image:
             return format_html(
@@ -122,17 +143,18 @@ class OrderAdmin(admin.ModelAdmin):
                 obj.custom_postcard_image.url, obj.custom_postcard_image.url
             )
         return "-"
+
     custom_postcard_preview.short_description = "Превью (Клиент)"
 
     def get_total_cost_display(self, obj):
         return f"{obj.get_total_cost()} руб."
+
     get_total_cost_display.short_description = "Полная стоимость"
 
     def get_items_cost_display(self, obj):
         return f"{obj.get_items_cost()} руб."
-    get_items_cost_display.short_description = "Стоимость товаров"
 
-    # --- Действия (Actions) ---
+    get_items_cost_display.short_description = "Стоимость товаров"
 
     actions = ['mark_as_paid', 'mark_as_delivered', 'mark_as_shipped', 'mark_as_cancelled',
                'send_notification_to_selected']
@@ -163,8 +185,6 @@ class OrderAdmin(admin.ModelAdmin):
             async_task('orders.utils.send_status_update_email_task', order_id=order.id)
         self.message_user(request, "Задачи на отправку уведомлений созданы.")
 
-    # --- URLs и кнопки ---
-
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
@@ -177,8 +197,6 @@ class OrderAdmin(admin.ModelAdmin):
         async_task('orders.utils.send_order_confirmation_email_task', order_id=object_id)
         self.message_user(request, "Письмо-подтверждение отправляется клиенту.", messages.SUCCESS)
         return redirect(reverse('admin:orders_order_change', args=[object_id]))
-
-    # --- Вспомогательные методы ---
 
     def save_formset(self, request, form, formset, change):
         instances = formset.save(commit=False)

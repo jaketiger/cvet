@@ -1,28 +1,50 @@
 # users/backends.py
 
 from django.contrib.auth.backends import ModelBackend
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+from .models import Profile
+from .utils import normalize_phone
 
-class EmailBackend(ModelBackend):
+User = get_user_model()
+
+
+class EmailOrPhoneBackend(ModelBackend):
     """
-    Кастомный бэкенд аутентификации.
-    Позволяет пользователям входить, используя свой email.
+    Авторизация по Email ИЛИ по Телефону.
     """
+
     def authenticate(self, request, username=None, password=None, **kwargs):
-        try:
-            # Пытаемся найти пользователя по email.
-            # username здесь - это то, что пользователь ввел в поле логина.
-            user = User.objects.get(email__iexact=username)
-            # Проверяем пароль
-            if user.check_password(password):
-                return user
-        except User.DoesNotExist:
-            # Если пользователь не найден, ничего не делаем,
-            # чтобы Django мог проверить другие бэкенды (например, стандартный).
+        if username is None:
             return None
 
-    def get_user(self, user_id):
-        try:
-            return User.objects.get(pk=user_id)
-        except User.DoesNotExist:
-            return None
+        user = None
+
+        # 1. Проверяем, похоже ли это на Email
+        if '@' in username:
+            try:
+                user = User.objects.get(email__iexact=username)
+            except User.DoesNotExist:
+                pass
+
+        # 2. Если не Email или не нашли, пробуем как Телефон
+        if not user:
+            clean_phone = normalize_phone(username)
+            if clean_phone:
+                try:
+                    profile = Profile.objects.get(phone=clean_phone)
+                    user = profile.user
+                except Profile.DoesNotExist:
+                    pass
+
+        # 3. Если и телефона нет, пробуем как обычный username (на всякий случай)
+        if not user:
+            try:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                return None
+
+        # Проверяем пароль
+        if user and user.check_password(password) and self.user_can_authenticate(user):
+            return user
+
+        return None

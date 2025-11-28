@@ -1,17 +1,77 @@
 <!-- templates/admin/orders/order/change_form.html -->
-
 {% extends "admin/change_form.html" %}
-{% load i18n admin_urls %}
+{% load i18n admin_urls static admin_modify %}
 
-{% block object-tools-items %}
-    <!-- Добавляем нашу кастомную кнопку -->
-    <li>
-        <!-- ИСПРАВЛЕНИЕ: Используем правильное имя URL 'order_notify_customer_full' -->
-        <a href="{% url 'admin:order_notify_customer_full' object_id %}" class="historylink">
-            {% translate 'Отправить полное подтверждение клиенту' %}
-        </a>
-    </li>
-
-    <!-- Выводим стандартные кнопки (например, "История") -->
+{% block extrahead %}
     {{ block.super }}
+    <style>
+        /* === НАСТРОЙКА ВИДЖЕТА КАЛЕНДАРЯ === */
+
+        /* 1. Скрываем весь текст (включая разделитель "|") */
+        .datetimeshortcuts {
+            font-size: 0 !important;
+            margin-left: 20px !important; /* Отодвигаем блок от поля ввода */
+            vertical-align: middle;
+        }
+
+        /* 2. Скрываем ВСЕ ссылки внутри (слово "Сегодня" и т.д.) */
+        .datetimeshortcuts a {
+            display: none !important;
+        }
+
+        /* 3. Возвращаем видимость ТОЛЬКО иконке календаря (по ID ссылки) */
+        .datetimeshortcuts a[id^="calendarlink"] {
+            display: inline-block !important;
+            opacity: 0.6; /* Слегка прозрачная, чтобы не отвлекать */
+            transition: opacity 0.3s;
+        }
+
+        /* При наведении иконка становится яркой */
+        .datetimeshortcuts a[id^="calendarlink"]:hover {
+            opacity: 1;
+        }
+
+        /* Если вдруг есть иконка часов (для DateTimeField), оставляем и её */
+        .datetimeshortcuts a[id^="clocklink"] {
+            display: inline-block !important;
+        }
+    </style>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // ID полей в админке
+            const dateField = document.getElementById('id_delivery_date');
+            const timeField = document.getElementById('id_delivery_time');
+            const form = document.getElementById('order_form');
+
+            if (dateField && timeField && form) {
+                // 1. Запоминаем исходные значения, которые установил клиент
+                const initialDate = dateField.value;
+                const initialTime = timeField.value;
+
+                // 2. При попытке сохранить форму
+                form.addEventListener('submit', function(e) {
+                    const newDate = dateField.value;
+                    const newTime = timeField.value;
+
+                    // 3. Проверяем, изменилось ли что-то
+                    if (newDate !== initialDate || newTime !== initialTime) {
+                        const confirmed = confirm(
+                            "⚠️ ВНИМАНИЕ! ПОДТВЕРДИТЕ ИЗМЕНЕНИЕ.\n\n" +
+                            "Вы меняете данные доставки, установленные клиентом.\n" +
+                            "--------------------------------------\n" +
+                            "Было: " + (initialDate || 'Пусто') + " | " + (initialTime || 'Пусто') + "\n" +
+                            "Стало: " + (newDate || 'Пусто') + " | " + (newTime || 'Пусто') + "\n" +
+                            "--------------------------------------\n" +
+                            "Вы согласовали это изменение с покупателем?"
+                        );
+
+                        if (!confirmed) {
+                            e.preventDefault(); // Блокируем сохранение
+                        }
+                    }
+                });
+            }
+        });
+    </script>
 {% endblock %}

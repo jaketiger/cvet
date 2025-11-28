@@ -8,284 +8,315 @@
 <div class="product-detail-page">
     <div class="product-detail-grid">
 
-        <!-- ЛЕВАЯ КОЛОНКА: ГАЛЕРЕЯ -->
-        <div class="product-gallery-new">
-            <!-- 1. Добавляем style="position: relative;" -->
-<div class="main-image-container" id="main-image-zoom-container" style="position: relative;">
+        <!-- === ЛЕВАЯ КОЛОНКА: ФОТОГРАФИИ === -->
+        <div class="product-gallery-wrapper">
 
-    <!-- БЕЗОПАСНЫЙ ВЫВОД ФОТО -->
-    {% if product.image %}
-        <img id="main-product-image"
-             src="{{ product.image.url }}"
-             alt="{{ product.name }}"
-             onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'no-photo-placeholder\'>Фото отсутствует</div>'">
-    {% else %}
-        <div class="no-photo-placeholder">Нет фото</div>
-    {% endif %}
+            <div class="main-image-container" id="main-image-zoom-container">
+                <button class="fav-btn {% if product.id in favorites.favorites %}active{% endif %}"
+                        data-id="{{ product.id }}"
+                        onclick="toggleFavorite(this, event)"
+                        title="Добавить в избранное">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                </button>
 
-    <!-- 2. ВСТАВЛЯЕМ КНОПКУ ИЗБРАННОГО СЮДА -->
-    <!-- Используем те же классы, что и в карточке -->
-    <button class="fav-btn {% if product.id in favorites.favorites %}active{% endif %}"
-            data-id="{{ product.id }}"
-            onclick="toggleFavorite(this, event)"
-            style="top: 15px; right: 15px; width: 45px; height: 45px;"> <!-- Чуть крупнее для детальной страницы -->
-        <svg viewBox="0 0 24 24" style="width: 24px; height: 24px;">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-        </svg>
-    </button>
-
-</div>
+                {% if product.image %}
+                    <img id="main-product-image"
+                         src="{{ product.image.url }}"
+                         alt="{{ product.name }}"
+                         data-zoom-target="{{ product.image.url }}"
+                         onerror="this.style.display='none'; this.parentElement.insertAdjacentHTML('beforeend', '<div class=\'no-photo-placeholder\'>Фото отсутствует</div>')">
+                {% else %}
+                    <div class="no-photo-placeholder">Нет фото</div>
+                {% endif %}
+            </div>
 
             {% with all_images=product.images.all %}
                 {% if product.image or all_images %}
-                <div class="thumbnails-new">
-                    <!-- Главное фото (миниатюра) -->
+                <div class="thumbnails-row">
                     {% if product.image %}
-                        <img src="{{ product.image.url }}"
-                             alt="Превью {{ product.name }}"
-                             class="thumbnail-new active"
-                             data-full-src="{{ product.image.url }}"
-                             onclick="changeMainImage(this)"
-                             onerror="this.style.display='none'">
+                        <div class="thumb-wrapper active" onclick="changeMainImage(this)" data-full-src="{{ product.image.url }}">
+                            <img src="{{ product.image.url }}" alt="Main Preview">
+                        </div>
                     {% endif %}
-
-                    <!-- Дополнительные фото -->
                     {% for img in all_images %}
                         {% if img.image %}
-                            <img src="{{ img.image.url }}"
-                                 alt="{{ img.alt_text|default:'Превью товара' }}"
-                                 class="thumbnail-new"
-                                 data-full-src="{{ img.image.url }}"
-                                 onclick="changeMainImage(this)"
-                                 onerror="this.style.display='none'">
+                            <div class="thumb-wrapper" onclick="changeMainImage(this)" data-full-src="{{ img.image.url }}">
+                                <img src="{{ img.image.url }}" alt="Gallery Preview">
+                            </div>
                         {% endif %}
                     {% endfor %}
                 </div>
                 {% endif %}
             {% endwith %}
-        </div>
 
-        <!-- ПРАВАЯ КОЛОНКА: ИНФОРМАЦИЯ -->
-        <div class="product-info-new">
-            <h1 class="product-title-new">{{ product.name }}</h1>
-            <div class="price-new">{{ product.price }} ₽</div>
-
-            <div class="actions-new">
-                {% if product.stock > 0 and product.available %}
-
-                    <!-- Статус В НАЛИЧИИ -->
-                    <p class="stock-status in-stock">✓ В наличии</p>
-
-                    <form class="add-to-cart-form-detail" action="{% url 'cart:cart_add' product.id %}" method="post">
-                        {% csrf_token %}
-
-                        <!-- Выбор количества -->
-                        <div class="quantity-selector">
-                            <button type="button" class="qty-btn minus" onclick="updateQty(-1)">−</button>
-                            {{ cart_product_form.quantity }}
-                            <button type="button" class="qty-btn plus" onclick="updateQty(1)">+</button>
-                        </div>
-
-                        <button type="submit" class="add-to-cart-btn-new">
-                            <span class="btn-text">Добавить в корзину</span>
-                            <span class="btn-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                            </span>
-                        </button>
-                    </form>
-
-                {% else %}
-                    <p class="stock-status out-of-stock">✖ Нет в наличии</p>
-                {% endif %}
-            </div>
-
-            <!-- Аккордеон -->
-            <div class="accordion-new">
-                {% if product.composition %}
-                <div class="accordion-item">
-                    <div class="accordion-header">
-                        <span>{{ product.composition_title|default:site_settings.default_composition_title }}</span>
-                        <svg class="accordion-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                    </div>
-                    <div class="accordion-content">
-                        <p>{{ product.composition|linebreaksbr }}</p>
-                    </div>
-                </div>
-                {% endif %}
-
-                {% if product.description %}
-                <div class="accordion-item">
-                    <div class="accordion-header">
-                        <span>{{ product.description_title|default:site_settings.default_description_title }}</span>
-                        <svg class="accordion-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                    </div>
-                    <div class="accordion-content">
-                        <p>{{ product.description|linebreaksbr }}</p>
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-
-            <!-- Преимущества -->
-            <div class="benefits-block">
+            {% if benefits %}
+            <div class="benefits-under-photo">
                 {% for benefit in benefits %}
-                    <div class="benefit-item">
-                        <!-- Иконка -->
-                        {{ benefit.icon_svg|safe }}
-
-                        <!-- Текст -->
-                        <span>{{ benefit.title }}</span>
-
-                        <!-- Всплывашка (Tooltip) -->
-                        {% if benefit.description %}
-                            <div class="benefit-tooltip">
-                                {{ benefit.description }}
-                            </div>
-                        {% endif %}
+                    <div class="benefit-item-minimal" title="{{ benefit.description }}">
+                        <div class="benefit-icon">{{ benefit.icon_svg|safe }}</div>
+                        <span class="benefit-text">{{ benefit.title }}</span>
                     </div>
                 {% endfor %}
             </div>
+            {% endif %}
+        </div>
 
-            <a href="{% url 'shop:product_list_all' %}" class="back-link-new">Вернуться в каталог</a>
+        <!-- === ПРАВАЯ КОЛОНКА: ИНФОРМАЦИЯ === -->
+        <div class="product-info-sticky">
+
+            <div class="product-header">
+                <h1 class="product-title-modern">{{ product.name }}</h1>
+                <div class="product-meta">
+                    {% if product.stock > 0 and product.available %}
+                        <div class="status-indicator">
+                            <span class="status-dot in-stock"></span> В наличии
+                        </div>
+                    {% else %}
+                        <div class="status-indicator">
+                            <span class="status-dot out-of-stock"></span> Нет в наличии
+                        </div>
+                    {% endif %}
+
+                    <span class="sku">Арт: {{ product.sku|default:"-" }}</span>
+                </div>
+            </div>
+
+            <div class="price-modern">
+                {{ product.price }} ₽
+            </div>
+
+            <!-- БЛОК ПОКУПКИ -->
+            <div class="purchase-area">
+                {% if product.stock > 0 and product.available %}
+                    <form class="add-to-cart-form-modern" action="{% url 'cart:cart_add' product.id %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="update" value="False">
+
+                        <!-- === КОЛИЧЕСТВО: Максимально чистое, без фона === -->
+                        <div class="qty-capsule">
+                            <button type="button" class="qty-btn" onclick="updateQty(-1)">−</button>
+                            <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" readonly>
+                            <button type="button" class="qty-btn" onclick="updateQty(1)">+</button>
+                        </div>
+
+                        <!-- КНОПКА "В КОРЗИНУ" -->
+                        <button type="submit" class="btn btn-primary custom-cart-btn">
+                            Добавить в корзину
+                        </button>
+                    </form>
+                {% else %}
+                    <button class="btn btn-secondary custom-cart-btn disabled" disabled>Товар раскуплен</button>
+                {% endif %}
+            </div>
+
+            <hr class="divider">
+
+            <div class="accordion-clean">
+                {% if product.composition %}
+                <details>
+                    <summary>
+                        {{ product.composition_title|default:site_settings.default_composition_title }}
+                        <span class="plus-icon">+</span>
+                    </summary>
+                    <div class="details-content">
+                        {{ product.composition|linebreaksbr }}
+                    </div>
+                </details>
+                {% endif %}
+
+                {% if product.description %}
+                <details>
+                    <summary>
+                        {{ product.description_title|default:site_settings.default_description_title }}
+                        <span class="plus-icon">+</span>
+                    </summary>
+                    <div class="details-content">
+                        {{ product.description|linebreaksbr }}
+                    </div>
+                </details>
+                {% endif %}
+            </div>
+
+            <a href="{% url 'shop:product_list_all' %}" class="back-link-modern">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                Вернуться в каталог
+            </a>
         </div>
     </div>
 </div>
 
 <style>
-    .no-photo-placeholder {
-        width: 100%;
-        aspect-ratio: 1/1;
-        background: #f0f0f0;
+    /* 1. СЕТКА */
+    .product-detail-page { max-width: 1300px; margin: 0 auto; padding: 50px 20px; font-family: var(--default-font-family, sans-serif); }
+    .product-detail-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 70px; align-items: start; }
+
+    /* 2. ЛЕВАЯ КОЛОНКА */
+    .product-gallery-wrapper { display: flex; flex-direction: column; gap: 20px; }
+    .main-image-container { position: relative; width: 100%; border-radius: 20px; overflow: hidden; background-color: #f8f8f8; cursor: zoom-in; }
+    #main-product-image { width: 100%; height: auto; display: block; transition: transform 0.3s ease-out; transform-origin: center center; }
+    .main-image-container:hover #main-product-image { transform: scale(1.5); cursor: zoom-out; }
+
+    .fav-btn { position: absolute; top: 20px; right: 20px; width: 44px; height: 44px; background: rgba(255, 255, 255, 0.95); border: none; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.08); cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; transition: transform 0.2s, background 0.2s; }
+    .fav-btn:hover { transform: scale(1.1); background: #fff; }
+    .fav-btn svg { width: 22px; height: 22px; stroke: #333; fill: none; stroke-width: 2; transition: all 0.2s; }
+    .fav-btn.active svg { fill: #e53935; stroke: #e53935; }
+
+    .thumbnails-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 12px; }
+    .thumb-wrapper { aspect-ratio: 1/1; border-radius: 12px; overflow: hidden; cursor: pointer; opacity: 0.6; transition: all 0.2s; border: 2px solid transparent; background-color: #f4f4f4; }
+    .thumb-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+    .thumb-wrapper:hover, .thumb-wrapper.active { opacity: 1; border-color: #333; }
+
+    .benefits-under-photo { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 10px; padding-top: 20px; border-top: 1px solid #f0f0f0; }
+    .benefit-item-minimal { display: flex; align-items: center; gap: 8px; color: #666; font-size: 0.9rem; }
+    .benefit-icon svg { width: 20px; height: 20px; color: #333; }
+
+    .no-photo-placeholder { width: 100%; padding-top: 100%; background: #eee; position: relative; border-radius: 20px; }
+    .no-photo-placeholder::after { content: "Нет фото"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #aaa; font-weight: 500; }
+
+    /* 3. ПРАВАЯ КОЛОНКА */
+    .product-info-sticky { position: sticky; top: 40px; }
+    .product-header { margin-bottom: 15px; }
+    .product-title-modern { font-size: 2.6rem; font-weight: 700; line-height: 1.1; margin: 0 0 10px 0; color: #111; letter-spacing: -0.02em; }
+    .product-meta { display: flex; align-items: center; gap: 15px; color: #777; font-size: 0.9rem; }
+    .status-indicator { display: flex; align-items: center; gap: 6px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .status-dot.in-stock { background: #2ecc71; }
+    .status-dot.out-of-stock { background: #e74c3c; }
+    .sku { color: #999; font-family: monospace; font-size: 1rem; }
+    .price-modern { font-size: 2.4rem; font-weight: 600; color: #111; margin-bottom: 30px; }
+
+    /* 4. БЛОК ПОКУПКИ */
+    .purchase-area { margin-bottom: 30px; }
+    .add-to-cart-form-modern { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; }
+
+    /* === ИСПРАВЛЕНО: ЧИСТОЕ ПОЛЕ КОЛИЧЕСТВА БЕЗ ФОНА И РАМОК === */
+    .qty-capsule {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: transparent !important; /* Убираем фон */
+        border: none !important;            /* Убираем рамки */
+        box-shadow: none !important;        /* Убираем тени */
+        padding: 0;
+        width: 120px;
+        height: 56px;
+    }
+
+    .qty-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: none !important;
+        background: transparent !important; /* Прозрачный фон кнопок */
+        font-size: 1.5rem; /* Крупные значки */
+        cursor: pointer;
+        color: #333;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #999;
-        font-size: 1.2rem;
-        border-radius: 12px;
+        transition: transform 0.1s, color 0.2s;
+        box-shadow: none !important;
+        padding: 0;
+        line-height: 1;
     }
-    .qty-btn {
-        background: none; border: none; font-size: 1.2rem; font-weight: bold; cursor: pointer;
-        padding: 0 15px; color: #333; height: 100%;
+    .qty-btn:hover { color: #000; transform: scale(1.1); }
+    .qty-btn:active { transform: scale(0.9); }
+
+    .qty-capsule input {
+        width: 40px;
+        text-align: center;
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #333;
+        padding: 0;
+        margin: 0;
+        outline: none;
     }
-    .qty-btn:hover { color: var(--accent-color, #e53935); background-color: #f0f0f0; }
-    .quantity-selector input[type=number]::-webkit-inner-spin-button,
-    .quantity-selector input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .qty-capsule input::-webkit-outer-spin-button,
+    .qty-capsule input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+    /* Кнопка "В корзину" */
+    .custom-cart-btn {
+        min-width: 220px; height: 56px; border-radius: 100px;
+        font-size: 1.05rem; font-weight: 600;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    .custom-cart-btn.disabled { background: #ccc !important; box-shadow: none; cursor: not-allowed; }
+
+    .divider { border: 0; border-top: 1px solid #f0f0f0; margin: 30px 0; }
+
+    /* 5. АККОРДЕОН */
+    .accordion-clean details { border-bottom: 1px solid #f0f0f0; }
+    .accordion-clean summary { list-style: none; cursor: pointer; padding: 18px 0; font-weight: 500; font-size: 1.05rem; color: #333; display: flex; justify-content: space-between; align-items: center; transition: color 0.2s; }
+    .accordion-clean summary:hover { color: #000; }
+    .accordion-clean summary::-webkit-details-marker { display: none; }
+    .accordion-clean .plus-icon { font-size: 1.4rem; font-weight: 300; color: #999; transition: transform 0.3s; }
+    .accordion-clean details[open] .plus-icon { transform: rotate(45deg); }
+    .details-content { padding-bottom: 20px; color: #666; line-height: 1.6; font-size: 0.95rem; }
+
+    .back-link-modern { display: inline-flex; align-items: center; gap: 8px; margin-top: 20px; color: #888; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
+    .back-link-modern:hover { color: #111; }
+
+    /* 6. АДАПТИВНОСТЬ */
+    @media (max-width: 992px) {
+        .product-detail-page { padding: 20px 20px 100px 20px; }
+        .product-detail-grid { grid-template-columns: 1fr; gap: 40px; }
+        .product-info-sticky { position: static; }
+        .product-title-modern { font-size: 2rem; }
+
+        .purchase-area {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: #fff; padding: 15px 20px; z-index: 100;
+            border-top: 1px solid #eee; margin: 0;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; gap: 15px;
+        }
+        .qty-capsule { width: 100px; height: 50px; }
+        .custom-cart-btn { flex: 1; min-width: auto; height: 50px; }
+    }
 </style>
-{% endblock %}
-
-{% block extra_scripts %}
-
-
-
 
 <script>
-    // 1. Кнопки +/-
-    function updateQty(change) {
-        const input = document.querySelector('.quantity-selector input');
-        if (!input) return;
-        let newVal = parseInt(input.value) || 1;
-        newVal += change;
-        if (newVal < 1) newVal = 1;
-        input.value = newVal;
+    function updateQty(amount) {
+        const input = document.querySelector('input[name="quantity"]');
+        let val = parseInt(input.value) || 1;
+        let max = parseInt(input.getAttribute('max')) || 999;
+        val += amount;
+        if (val < 1) val = 1; if (val > max) val = max;
+        input.value = val;
     }
 
-    // 2. Галерея и Зум
-    const mainImage = document.getElementById('main-product-image');
+    function changeMainImage(el) {
+        const fullSrc = el.getAttribute('data-full-src');
+        const mainImg = document.getElementById('main-product-image');
+        mainImg.style.opacity = 0;
+        setTimeout(() => {
+            mainImg.src = fullSrc;
+            mainImg.setAttribute('data-zoom-target', fullSrc);
+            mainImg.style.opacity = 1;
+        }, 200);
+        document.querySelectorAll('.thumb-wrapper').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+    }
+
     const zoomContainer = document.getElementById('main-image-zoom-container');
-
-    function changeMainImage(thumbnail) {
-        const fullSrc = thumbnail.getAttribute('data-full-src');
-        if (!mainImage) return;
-
-        if (mainImage.src !== fullSrc) {
-            mainImage.style.opacity = 0;
-            setTimeout(() => {
-                mainImage.src = fullSrc;
-                mainImage.style.opacity = 1;
-            }, 200);
-        }
-        document.querySelectorAll('.thumbnail-new').forEach(t => t.classList.remove('active'));
-        thumbnail.classList.add('active');
-    }
-
-    if (zoomContainer && mainImage) {
+    const mainImg = document.getElementById('main-product-image');
+    if (zoomContainer && mainImg) {
         zoomContainer.addEventListener('mousemove', function(e) {
             const rect = zoomContainer.getBoundingClientRect();
             const x = (e.clientX - rect.left) / rect.width * 100;
             const y = (e.clientY - rect.top) / rect.height * 100;
-            mainImage.style.transformOrigin = `${x}% ${y}%`;
+            mainImg.style.transformOrigin = `${x}% ${y}%`;
         });
         zoomContainer.addEventListener('mouseleave', function() {
-            mainImage.style.transformOrigin = 'center center';
+            mainImg.style.transformOrigin = 'center center';
         });
     }
-
-    // 3. Аккордеон
-    const accordionItems = document.querySelectorAll('.accordion-item');
-    accordionItems.forEach(item => {
-        const header = item.querySelector('.accordion-header');
-        const content = item.querySelector('.accordion-content');
-        header.addEventListener('click', () => {
-            if (item.classList.contains('open')) {
-                item.classList.remove('open');
-                content.style.maxHeight = '0';
-            } else {
-                item.classList.add('open');
-                content.style.maxHeight = content.scrollHeight + 'px';
-            }
-        });
-    });
-
-
-    // 4. Анимация кнопки
-    const addToCartForm = document.querySelector('.add-to-cart-form-detail');
-    if (addToCartForm) {
-        addToCartForm.addEventListener('submit', function(e) {
-            const btn = this.querySelector('.add-to-cart-btn-new');
-            if (!btn.classList.contains('added')) {
-                const originalText = btn.querySelector('.btn-text').innerText;
-                btn.classList.add('added');
-                // btn.querySelector('.btn-text').innerText = 'Добавлено!';
-                setTimeout(() => {
-                    btn.classList.remove('added');
-                    btn.querySelector('.btn-text').innerText = originalText;
-                }, 2000);
-            }
-        });
-
-
-    }
-// === СКРИПТ ДЛЯ ПОДСКАЗОК (МОБИЛЬНЫЕ) ===
-    document.addEventListener('DOMContentLoaded', function() {
-        const benefits = document.querySelectorAll('.benefit-item');
-
-        benefits.forEach(item => {
-            item.addEventListener('click', function(e) {
-                // Проверяем, есть ли у этого элемента подсказка
-                if (this.querySelector('.benefit-tooltip')) {
-                    e.stopPropagation(); // Чтобы клик не ушел "в пустоту" сразу
-
-                    // 1. Закрываем все остальные открытые подсказки
-                    benefits.forEach(other => {
-                        if (other !== item) {
-                            other.classList.remove('active-tooltip');
-                        }
-                    });
-
-                    // 2. Переключаем состояние текущей (Открыт/Закрыт)
-                    this.classList.toggle('active-tooltip');
-                }
-            });
-        });
-
-        // 3. Закрываем всё при клике в любое другое место экрана
-        document.addEventListener('click', function() {
-            benefits.forEach(item => {
-                item.classList.remove('active-tooltip');
-            });
-        });
-    });
 </script>
-
-
 {% endblock %}

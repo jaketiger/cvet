@@ -4,75 +4,220 @@
 {% block title %}Регистрация нового пользователя{% endblock %}
 
 {% block content %}
-<div class="form-container">
-    <h1>Создание аккаунта</h1>
-    <p>Пожалуйста, заполните форму ниже, чтобы зарегистрироваться:</p>
+<div class="register-page-wrapper">
 
-    <form method="post" class="styled-form">
-        {% csrf_token %}
+    <div class="register-card fade-in">
 
-        {% if form.non_field_errors %}
-            <div class="form-error-main">
-                {% for error in form.non_field_errors %}
-                    <p>{{ error }}</p>
-                {% endfor %}
+        <!-- ЛЕВАЯ ЧАСТЬ: ИМИДЖЕВАЯ -->
+        <div class="register-visual">
+            <div class="visual-content">
+                <h2>Добро пожаловать в мир цветов!</h2>
+                <p>Создайте аккаунт, чтобы отслеживать заказы, сохранять адреса и получать персональные скидки.</p>
             </div>
-        {% endif %}
-
-        <div class="form-group">
-            <label>
-                Адрес email:
-                {{ form.email }}
-            </label>
-            {% if form.email.errors %}<div class="form-error">{{ form.email.errors }}</div>{% endif %}
+            <!-- Декоративные круги -->
+            <div class="circle c1"></div>
+            <div class="circle c2"></div>
         </div>
 
-        <div class="form-group">
-            <label>
-                Ваше имя:
-                {{ form.first_name }}
-            </label>
-            {% if form.first_name.errors %}<div class="form-error">{{ form.first_name.errors }}</div>{% endif %}
-        </div>
+        <!-- ПРАВАЯ ЧАСТЬ: ФОРМА -->
+        <div class="register-form-container">
+            <h1 class="form-title">Создание аккаунта</h1>
+            <p class="form-subtitle">Заполните данные для регистрации</p>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label>
-                    Пароль:
-                    {{ form.password }}
-                </label>
-                {% if form.password.errors %}<div class="form-error">{{ form.password.errors }}</div>{% endif %}
-            </div>
-            <div class="form-group">
-                <label>
-                    Повторите пароль:
-                    {{ form.password2 }}
-                </label>
-                {% if form.password2.errors %}<div class="form-error">{{ form.password2.errors }}</div>{% endif %}
-            </div>
-        </div>
+            <form method="post" class="modern-form">
+                {% csrf_token %}
 
-        <div class="form-actions">
-            <button type="submit" class="btn-primary">Создать аккаунт</button>
-        </div>
-    </form>
+                <!-- Ошибки -->
+                {% if form.non_field_errors %}
+                    <div class="form-error-alert">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
 
-    <div class="form-footer">
-        <p>Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
+                <!-- Поле: Имя -->
+                <div class="input-group">
+                    <label>Ваше имя</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">👤</span>
+                        {{ form.first_name }}
+                    </div>
+                    {% if form.first_name.errors %}<div class="field-error">{{ form.first_name.errors }}</div>{% endif %}
+                </div>
+
+                <!-- Поле: Телефон -->
+                <div class="input-group">
+                    <label>Номер телефона</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">📞</span>
+                        {{ form.phone }}
+                    </div>
+                    <small class="help-text">{{ form.phone.help_text }}</small>
+                    {% if form.phone.errors %}<div class="field-error">{{ form.phone.errors }}</div>{% endif %}
+                </div>
+
+                <!-- Поле: Email -->
+                <div class="input-group">
+                    <label>Email <span class="optional">(не обязательно)</span></label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">✉️</span>
+                        {{ form.email }}
+                    </div>
+                    <small class="help-text">Для чеков и восстановления пароля</small>
+                    {% if form.email.errors %}<div class="field-error">{{ form.email.errors }}</div>{% endif %}
+                </div>
+
+                <!-- Поля: Пароли (в ряд) -->
+                <div class="password-row">
+                    <div class="input-group">
+                        <label>Пароль</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🔒</span>
+                            {{ form.password }}
+                        </div>
+                        {% if form.password.errors %}<div class="field-error">{{ form.password.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="input-group">
+                        <label>Повторите пароль</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🔑</span>
+                            {{ form.password2 }}
+                        </div>
+                        {% if form.password2.errors %}<div class="field-error">{{ form.password2.errors }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <!-- Кнопка -->
+                <button type="submit" class="btn btn-primary btn-block register-btn">
+                    Зарегистрироваться
+                </button>
+
+                <div class="form-footer">
+                    <p>Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
 <style>
-    /* Добавляем небольшие стили для корректного отображения вложенных инпутов */
-    .styled-form label {
-        display: block;
-        font-weight: bold;
-        font-size: 0.9em;
+    /* Анимация появления */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeIn 0.6s ease-out forwards; }
+
+    /* Обертка на всю страницу */
+    .register-page-wrapper {
+        display: flex; justify-content: center; align-items: center;
+        min-height: 80vh; padding: 40px 20px;
+        background-color: #f9f9f9;
+        font-family: var(--default-font-family, sans-serif);
     }
-    .styled-form input {
-        margin-top: 5px; /* Отступ между текстом метки и полем */
-        display: block;
+
+    /* Карточка (разделенная на 2 части) */
+    .register-card {
+        display: flex;
+        width: 100%; max-width: 900px;
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+
+    /* --- ЛЕВАЯ ЧАСТЬ (ВИЗУАЛ) --- */
+    .register-visual {
+        flex: 1;
+        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        padding: 40px;
+        display: flex; flex-direction: column; justify-content: center;
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+    }
+    .visual-content { position: relative; z-index: 2; }
+    .register-visual h2 { font-size: 2.2rem; margin-bottom: 15px; text-shadow: 0 2px 5px rgba(0,0,0,0.1); line-height: 1.2; }
+    .register-visual p { font-size: 1.1rem; opacity: 0.95; line-height: 1.6; }
+
+    /* Декор (круги) */
+    .circle { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.15); }
+    .c1 { width: 200px; height: 200px; top: -50px; left: -50px; }
+    .c2 { width: 300px; height: 300px; bottom: -100px; right: -50px; }
+
+    /* --- ПРАВАЯ ЧАСТЬ (ФОРМА) --- */
+    .register-form-container {
+        flex: 1.2;
+        padding: 50px;
+    }
+    .form-title { font-size: 1.8rem; margin: 0 0 10px 0; color: #333; }
+    .form-subtitle { color: #888; margin-bottom: 30px; }
+
+    .modern-form { display: flex; flex-direction: column; gap: 20px; }
+
+    .input-group label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 8px; color: #555; }
+    .input-wrapper {
+        position: relative;
+        display: flex; align-items: center;
+    }
+    .input-icon {
+        position: absolute; left: 15px;
+        font-size: 1.2rem; opacity: 0.5;
+        pointer-events: none;
+    }
+
+    /* Стили полей ввода */
+    .modern-form input {
         width: 100%;
+        padding: 12px 15px 12px 45px; /* Отступ слева под иконку */
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        box-sizing: border-box; /* Важно для ширины */
+    }
+    .modern-form input:focus {
+        border-color: var(--accent-color, #e53935);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.1);
+    }
+
+    .optional { font-weight: normal; color: #999; font-size: 0.85em; }
+    .help-text { font-size: 0.8rem; color: #999; margin-top: 5px; display: block; }
+    .field-error { color: #dc3545; font-size: 0.85rem; margin-top: 5px; }
+    .form-error-alert { background: #ffebee; color: #c62828; padding: 10px; border-radius: 8px; }
+
+    /* Пароли в ряд */
+    .password-row { display: flex; gap: 20px; }
+    .password-row .input-group { flex: 1; }
+
+    /* Кнопка */
+    .register-btn {
+        margin-top: 10px;
+        padding: 15px;
+        font-size: 1.1rem;
+        border-radius: 10px;
+        /* Цвета берутся из глобального класса btn-primary */
+    }
+
+    .form-footer { text-align: center; margin-top: 20px; font-size: 0.95rem; color: #666; }
+    .form-footer a { color: var(--accent-color, #e53935); text-decoration: none; font-weight: 600; }
+    .form-footer a:hover { text-decoration: underline; }
+
+    /* АДАПТИВНОСТЬ */
+    @media (max-width: 850px) {
+        .register-card { flex-direction: column; }
+        .register-visual { padding: 30px; text-align: center; }
+        .register-form-container { padding: 30px 20px; }
+        .password-row { flex-direction: column; gap: 20px; }
     }
 </style>
+
+<!-- Скрипт маски ввода телефона -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.7/jquery.inputmask.min.js"></script>
+<script>
+    $(document).ready(function(){
+        $('input[data-mask="phone"]').inputmask("+7 (999) 999-99-99");
+    });
+</script>
 {% endblock %}

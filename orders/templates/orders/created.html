@@ -1,31 +1,173 @@
 <!-- orders/templates/orders/created.html -->
 {% extends "base.html" %}
 
-{% block title %}Заказ #{{ order.id }} принят{% endblock %}
+{% block title %}Заказ #{{ order.id }} принят - {{ site_settings.shop_name }}{% endblock %}
 
 {% block content %}
-<div class="static-page-container" style="text-align: center; padding: 40px;">
-    <div style="font-size: 4em; color: #28a745;">✔</div>
+<div class="created-order-container">
+
+    <!-- Анимация галочки -->
+    <div class="success-icon-wrapper">
+        <div class="success-icon">✔</div>
+    </div>
+
     <h1>Спасибо за заказ!</h1>
-    <p>Ваш заказ <strong>#{{ order.id }}</strong> успешно оформлен.</p>
-    <p>Мы отправили письмо с подтверждением на <strong>{{ order.email }}</strong>.</p>
 
-    <div style="background: #f8f8f8; padding: 20px; max-width: 400px; margin: 20px auto; border-radius: 8px;">
-        <h3>Сумма к оплате: {{ order.get_total_cost }} руб.</h3>
-        <ul style="list-style: none; padding: 0; text-align: left; color: #555;">
-            <li>Товары: {{ order.get_items_cost }} руб.</li>
+    <div class="order-message">
+        <p>Ваш заказ <strong>#{{ order.id }}</strong> успешно оформлен.</p>
 
-            <!-- ИЗМЕНЕНИЕ ЗДЕСЬ: Проверка стоимости доставки -->
+        <!-- Проверка на email-заглушку -->
+        {% if order.email and order.email != 'no-email@provided.com' %}
+            <p>Мы отправили письмо с подтверждением на <strong>{{ order.email }}</strong>.</p>
+        {% endif %}
+
+        <!-- Логика текста в зависимости от способа получения -->
+        {% if order.delivery_option == 'pickup' %}
+            <p>Мы свяжемся с вами по телефону <strong>{{ order.phone }}</strong>, когда заказ будет готов к выдаче.</p>
+        {% else %}
+            <p>Мы свяжемся с вами по телефону <strong>{{ order.phone }}</strong> для подтверждения доставки.</p>
+        {% endif %}
+    </div>
+
+    <!-- Блок с итоговой суммой -->
+    <div class="order-summary-card">
+        <h3>Сумма к оплате: <span class="total-highlight">{{ order.get_total_cost }} руб.</span></h3>
+
+        <ul class="summary-details">
+            <li>
+                <span class="label">Товары:</span>
+                <span class="value">{{ order.get_items_cost }} руб.</span>
+            </li>
+
             {% if order.delivery_cost > 0 %}
-                <li>Доставка: {{ order.delivery_cost }} руб.</li>
+                <li>
+                    <span class="label">Доставка:</span>
+                    <span class="value">{{ order.delivery_cost }} руб.</span>
+                </li>
             {% endif %}
 
             {% if order.postcard and order.postcard.price > 0 %}
-                <li style="color: #28a745;">+ Открытка: {{ order.postcard.price }} руб.</li>
+                <li class="postcard-row">
+                    <span class="label">+ Открытка:</span>
+                    <span class="value">{{ order.postcard.price }} руб.</span>
+                </li>
             {% endif %}
         </ul>
     </div>
 
-    <a href="{% url 'shop:product_list_all' %}" class="btn btn-primary">Вернуться в магазин</a>
+    <!-- КНОПКА -->
+    <!-- Используем стандартные классы, чтобы сработал пресет из настроек -->
+    <div class="action-area">
+        <a href="{% url 'shop:product_list_all' %}" class="btn btn-primary custom-btn-size">
+            Вернуться в каталог
+        </a>
+    </div>
 </div>
+
+<style>
+    .created-order-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 60px 20px;
+        text-align: center;
+        font-family: var(--default-font-family, sans-serif);
+    }
+
+    /* Галочка */
+    .success-icon-wrapper {
+        margin-bottom: 20px;
+    }
+    .success-icon {
+        font-size: 4em;
+        color: #28a745;
+        animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes popIn {
+        0% { opacity: 0; transform: scale(0.5); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+
+    h1 {
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .order-message {
+        font-size: 1.1em;
+        line-height: 1.6;
+        color: #555;
+        margin-bottom: 40px;
+    }
+
+    /* Карточка с суммой */
+    .order-summary-card {
+        background: #f9f9f9;
+        padding: 30px;
+        border-radius: 16px;
+        border: 1px solid #eee;
+        margin-bottom: 40px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    }
+
+    .order-summary-card h3 {
+        margin-top: 0;
+        margin-bottom: 20px;
+        color: #333;
+        font-size: 1.4em;
+    }
+
+    .total-highlight {
+        color: var(--accent-color, #e53935);
+        font-weight: 700;
+    }
+
+    .summary-details {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 1.05em;
+    }
+
+    .summary-details li {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+        color: #666;
+    }
+
+    .summary-details li:last-child {
+        border-bottom: none;
+    }
+
+    .summary-details .value {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .postcard-row {
+        color: #28a745 !important;
+    }
+    .postcard-row .value {
+        color: #28a745;
+    }
+
+    /* --- Стили кнопки --- */
+    /* Мы задаем только размеры и отступы.
+       Цвета, границы и тени подтянутся из глобального класса .btn-primary */
+    .custom-btn-size {
+        display: inline-block;
+        padding: 15px 40px;
+        font-size: 1.1rem;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    /* Центровка */
+    .action-area {
+        display: flex;
+        justify-content: center;
+    }
+</style>
 {% endblock %}
