@@ -6,12 +6,13 @@ from django.utils.safestring import mark_safe
 from django.urls import path, reverse
 from django.shortcuts import redirect
 from django.conf import settings
-from django.http import FileResponse
-from django.core.management import call_command  # Импорт для запуска команд
-import os
-import subprocess
-import zipfile
-import io
+from django.core.management import call_command
+from django.http import FileResponse  # <--- ВЕРНУЛИ
+import os  # <--- ВЕРНУЛИ
+import subprocess  # <--- ВЕРНУЛИ
+import zipfile  # <--- ВЕРНУЛИ
+import io  # <--- ВЕРНУЛИ
+from io import StringIO
 
 from solo.admin import SingletonModelAdmin
 from adminsortable2.admin import SortableAdminMixin
@@ -62,8 +63,7 @@ class BannerAdmin(SortableAdminMixin, admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
         form.base_fields['image'].label = "Изображение (адаптивно)"
-        form.base_fields[
-            'image'].help_text = "Рекомендуется горизонтальное фото (например, 1600x600). Изображение будет автоматически адаптироваться под размер экрана."
+        form.base_fields['image'].help_text = "Рекомендуется 1600x600."
         return form
 
 
@@ -118,8 +118,6 @@ class ProductAdmin(admin.ModelAdmin):
     def category_list(self, obj):
         return ", ".join([c.name for c in obj.category.all()])
 
-    category_list.short_description = 'Категории'
-
 
 @admin.register(FooterPage)
 class FooterPageAdmin(SortableAdminMixin, admin.ModelAdmin):
@@ -149,22 +147,24 @@ class BenefitAdmin(SortableAdminMixin, admin.ModelAdmin):
 class SiteSettingsAdmin(SingletonModelAdmin):
     form = SiteSettingsForm
 
+    # Подключаем JS для кнопок
+    class Media:
+        js = ('shop/js/admin_scripts.js',)
+
     fieldsets = (
         ('Основные настройки', {
             'classes': ('collapse',),
             'description': "Ключевая информация о вашем магазине.",
             'fields': (
-                'shop_name',
-                # Настройки Артикулов
+                ('shop_name', 'logo_image'),
+                'image_preview',
+
                 'sku_start_number',
-                'apply_sku_logic_button',  # <-- Кнопка
+                'apply_sku_logic_button',
 
-                # Настройки Заказов
                 'order_start_number',
-                'apply_order_logic_button',  # <-- Кнопка
+                'apply_order_logic_button',
 
-                'logo_image',
-                'image_preview',  # <-- Превью логотипа
                 ('contact_phone', 'contact_phone_secondary'),
                 ('pickup_address', 'working_hours'),
                 'map_embed_code',
@@ -270,10 +270,8 @@ class SiteSettingsAdmin(SingletonModelAdmin):
 
     change_form_template = "admin/shop/sitesettings/change_form.html"
 
-    # Объявляем поля только для чтения
     readonly_fields = ('apply_sku_logic_button', 'apply_order_logic_button', 'image_preview')
 
-    # === ВОТ ФУНКЦИЯ, КОТОРАЯ БЫЛА ПРОПУЩЕНА ===
     def image_preview(self, obj):
         if obj.logo_image:
             return format_html('<img src="{}" width="150" />', obj.logo_image.url)
@@ -281,15 +279,74 @@ class SiteSettingsAdmin(SingletonModelAdmin):
 
     image_preview.short_description = "Превью логотипа"
 
-    # ============================================
-
     def save_model(self, request, obj, form, change):
         if obj.mobile_font_scale is not None:
             if obj.mobile_font_scale > 50 or obj.mobile_font_scale < -50:
                 obj.mobile_font_scale = 0
         super().save_model(request, obj, form, change)
 
-    # --- ЛОГИКА КНОПОК И URLS ---
+    # --- КНОПКИ ---
+
+    def apply_sku_logic_button(self, obj):
+        # Кнопка для артикулов (JS добавит подтверждение)
+        return format_html(
+            '<a class="button" href="javascript:void(0);" onclick="runSkuScript()" '
+            'style="background:#28a745; color:white; padding:5px 10px; border-radius:4px;">'
+            '▶ Обновить артикулы</a> '
+            '<span style="color:#666; margin-left:10px;">(Нажмите для пересчета)</span>'
+        )
+
+    apply_sku_logic_button.short_description = "Действие с артикулами"
+
+    def apply_order_logic_button(self, obj):
+        # Кнопка для заказов
+        return format_html(
+            '<a class="button" href="javascript:void(0);" onclick="runOrderScript()" '
+            'style="background:#dc3545; color:white; padding:5px 10px; border-radius:4px;">'
+            '⚠ Перенумеровать заказы</a> '
+            '<span style="color:#dc3545; margin-left:10px; font-weight:bold;">(Изменит ВСЕ номера!)</span>'
+        )
+
+    apply_order_logic_button.short_description = "Действие с заказами"
+
+    # --- ОБРАБОТЧИКИ ---
+
+    def run_fix_skus(self, request):
+        # Сохраняем число
+        new_start_num = request.GET.get('val')
+        if new_start_num:
+            settings_obj = SiteSettings.get_solo()
+            settings_obj.sku_start_number = int(new_start_num)
+            settings_obj.save()
+
+        # Запускаем скрипт
+        out = StringIO()
+        try:
+            call_command('fix_skus', force=True, stdout=out)
+            result_msg = out.getvalue()
+            self.message_user(request, f"РЕЗУЛЬТАТ: {result_msg}", level='success')
+        except Exception as e:
+            self.message_user(request, f"Ошибка: {e}", level='error')
+        return redirect(reverse('admin:shop_sitesettings_change', args=[SiteSettings.objects.get().pk]))
+
+    def run_fix_orders(self, request):
+        new_start_num = request.GET.get('val')
+        if new_start_num:
+            settings_obj = SiteSettings.get_solo()
+            settings_obj.order_start_number = int(new_start_num)
+            settings_obj.save()
+
+        out = StringIO()
+        try:
+            call_command('fix_order_ids', force=True, stdout=out)
+            result_msg = out.getvalue()
+            self.message_user(request, f"РЕЗУЛЬТАТ: {result_msg}", level='success')
+        except Exception as e:
+            self.message_user(request, f"Ошибка: {e}", level='error')
+        return redirect(reverse('admin:shop_sitesettings_change', args=[SiteSettings.objects.get().pk]))
+
+    # --- БЭКАПЫ (С восстановленными импортами) ---
+
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
@@ -301,41 +358,6 @@ class SiteSettingsAdmin(SingletonModelAdmin):
             path('run-fix-orders/', self.admin_site.admin_view(self.run_fix_orders), name='run_fix_orders'),
         ]
         return custom_urls + urls
-
-    def apply_sku_logic_button(self, obj):
-        return format_html(
-            '<a class="button" href="run-fix-skus/" style="background:#28a745; color:white; padding:5px 10px; border-radius:4px;">'
-            '▶ Применить к старым товарам</a> '
-            '<span style="color:#666; margin-left:10px;">(Нажмите, если изменили начальный номер)</span>'
-        )
-
-    apply_sku_logic_button.short_description = "Обновление артикулов"
-
-    def apply_order_logic_button(self, obj):
-        return format_html(
-            '<a class="button" href="run-fix-orders/" style="background:#dc3545; color:white; padding:5px 10px; border-radius:4px;" '
-            'onclick="return confirm(\'ВНИМАНИЕ! Это изменит номера существующих заказов. Вы уверены?\')">'
-            '⚠ Обновить номера старых заказов</a> '
-            '<span style="color:#666; margin-left:10px;">(Внимание: номера изменятся!)</span>'
-        )
-
-    apply_order_logic_button.short_description = "Обновление заказов"
-
-    def run_fix_skus(self, request):
-        try:
-            call_command('fix_skus')
-            self.message_user(request, "Артикулы успешно обновлены!", level='success')
-        except Exception as e:
-            self.message_user(request, f"Ошибка при обновлении артикулов: {e}", level='error')
-        return redirect(reverse('admin:shop_sitesettings_change', args=[SiteSettings.objects.get().pk]))
-
-    def run_fix_orders(self, request):
-        try:
-            call_command('fix_order_ids', force=True)
-            self.message_user(request, "Номера заказов успешно пересчитаны!", level='success')
-        except Exception as e:
-            self.message_user(request, f"Ошибка при обновлении заказов: {e}", level='error')
-        return redirect(reverse('admin:shop_sitesettings_change', args=[SiteSettings.objects.get().pk]))
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}

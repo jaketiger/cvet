@@ -10,9 +10,9 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.html import format_html
-from django.db.models import Max  # Импорт для поиска
+from django.db.models import Max
 
-# --- КОНСТАНТЫ ВЫБОРА (В НАЧАЛЕ ФАЙЛА) ---
+# --- КОНСТАНТЫ ВЫБОРА ---
 
 GLOBAL_FONT_FAMILY_CHOICES = [
     ('roboto', 'Стандартный (Roboto)'),
@@ -139,16 +139,13 @@ class Category(models.Model):
 
 
 class SiteSettings(SingletonModel):
-    # Основные настройки
     shop_name = models.CharField("Название магазина", max_length=100, default="MegaCvet")
 
-    # === МАГИЧЕСКИЕ ЧИСЛА (НУМЕРАЦИЯ) ===
     sku_start_number = models.PositiveIntegerField("Начальный АРТИКУЛ товара", default=11287,
                                                    help_text="Если товаров нет, отсчет начнется с этого числа. Если товары есть, будет использовано (Последний Артикул + 1).")
 
     order_start_number = models.PositiveIntegerField("Начальный номер ЗАКАЗА", default=1,
                                                      help_text="Новые заказы будут начинаться с этого числа (если оно больше текущего максимального номера заказа).")
-    # ====================================
 
     logo_image = models.ImageField("Логотип (Изображение)", upload_to='logo/', blank=True, null=True,
                                    help_text="Если загрузить картинку, она заменит текстовое название и стандартную иконку.")
@@ -169,7 +166,6 @@ class SiteSettings(SingletonModel):
     delivery_cost = models.DecimalField("Стоимость доставки", max_digits=10, decimal_places=2, default=300.00,
                                         help_text="Стоимость доставки будет добавлена к общей сумме заказа.")
 
-    # Фон листа
     site_sheet_bg_color = models.CharField("Фон листа сайта", max_length=7, blank=True, default='#ffffff',
                                            help_text=HELP_COLOR_RESET + " Если очистить, фон будет прозрачным.")
     site_sheet_opacity = models.FloatField("Прозрачность листа", default=95, blank=True, null=True,
@@ -178,7 +174,6 @@ class SiteSettings(SingletonModel):
     site_sheet_blur = models.PositiveIntegerField("Размытие фона листа (px)", default=0, blank=True, null=True,
                                                   validators=[MaxValueValidator(20)], help_text=HELP_BLUR)
 
-    # Шапка
     desktop_header_behavior = models.CharField("Поведение (Десктоп)", max_length=20, choices=DESKTOP_HEADER_BEHAVIOR,
                                                default='normal')
     desktop_header_scroll_enabled = models.BooleanField("Прозрачность Шапки при скролле", default=False)
@@ -211,7 +206,6 @@ class SiteSettings(SingletonModel):
     mobile_header_bg_color_custom = models.CharField("Свой цвет", max_length=7, blank=True, default='',
                                                      help_text=HELP_COLOR_RESET)
 
-    # Каталог и товары
     all_products_text = models.CharField("Текст ссылки 'Все товары'", max_length=50, default="Все товары")
     catalog_title = models.CharField("Заголовок страницы каталога", max_length=200, default='Наш каталог цветов')
     catalog_title_color = models.CharField("Цвет заголовка каталога", max_length=7, blank=True, default='',
@@ -232,11 +226,9 @@ class SiteSettings(SingletonModel):
     default_composition_title = models.CharField("Заголовок 'Состава' (по умолч.)", max_length=100, default="Состав")
     default_description_title = models.CharField("Заголовок 'Описания' (по умолч.)", max_length=100, default="Описание")
 
-    # Слайдер
     slider_duration = models.PositiveIntegerField("Пауза (сек)", default=5)
     slider_effect = models.CharField("Эффект", max_length=20, choices=SLIDER_EFFECT_CHOICES, default='slide')
 
-    # Глобальное оформление
     navigation_style = models.CharField("Стиль анимации навигации", max_length=10, choices=NAV_STYLE_CHOICES,
                                         default='underline', help_text="Эффект при наведении на ссылки в меню.")
     icon_animation_style = models.CharField("СТИЛЬ АНИМАЦИИ ИКОНОК", max_length=10, choices=ICON_ANIMATION_CHOICES,
@@ -305,7 +297,6 @@ class SiteSettings(SingletonModel):
                                         choices=GLOBAL_FONT_FAMILY_CHOICES, default='roboto', editable=False)
     base_font_size = models.PositiveIntegerField("Базовый размер шрифта (устарело, px)", default=16, editable=False)
 
-    # Кнопки
     button_style_preset = models.CharField("Стиль кнопок (Пресет)", max_length=20, choices=BUTTON_PRESET_CHOICES,
                                            default='standard')
     button_bg_color = models.CharField("Цвет фона", max_length=7, blank=True, default='', help_text=HELP_COLOR_RESET)
@@ -327,7 +318,6 @@ class SiteSettings(SingletonModel):
     add_to_cart_hover_bg_color = models.CharField("Цвет фона 'В корзину' при наведении", max_length=7, blank=True,
                                                   default='', help_text=HELP_COLOR_RESET)
 
-    # Мобильная версия
     mobile_header_style = models.CharField("Отображение ссылок в шапке", max_length=25, choices=MOBILE_HEADER_CHOICES,
                                            default='partial')
     mobile_product_grid = models.PositiveSmallIntegerField("Кол-во товаров в ряду", choices=MOBILE_GRID_CHOICES,
@@ -337,7 +327,6 @@ class SiteSettings(SingletonModel):
     collapse_categories_threshold = models.PositiveSmallIntegerField("Схлопывать категории в иконку", default=4)
     collapse_footer_threshold = models.PositiveSmallIntegerField("Схлопывать ссылки в подвале", default=4)
 
-    # Мобильное меню
     mobile_button_override_global = models.BooleanField("Применить мобильные цвета ко ВСЕМ кнопкам", default=False)
     mobile_dropdown_bg_color = models.CharField("Фон", max_length=7, blank=True, default='', help_text=HELP_COLOR_RESET)
     mobile_dropdown_opacity = models.FloatField("Прозрачность фона", default=95, blank=True, null=True,
@@ -367,7 +356,7 @@ class SiteSettings(SingletonModel):
                                                        validators=[MinValueValidator(0), MaxValueValidator(100)],
                                                        help_text="100% - непрозрачные, 0% - полностью прозрачные.")
 
-    # Статические страницы (ВОТ НЕДОСТАЮЩИЕ ПОЛЯ)
+    # Статические страницы (ВОССТАНОВЛЕННЫЕ ПОЛЯ)
     static_page_title_color = models.CharField("Цвет заголовков H1", max_length=7, blank=True,
                                                help_text="Меняет цвет заголовков на страницах 'Контакты', 'О нас' и текстовых страницах.")
     static_page_subtitle_color = models.CharField("Цвет подзаголовков H3", max_length=7, blank=True,
@@ -482,7 +471,7 @@ class Product(models.Model):
     created = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
 
-    # === ЛОГИКА АРТИКУЛОВ ИЗ SITESETTINGS ===
+    # === ЛОГИКА АРТИКУЛОВ ИЗ SITESETTINGS (БЕЗ КОНФЛИКТОВ) ===
     def save(self, *args, **kwargs):
         if not self.sku:
             try:
@@ -490,14 +479,22 @@ class Product(models.Model):
             except:
                 start_num = 11287
 
+                # Ищем максимальный, но при этом проверяем уникальность в цикле
+            # Это надежнее
             max_sku_dict = Product.objects.aggregate(Max('sku'))
             max_sku = max_sku_dict['sku__max']
 
             next_val = start_num
             if max_sku and max_sku.isdigit():
-                next_val = int(max_sku) + 1
+                potential_next = int(max_sku) + 1
+                if potential_next > start_num:
+                    next_val = potential_next
 
-            self.sku = str(max(next_val, start_num))
+            # Финальная проверка на коллизию (на всякий случай)
+            while Product.objects.filter(sku=str(next_val)).exists():
+                next_val += 1
+
+            self.sku = str(next_val)
 
         super().save(*args, **kwargs)
 
