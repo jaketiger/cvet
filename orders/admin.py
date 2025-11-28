@@ -28,6 +28,7 @@ class OrderItemInline(admin.TabularInline):
 class OrderAdmin(admin.ModelAdmin):
     list_display = (
         'id',
+        'type_display',  # <--- НОВАЯ КОЛОНКА: ТИП ЗАКАЗА
         'first_name', 'last_name',
         'recipient_display',
         'delivery_date_fmt',
@@ -39,18 +40,13 @@ class OrderAdmin(admin.ModelAdmin):
         'created'
     )
 
-    list_filter = ('status', 'paid', 'created', 'updated', 'delivery_date', 'delivery_option')
-
-    # === ИЗМЕНЕНИЕ: ПОИСК ПО ТОВАРАМ И АРТИКУЛАМ ===
+    list_filter = ('is_one_click', 'status', 'paid', 'created', 'updated', 'delivery_date', 'delivery_option')
     search_fields = (
         'id',
         'first_name', 'last_name', 'email', 'phone',
         'recipient_name', 'recipient_phone', 'address',
-        # Поиск по товарам внутри заказа
-        'items__product__name',
-        'items__product__sku'
+        'items__product__name', 'items__product__sku'
     )
-    # ===============================================
 
     inlines = [OrderItemInline]
     readonly_fields = (
@@ -63,7 +59,7 @@ class OrderAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Основная информация', {
-            'fields': ('status', 'paid', 'delivery_option', 'delivery_cost')
+            'fields': ('status', 'is_one_click', 'paid', 'delivery_option', 'delivery_cost')
         }),
         ('Заказчик', {
             'fields': ('user', 'first_name', 'last_name', 'email', 'phone')
@@ -76,7 +72,6 @@ class OrderAdmin(admin.ModelAdmin):
             'fields': ('address', 'postal_code', 'city')
         }),
 
-        # Блок даты и времени (Открыт)
         ('📅 Дата и Время доставки (Установлено клиентом)', {
             'fields': ('delivery_date', 'delivery_time'),
             'description': 'Данные установлены клиентом при оформлении. Изменяйте их только после согласования с покупателем!'
@@ -95,6 +90,17 @@ class OrderAdmin(admin.ModelAdmin):
             'fields': ('get_items_cost_display', 'get_total_cost_display', 'created', 'updated')
         }),
     )
+
+    # === МЕТОД ОТОБРАЖЕНИЯ ТИПА ЗАКАЗА ===
+    def type_display(self, obj):
+        if obj.is_one_click:
+            return format_html(
+                '<span style="color: orange; font-weight: bold; font-size: 1.2em;" title="Быстрый заказ">⚡ 1-Click</span>')
+        return format_html('<span style="color: #666;" title="Обычный заказ">🛒 Корзина</span>')
+
+    type_display.short_description = "Тип"
+
+    # =====================================
 
     def delivery_date_fmt(self, obj):
         if obj.delivery_date:

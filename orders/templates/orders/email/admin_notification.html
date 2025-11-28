@@ -1,89 +1,108 @@
 <!-- orders/templates/orders/email/admin_notification.html -->
-<h1 style="color: #333;">Новый заказ #{{ order.id }}</h1>
-<p>На сайте был оформлен новый заказ. Сумма: <strong>{{ order.get_total_cost }} руб.</strong></p>
+<div style="font-family: sans-serif; color: #333;">
 
-<hr>
-
-<table style="width: 100%; border-collapse: collapse;">
-    <tr>
-        <td style="vertical-align: top; padding-right: 20px;">
-            <h3>👤 Заказчик:</h3>
-            <p>
-                <strong>Имя:</strong> {{ order.first_name }} {{ order.last_name }}<br>
-                <strong>Телефон:</strong> {{ order.phone }}<br>
-                <strong>Email:</strong> {{ order.email }}
-            </p>
-        </td>
-        {% if order.recipient_name %}
-        <td style="vertical-align: top; background-color: #fff3cd; padding: 10px; border-radius: 5px;">
-            <h3 style="margin-top: 0; color: #856404;">🎁 ПОЛУЧАТЕЛЬ (ДРУГОЙ):</h3>
-            <p>
-                <strong>Имя:</strong> {{ order.recipient_name }}<br>
-                <strong>Телефон:</strong> {{ order.recipient_phone }}
-            </p>
-        </td>
-        {% endif %}
-    </tr>
-</table>
-
-<hr>
-
-<h3>📅 Когда доставить:</h3>
-<p>
-    <strong>Дата:</strong> {% if order.delivery_date %}{{ order.delivery_date|date:"d.m.Y" }}{% else %}Не указана{% endif %}<br>
-    <strong>Время:</strong> {{ order.get_delivery_time_display }}
-</p>
-
-<hr>
-
-<h3>🚚 Доставка:</h3>
-{% if order.delivery_option == 'delivery' %}
-    <p style="font-weight: bold; color: #dc3545;">КУРЬЕРСКАЯ ДОСТАВКА</p>
-    <p>
-        <strong>Адрес:</strong> {{ order.postal_code }}, {{ order.city }}, {{ order.address }}
-    </p>
-{% else %}
-    <p style="font-weight: bold; color: #007bff;">САМОВЫВОЗ</p>
-{% endif %}
-
-<hr>
-
-<!-- БЛОК ОТКРЫТКИ -->
-{% if order.postcard or order.custom_postcard_image %}
-<div style="background-color: #f8f9fa; padding: 15px; border: 1px solid #dee2e6; border-radius: 5px; margin: 20px 0;">
-    <h3 style="margin-top: 0;">💌 ОТКРЫТКА К ЗАКАЗУ:</h3>
-
-    <div style="margin-bottom: 10px;">
-        {% if order.custom_postcard_image %}
-            <strong>Тип:</strong> <span style="color: purple;">Своё фото клиента</span><br>
-            <img src="{{ base_url }}{{ order.custom_postcard_image.url }}" alt="Своя открытка" style="max-width: 200px; border: 1px solid #ccc; margin-top: 5px;">
-        {% elif order.postcard %}
-            <strong>Тип:</strong> {{ order.postcard.title }} ({% if order.postcard.price > 0 %}Платная: {{ order.postcard.price }}р{% else %}Бесплатная{% endif %})<br>
-            {% if order.postcard.image %}
-                <img src="{{ base_url }}{{ order.postcard.image.url }}" alt="Открытка" style="max-width: 200px; border: 1px solid #ccc; margin-top: 5px;">
-            {% endif %}
-        {% endif %}
+    <!-- === БЛОК ТРЕВОГИ ДЛЯ БЫСТРОГО ЗАКАЗА === -->
+    {% if order.is_one_click %}
+    <div style="border: 3px solid #dc3545; background-color: #fff8f8; padding: 20px; text-align: center; margin-bottom: 20px; border-radius: 8px;">
+        <h1 style="margin: 0; color: #dc3545; font-size: 28px; text-transform: uppercase;">⚡ Быстрый заказ в 1 клик!</h1>
+        <p style="font-size: 18px; font-weight: bold; margin: 10px 0;">Срочно свяжитесь с клиентом!</p>
+        <p style="font-size: 16px;">Телефон: <a href="tel:{{ order.phone }}" style="color: #000; text-decoration: none; border-bottom: 2px solid #000;">{{ order.phone }}</a></p>
+        <p style="margin: 5px 0; color: #666;">Имя: {{ order.first_name }}</p>
     </div>
-
-    {% if order.postcard_text %}
-    <div style="background: #fff; padding: 10px; border: 1px dashed #ccc;">
-        <strong>Текст поздравления (Напечатать):</strong><br>
-        <em style="font-size: 1.1em;">{{ order.postcard_text|linebreaksbr }}</em>
-    </div>
+    {% else %}
+    <h1 style="color: #333;">Новый заказ #{{ order.id }}</h1>
     {% endif %}
+
+    <p>
+        <strong>Время заказа:</strong> {{ order.created|date:"d.m.Y H:i" }}<br>
+        <strong>Сумма:</strong> {{ order.get_total_cost }} руб.
+    </p>
+
+    <hr>
+
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="vertical-align: top; padding-right: 20px;">
+                <h3>👤 Заказчик:</h3>
+                <p>
+                    <strong>Имя:</strong> {{ order.first_name }} {{ order.last_name }}<br>
+                    <strong>Телефон:</strong> {{ order.phone }}<br>
+                    <strong>Email:</strong> {{ order.email }}
+                </p>
+            </td>
+            {% if order.recipient_name %}
+            <td style="vertical-align: top; background-color: #fff3cd; padding: 10px; border-radius: 5px;">
+                <h3 style="margin-top: 0; color: #856404;">🎁 ПОЛУЧАТЕЛЬ (ДРУГОЙ):</h3>
+                <p>
+                    <strong>Имя:</strong> {{ order.recipient_name }}<br>
+                    <strong>Телефон:</strong> {{ order.recipient_phone }}
+                </p>
+            </td>
+            {% endif %}
+        </tr>
+    </table>
+
+    <hr>
+
+    <!-- ДАННЫЕ О ДОСТАВКЕ (Скрываем лишнее для 1 клика) -->
+    {% if not order.is_one_click %}
+        <h3>📅 Когда доставить:</h3>
+        <p>
+            <strong>Дата:</strong> {% if order.delivery_date %}{{ order.delivery_date|date:"d.m.Y" }}{% else %}Не указана{% endif %}<br>
+            <strong>Время:</strong> {{ order.get_delivery_time_display }}
+        </p>
+
+        <hr>
+
+        <h3>🚚 Доставка:</h3>
+        {% if order.delivery_option == 'delivery' %}
+            <p style="font-weight: bold; color: #dc3545;">КУРЬЕРСКАЯ ДОСТАВКА</p>
+            <p>
+                <strong>Адрес:</strong> {{ order.postal_code }}, {{ order.city }}, {{ order.address }}
+            </p>
+        {% else %}
+            <p style="font-weight: bold; color: #007bff;">САМОВЫВОЗ</p>
+        {% endif %}
+        <hr>
+    {% endif %}
+
+    <!-- БЛОК ОТКРЫТКИ -->
+    {% if order.postcard or order.custom_postcard_image %}
+    <div style="background-color: #f8f9fa; padding: 15px; border: 1px solid #dee2e6; border-radius: 5px; margin: 20px 0;">
+        <h3 style="margin-top: 0;">💌 ОТКРЫТКА К ЗАКАЗУ:</h3>
+
+        <div style="margin-bottom: 10px;">
+            {% if order.custom_postcard_image %}
+                <strong>Тип:</strong> <span style="color: purple;">Своё фото клиента</span><br>
+                <img src="{{ base_url }}{{ order.custom_postcard_image.url }}" alt="Своя открытка" style="max-width: 200px; border: 1px solid #ccc; margin-top: 5px;">
+            {% elif order.postcard %}
+                <strong>Тип:</strong> {{ order.postcard.title }} ({% if order.postcard.price > 0 %}Платная: {{ order.postcard.price }}р{% else %}Бесплатная{% endif %})<br>
+                {% if order.postcard.image %}
+                    <img src="{{ base_url }}{{ order.postcard.image.url }}" alt="Открытка" style="max-width: 200px; border: 1px solid #ccc; margin-top: 5px;">
+                {% endif %}
+            {% endif %}
+        </div>
+
+        {% if order.postcard_text %}
+        <div style="background: #fff; padding: 10px; border: 1px dashed #ccc;">
+            <strong>Текст поздравления (Напечатать):</strong><br>
+            <em style="font-size: 1.1em;">{{ order.postcard_text|linebreaksbr }}</em>
+        </div>
+        {% endif %}
+    </div>
+    <hr>
+    {% endif %}
+
+    <h3>🛒 Состав заказа:</h3>
+    <ul>
+        {% for item in order.items.all %}
+            <li>{{ item.product.name }} - {{ item.quantity }} шт. ({{ item.get_cost }} руб.)</li>
+        {% endfor %}
+    </ul>
+
+    <p style="text-align: center; margin-top: 30px;">
+        <a href="{{ admin_order_url }}" style="background-color: #28a745; color: white; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-size: 16px;">
+            <strong>Перейти к заказу в админ-панели</strong>
+        </a>
+    </p>
 </div>
-<hr>
-{% endif %}
-
-<h3>🛒 Состав заказа:</h3>
-<ul>
-    {% for item in order.items.all %}
-        <li>{{ item.product.name }} - {{ item.quantity }} шт. ({{ item.get_cost }} руб.)</li>
-    {% endfor %}
-</ul>
-
-<p style="text-align: center; margin-top: 30px;">
-    <a href="{{ admin_order_url }}" style="background-color: #28a745; color: white; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-size: 16px;">
-        <strong>Перейти к заказу в админ-панели</strong>
-    </a>
-</p>

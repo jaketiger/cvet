@@ -5,6 +5,32 @@ from .models import Order
 from shop.models import Postcard
 
 
+# === НОВАЯ ФОРМА ДЛЯ 1 КЛИКА ===
+class OneClickOrderForm(forms.ModelForm):
+    phone = forms.CharField(
+        label='Ваш телефон',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '+7 (___) ___-__-__',
+            'data-mask': 'phone'
+        })
+    )
+    first_name = forms.CharField(
+        label='Ваше имя',
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Как к вам обращаться?'
+        })
+    )
+
+    class Meta:
+        model = Order
+        fields = ['phone', 'first_name']
+
+
+# ===============================
+
 class OrderCreateForm(forms.ModelForm):
     delivery_option = forms.ChoiceField(
         label="Способ получения",
@@ -61,9 +87,6 @@ class OrderCreateForm(forms.ModelForm):
         self.fields['address'].required = False
         self.fields['city'].required = False
         self.fields['postal_code'].required = False
-
-        # === ИЗМЕНЕНИЕ: Делаем поля необязательными по умолчанию ===
-        # Мы проверим их наличие вручную в методе clean, если нужна доставка
         self.fields['delivery_date'].required = False
         self.fields['delivery_time'].required = False
 
@@ -76,33 +99,22 @@ class OrderCreateForm(forms.ModelForm):
         if not cleaned_data.get('email'):
             cleaned_data['email'] = 'no-email@provided.com'
 
-        # Логика валидации
         if delivery_option == 'delivery':
-            # Если ДОСТАВКА — требуем адрес и дату/время
             if not cleaned_data.get('address'):
                 self.add_error('address', 'Укажите улицу и дом.')
             if not cleaned_data.get('city'):
                 self.add_error('city', 'Укажите город.')
-
-            # === Проверка даты для доставки ===
             if not cleaned_data.get('delivery_date'):
                 self.add_error('delivery_date', 'Выберите дату доставки.')
             if not cleaned_data.get('delivery_time'):
                 self.add_error('delivery_time', 'Выберите время доставки.')
-
         else:
-            # Если САМОВЫВОЗ — заполняем заглушками
             if not cleaned_data.get('address'):
                 cleaned_data['address'] = 'Самовывоз'
             if not cleaned_data.get('city'):
                 cleaned_data['city'] = 'Самовывоз'
             if not cleaned_data.get('postal_code'):
                 cleaned_data['postal_code'] = '000000'
-
-            # При самовывозе дату можно не указывать (или можно требовать, по вашему желанию)
-            # Если хотите требовать дату и при самовывозе (когда заберут) - раскомментируйте строки ниже:
-            # if not cleaned_data.get('delivery_date'):
-            #     self.add_error('delivery_date', 'Укажите дату самовывоза.')
 
         r_name = cleaned_data.get('recipient_name')
         r_phone = cleaned_data.get('recipient_phone')
