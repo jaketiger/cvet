@@ -1,5 +1,5 @@
 # shop/forms.py
-
+from django.contrib.admin.widgets import AdminTimeWidget
 from django import forms
 from .models import SiteSettings, Banner, Product
 from django.utils.safestring import mark_safe
@@ -172,6 +172,16 @@ class SiteSettingsForm(forms.ModelForm):
         model = SiteSettings
         fields = '__all__'
         widgets = {
+            # === ДОБАВЛЯЕМ ЭТОТ БЛОК ДЛЯ ВРЕМЕНИ ===
+            'work_weekdays_open': AdminTimeWidget(),
+            'work_weekdays_close': AdminTimeWidget(),
+            'work_weekend_open': AdminTimeWidget(),
+            'work_weekend_close': AdminTimeWidget(),
+            'delivery_weekdays_open': AdminTimeWidget(),
+            'delivery_weekdays_close': AdminTimeWidget(),
+            'delivery_weekend_open': AdminTimeWidget(),
+            'delivery_weekend_close': AdminTimeWidget(),
+            # =======================================
             'discount_colors_mode': forms.Select(attrs={'style': 'width: 300px;'}),
             'default_discount_sticker_color': ClearableColorInput(),
             'default_new_price_color': ClearableColorInput(),
