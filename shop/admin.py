@@ -442,22 +442,22 @@ class SiteSettingsAdmin(SingletonModelAdmin):
     )
 
     def timezone_preview(self, obj):
-        return format_html(
-            '<span id="timezone-clock-preview" style="font-size: 14px; padding-left: 10px; line-height: 35px;">Загрузка времени...</span>')
-
-    timezone_preview.short_description = "Текущее время в регионе"
+        # ИСПОЛЬЗУЕМ mark_safe ДЛЯ ПРОСТОГО HTML
+        return mark_safe(
+            '<span id="timezone-clock-preview" style="font-size: 14px; padding-left: 10px; line-height: 35px;">Загрузка времени...</span>'
+        )
 
     def image_preview(self, obj):
         if obj.logo_image:
+            # Здесь format_html НУЖЕН, так как есть {}
             return format_html('<img src="{}" width="150" />', obj.logo_image.url)
         return "Логотип не загружен"
 
-    image_preview.short_description = "Превью логотипа"
-
     def discount_colors_info(self, obj):
-        return format_html(
-            '<div style="background-color: #363a36; border-left: 4px solid #e53935; padding: 10px 15px; margin-bottom: 15px;">...</div>')
-
+        # ИСПОЛЬЗУЕМ mark_safe
+        return mark_safe(
+            '<div style="background-color: #363a36; border-left: 4px solid #e53935; padding: 10px 15px; margin-bottom: 15px;">...</div>'
+        )
     discount_colors_info.short_description = "Информация"
 
     def save_model(self, request, obj, form, change):
@@ -475,14 +475,18 @@ class SiteSettingsAdmin(SingletonModelAdmin):
             self.message_user(request, "Настройки сохранены. Заказы перенумерованы!", level='success')
 
     def apply_sku_logic_button(self, obj):
-        return format_html(
-            '<button type="submit" name="_run_sku_script" value="1" style="background:#28a745; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;">💾 Сохранить и Обновить артикулы</button>')
+        # ИСПОЛЬЗУЕМ mark_safe
+        return mark_safe(
+            '<button type="submit" name="_run_sku_script" value="1" style="...">💾 Сохранить и Обновить артикулы</button>'
+        )
 
     apply_sku_logic_button.short_description = "Действие"
 
     def apply_order_logic_button(self, obj):
-        return format_html(
-            '<button type="submit" name="_run_order_script" value="1" style="background:#dc3545; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;">💾 Сохранить и Перенумеровать заказы</button>')
+        # ИСПОЛЬЗУЕМ mark_safe
+        return mark_safe(
+            '<button type="submit" name="_run_order_script" value="1" style="...">💾 Сохранить и Перенумеровать заказы</button>'
+        )
 
     apply_order_logic_button.short_description = "Действие"
 
