@@ -407,7 +407,7 @@ class SiteSettings(SingletonModel):
         verbose_name = "Настройки сайта"
 
     def __str__(self):
-        return "Настройки сайта"
+        return format_html("{}", "Настройки сайта")
 
     # ... (методы _get_rgb и property opacity_css оставляем как были) ...
     def _get_rgb(self, hex_color):
