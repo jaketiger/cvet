@@ -1,48 +1,65 @@
 <!-- shop/templates/shop/footer_page_detail.html -->
 {% extends "base.html" %}
 
-{% block title %}{{ page.get_page_title }}{% endblock %}
+{% block title %}{{ page.get_page_title }} - {{ site_settings.shop_name }}{% endblock %}
 
 {% block content %}
-<div class="static-page-container">
-    <h1 class="static-page-title">{{ page.get_page_title }}</h1>
-    <div class="static-page-content">
-        {{ page.content|linebreaks }}
+<div class="info-page-wrapper fade-in-up">
+    <div class="info-card">
+        <div class="info-header">
+            <h1>{{ page.get_page_title }}</h1>
+            <div class="header-line"></div>
+        </div>
+
+        <div class="info-content text-formatted">
+            {{ page.content|linebreaks }}
+        </div>
+
+        <div class="info-footer">
+            <!-- ИСПРАВЛЕННАЯ ССЫЛКА -->
+            <a href="{% url 'shop:product_list_all' %}" class="back-link">
+                ← На главную
+            </a>
+        </div>
     </div>
 </div>
 
 <style>
-    :root {
-        --static-title-color: {{ site_settings.static_page_title_color|default:'var(--heading-font-family)' }};
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+
+    .info-page-wrapper {
+        max-width: 900px; margin: 0 auto; padding: 40px 20px;
+        font-family: var(--default-font-family, sans-serif);
     }
-    .static-page-container {
-        max-width: 900px;
-        margin: 2rem auto;
-        padding: 2rem;
-        background-color: #fff;
-        border-radius: 12px;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+
+    .info-card {
+        background: #fff; padding: 50px; border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        border: 1px solid #f0f0f0;
     }
-    .static-page-title {
-        text-align: center;
-        margin-top: 0;
-        margin-bottom: 2rem;
-        color: var(--static-title-color);
-        padding-bottom: 1rem;
-        border-bottom: 2px solid #f0f0f0;
+
+    .info-header { text-align: center; margin-bottom: 40px; }
+    .info-header h1 { font-size: 2.2rem; color: #333; margin: 0 0 15px 0; font-weight: 700; }
+    .header-line { width: 60px; height: 4px; background: var(--accent-color, #e53935); margin: 0 auto; border-radius: 2px; }
+
+    /* Типографика текста */
+    .text-formatted { font-size: 1.05rem; line-height: 1.8; color: #555; }
+    .text-formatted p { margin-bottom: 20px; }
+    .text-formatted ul, .text-formatted ol { margin-bottom: 20px; padding-left: 20px; }
+    .text-formatted li { margin-bottom: 10px; }
+
+    .info-footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; }
+
+    .back-link {
+        color: #999; text-decoration: none; font-weight: 500; transition: 0.2s;
+        font-size: 1.1rem;
     }
-    .static-page-content {
-        line-height: 1.8;
-        font-size: 1.1em;
-    }
-    .static-page-content p {
-        margin-bottom: 1.5em;
-    }
+    .back-link:hover { color: var(--accent-color, #e53935); }
+
     @media (max-width: 768px) {
-        .static-page-container {
-            padding: 1.5rem;
-            margin: 1rem;
-        }
+        .info-card { padding: 30px 20px; }
+        .info-header h1 { font-size: 1.8rem; }
     }
 </style>
 {% endblock %}

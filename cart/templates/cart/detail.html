@@ -1,16 +1,19 @@
 <!-- cart/templates/cart/detail.html -->
+
 {% extends "base.html" %}
 {% load static %}
 
 {% block title %}Корзина - {{ site_settings.shop_name }}{% endblock %}
 
 {% block content %}
+
 <div class="cart-page-container">
     <h1 class="page-title">Корзина покупок</h1>
 
     {% if cart %}
     <div class="cart-layout">
-        <!-- СПИСОК ТОВАРОВ -->
+
+        <!-- === ЛЕВАЯ КОЛОНКА: СПИСОК ТОВАРОВ === -->
         <div class="cart-items-list">
             {% for item in cart %}
                 {% with product=item.product %}
@@ -44,7 +47,7 @@
                         {% endif %}
                     </div>
 
-                    <!-- 3. ПРАВЫЙ БЛОК -->
+                    <!-- 3. ПРАВЫЙ БЛОК (Цена, Кол-во, Удалить) -->
                     <div class="cart-item-actions">
 
                         <!-- ЦЕНА -->
@@ -59,36 +62,26 @@
                         <form action="{% url 'cart:cart_add' product.id %}" method="post" class="cart-qty-form">
                             {% csrf_token %}
                             <input type="hidden" name="variant_id" value="{{ item.variant_id|default_if_none:'' }}">
-
-                            <!-- ГЛАВНОЕ: Жестко говорим "ОБНОВИТЬ" количество, а не добавить -->
                             <input type="hidden" name="update" value="True">
 
                             <div class="qty-control-neat">
                                 {% if item.quantity <= 1 %}
-                                    <!-- Если 1 шт, минус неактивен, отправлять нечего -->
                                     <button type="button" class="qty-btn minus" disabled style="opacity: 0.3; cursor: default;">−</button>
                                 {% else %}
-                                    <!-- Значение: текущее МИНУС 1 -->
                                     <button type="submit" name="quantity" value="{{ item.quantity|add:'-1' }}" class="qty-btn minus">−</button>
                                 {% endif %}
 
                                 <span class="qty-value">{{ item.quantity }}</span>
 
-                                <!-- Значение: текущее ПЛЮС 1 -->
                                 <button type="submit" name="quantity" value="{{ item.quantity|add:'1' }}" class="qty-btn plus">+</button>
                             </div>
                         </form>
 
-                        <!-- УДАЛИТЬ -->
+                        <!-- УДАЛИТЬ (Твой стиль кнопки) -->
                         <form action="{% url 'cart:cart_remove' product.id %}" method="post" class="delete-form">
                             {% csrf_token %}
                             <input type="hidden" name="variant_id" value="{{ item.variant_id|default_if_none:'' }}">
 
-                            <!--
-                                ХИТРОСТЬ: Используем тег <a> вместо <button>.
-                                Глобальные стили main.css применяются к button, но не к a.
-                                onclick отправляет форму.
-                            -->
                             <a href="#" onclick="event.preventDefault(); this.closest('form').submit();" class="btn-clean-delete">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <polyline points="3 6 5 6 21 6"></polyline>
@@ -105,31 +98,83 @@
             {% endfor %}
         </div>
 
-        <!-- САЙДБАР -->
+        <!-- === ПРАВАЯ КОЛОНКА: ИТОГИ И ПРОМОКОД === -->
         <div class="cart-summary-sidebar">
             <div class="summary-card">
-                <h3>Итого:</h3>
-                <div class="summary-row">
-                    <span>Товары ({{ cart|length }}):</span>
-                    <span>{{ cart.get_total_price }} ₽</span>
+                <h3>Ваш заказ</h3>
+
+                <!-- Блок ПРОМОКОДА -->
+                <div class="promo-block">
+                    {% if cart.promo %}
+                        <!-- Если промокод применен -->
+                        <div class="promo-applied">
+                            <div class="promo-icon">🏷️</div>
+                            <div class="promo-info">
+                                <span class="promo-code">{{ cart.promo.code }}</span>
+                                <span class="promo-desc">Скидка {{ cart.promo.discount }}% применена</span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- Форма ввода -->
+                        <form action="{% url 'promo:apply' %}" method="post" class="promo-form">
+                            {% csrf_token %}
+                            <input type="text" name="code" placeholder="Промокод" required>
+                            <button type="submit">→</button>
+                        </form>
+                    {% endif %}
+<!--
+                    {% if messages %}
+                        <div class="promo-messages">
+                            {% for message in messages %}
+                                <div class="{{ message.tags }}">{{ message }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+-->
                 </div>
-                <hr>
-                <div class="summary-total">
-                    <span>К оплате:</span>
-                    <span class="total-price">{{ cart.get_total_price }} ₽</span>
+
+                <div class="summary-details">
+                    <div class="summary-row">
+                        <span>Товары ({{ cart|length }}):</span>
+                        <span>{{ cart.get_total_price }} ₽</span>
+                    </div>
+
+                    {% if cart.promo %}
+                    <div class="summary-row discount">
+                        <span>Скидка</span>
+                        <span>-{{ cart.get_discount|floatformat:0 }} ₽</span>
+                    </div>
+                    {% endif %}
+
+                    <hr>
+
+                    <div class="summary-total">
+                        <span>К оплате:</span>
+                        <span class="total-price">
+                            {% if cart.promo %}
+                                {{ cart.get_total_price_after_discount|floatformat:0 }}
+                            {% else %}
+                                {{ cart.get_total_price }}
+                            {% endif %} ₽
+                        </span>
+                    </div>
                 </div>
-                {% if is_checkout_possible %}
+
+                <!-- Кнопка Оформить -->
+                {% if is_checkout_possible|default:True %}
                     <a href="{% url 'orders:order_create' %}" class="btn checkout-btn">Оформить заказ</a>
                 {% else %}
                      <button class="btn checkout-btn disabled" disabled style="opacity: 0.6; cursor: not-allowed;">Оформить заказ</button>
                      <p style="color: #dc3545; font-size: 0.85em; text-align: center; margin-top: 5px;">Некоторые товары недоступны.</p>
                 {% endif %}
+
                 <a href="{% url 'shop:product_list_all' %}" class="back-to-shop">Продолжить покупки</a>
             </div>
         </div>
     </div>
 
     {% else %}
+    <!-- ПУСТАЯ КОРЗИНА -->
     <div class="empty-cart-state">
         <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
         <h2>Ваша корзина пуста</h2>
@@ -156,7 +201,7 @@
     .category-label { font-size: 0.85rem; color: #888; background: #f8f8f8; padding: 2px 8px; border-radius: 4px; display: inline-block; }
     .stock-error-msg { color: #dc3545; font-size: 0.8em; font-weight: bold; }
 
-    /* Правый блок */
+    /* Правый блок карточки */
     .cart-item-actions {
         display: flex; flex-direction: column; align-items: flex-end;
         gap: 12px; min-width: 140px;
@@ -185,42 +230,60 @@
         color: var(--accent-color, #e53935) !important;
     }
 
-    /* === ССЫЛКА-КНОПКА УДАЛИТЬ (ТЕПЕРЬ 100% БЕЗ ФОНА) === */
+    /* === ССЫЛКА-КНОПКА УДАЛИТЬ (БЕЗ ФОНА) === */
     .btn-clean-delete {
-        /* Стили ссылки, чтобы она выглядела как текст/иконка */
         text-decoration: none !important;
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
-
         display: inline-flex;
         align-items: center;
         gap: 6px;
-
-        color: #999; /* Серый цвет */
+        color: #999;
         font-size: 0.9rem;
         cursor: pointer;
     }
+    .btn-clean-delete:hover { color: #dc3545; }
 
-    /* Убираем псевдоэлементы, если они прилетают из глобального CSS */
-    .btn-clean-delete::before,
-    .btn-clean-delete::after {
-        display: none !important;
-        content: none !important;
-    }
-
-    .btn-clean-delete:hover {
-        color: #dc3545; /* Красный при наведении */
-    }
-
-    /* Сайдбар */
-    .summary-card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); position: sticky; top: 100px; }
+    /* === ПРАВАЯ КОЛОНКА (САЙДБАР) === */
+    .summary-card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); position: sticky; top: 100px; border: 1px solid #eee; }
     .summary-card h3 { margin-top: 0; margin-bottom: 20px; font-size: 1.3rem; font-weight: bold; color: #333; }
+
+    /* Промокод */
+    .promo-block { margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+    .promo-form { display: flex; gap: 8px; }
+    .promo-form input {
+        flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px;
+        font-size: 0.9rem; outline: none; transition: 0.2s;
+    }
+    .promo-form input:focus { border-color: var(--accent-color, #e53935); }
+    .promo-form button {
+        width: 40px; background: #333; color: white; border: none; border-radius: 8px;
+        cursor: pointer; font-size: 1.1rem; transition: 0.2s;
+    }
+    .promo-form button:hover { background: var(--accent-color, #e53935); }
+
+    .promo-applied {
+        background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 8px; padding: 12px;
+        display: flex; align-items: center; gap: 12px;
+    }
+    .promo-icon { font-size: 1.5rem; }
+    .promo-info { display: flex; flex-direction: column; }
+    .promo-code { font-weight: 800; color: #2e7d32; font-size: 1rem; }
+    .promo-desc { font-size: 0.8rem; color: #4caf50; }
+    .promo-messages { margin-top: 10px; font-size: 0.85rem; }
+    .promo-messages .success { color: #2e7d32; }
+    .promo-messages .error { color: #c62828; }
+
+    /* Итоги */
     .summary-row { display: flex; justify-content: space-between; margin-bottom: 10px; color: #555; }
+    .summary-row.discount { color: #2e7d32; font-weight: 600; }
     .summary-total { display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: bold; margin: 20px 0; }
     .total-price { color: var(--accent-color, #e53935); }
-    .checkout-btn { width: 100%; padding: 15px; display: block; text-align: center; margin-bottom: 15px; }
+    .checkout-btn { width: 100%; padding: 15px; display: block; text-align: center; margin-bottom: 15px; background: var(--accent-color, #e53935); color: white; border-radius: 12px; text-decoration: none; font-weight: 700; transition: 0.2s; }
+    .checkout-btn:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     .back-to-shop { display: block; text-align: center; color: #777; font-size: 0.9rem; }
+
     .empty-cart-state { text-align: center; padding: 60px 20px; background: #fff; border-radius: 12px; }
 
 
@@ -275,7 +338,7 @@
             justify-content: flex-end !important; /* Прижать вправо */
             align-items: center !important;
 
-            color: var(--accent-color, #dc3545) !important; /* Красный цвет */
+            color: var(--accent-color, #dc3545) !important;
         }
 
         .btn-clean-delete svg { width: 20px !important; height: 20px !important; }

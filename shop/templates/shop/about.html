@@ -1,12 +1,67 @@
 <!-- shop/templates/shop/about.html -->
-
 {% extends "base.html" %}
-{% block title %}О нас - {{ site_settings.shop_name }}{% endblock %}
+
+{% block title %}{{ custom_title }} - {{ site_settings.shop_name }}{% endblock %}
+
 {% block content %}
-    <div class="static-page-container">
-        <h1 class="static-page-title">О нашем магазине</h1>
-        <div class="static-page-content">
-            <p>{{ site_settings.about_text|linebreaksbr }}</p>
+<div class="info-page-wrapper fade-in-up">
+
+    <div class="about-hero">
+        {% if site_settings.logo_image %}
+            <img src="{{ site_settings.logo_image.url }}" alt="{{ site_settings.shop_name }}" class="about-logo">
+        {% endif %}
+        <!-- ТЕПЕРЬ ЗАГОЛОВОК ДИНАМИЧЕСКИЙ -->
+        <h1>{{ custom_title }}</h1>
+    </div>
+
+    <div class="info-card">
+        <div class="info-content text-formatted">
+            {{ page.content|default:"Мы создаем красоту для вас каждый день."|linebreaks }}
+        </div>
+
+        <div class="about-features">
+            <div class="feature">
+                <span class="feature-icon">🌸</span>
+                <span>Свежие цветы</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">🚀</span>
+                <span>Быстрая доставка</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">💖</span>
+                <span>Сделано с любовью</span>
+            </div>
         </div>
     </div>
+</div>
+
+<style>
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+
+    .info-page-wrapper { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+
+    .about-hero { text-align: center; margin-bottom: 40px; }
+    .about-logo { height: 80px; width: auto; object-fit: contain; margin-bottom: 15px; }
+    .about-hero h1 { font-size: 2.4rem; color: #333; font-weight: 800; margin: 0; }
+
+    .info-card {
+        background: #fff; padding: 50px; border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.05);
+    }
+
+    .text-formatted { font-size: 1.1rem; line-height: 1.8; color: #444; text-align: center; }
+
+    .about-features {
+        display: flex; justify-content: center; gap: 30px; margin-top: 50px; padding-top: 30px; border-top: 1px solid #eee; flex-wrap: wrap;
+    }
+    .feature { display: flex; flex-direction: column; align-items: center; gap: 10px; color: #666; font-weight: 600; }
+    .feature-icon { font-size: 2rem; background: #fff5f5; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+
+    @media (max-width: 768px) {
+        .info-card { padding: 30px 20px; }
+        .about-hero h1 { font-size: 1.8rem; }
+    }
+</style>
 {% endblock %}

@@ -1,12 +1,47 @@
 <!-- shop/templates/shop/payment.html -->
-
 {% extends "base.html" %}
-{% block title %}Оплата - {{ site_settings.shop_name }}{% endblock %}
+
+{% block title %}{{ custom_title }}{% endblock %}
+
 {% block content %}
-    <div class="static-page-container">
-        <h1 class="static-page-title">Информация об оплате</h1>
-        <div class="static-page-content">
-            <p>{{ site_settings.payment_text|linebreaksbr }}</p>
+<div class="info-page-wrapper fade-in-up">
+    <div class="info-card">
+        <div class="info-header">
+            <span style="font-size: 3rem; display: block; margin-bottom: 10px;">💳</span>
+            <!-- ТЕПЕРЬ ЗАГОЛОВОК ДИНАМИЧЕСКИЙ -->
+            <h1>{{ custom_title }}</h1>
+        </div>
+
+        <div class="info-content text-formatted">
+            {{ page.content|default:"Информация уточняется"|linebreaks }}
+        </div>
+
+        <div class="payment-methods">
+            <div class="p-card"><span class="icon">💵</span> Наличные</div>
+            <div class="p-card"><span class="icon">💳</span> Картой онлайн</div>
+            <div class="p-card"><span class="icon">📱</span> Перевод</div>
         </div>
     </div>
+</div>
+
+<style>
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+
+    .info-page-wrapper { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+    .info-card { background: #fff; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); border: 1px solid #f0f0f0; }
+
+    .info-header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+    .info-header h1 { margin: 0; font-size: 2rem; color: #333; }
+
+    .text-formatted { font-size: 1.05rem; line-height: 1.7; color: #555; }
+
+    .payment-methods { display: flex; gap: 15px; margin-top: 30px; flex-wrap: wrap; }
+    .p-card {
+        flex: 1; min-width: 120px; background: #f9f9f9; padding: 15px; border-radius: 10px;
+        text-align: center; font-weight: 600; color: #555; border: 1px solid #eee;
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .p-card .icon { font-size: 1.2rem; }
+</style>
 {% endblock %}

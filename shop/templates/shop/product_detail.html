@@ -86,8 +86,38 @@
                 </div>
             </div>
 
+            <!-- ЦЕНА С ЛОГИКОЙ СКИДКИ И КАСТОМИЗАЦИЕЙ ЦВЕТОВ -->
             <div class="price-modern">
-                {{ product.price }} ₽
+                <!-- Проверяем, есть ли старая цена и она больше новой -->
+                {% if product.old_price and product.old_price > product.price %}
+                    {% with discount_percent=product.get_discount_percent %}
+                    {% with sticker_color=product.get_discount_sticker_color %}
+                    {% with new_price_color=product.get_new_price_color %}
+
+                    <!-- Старая зачеркнутая цена -->
+                    <span class="detail-old-price">{{ product.old_price|floatformat:0 }} ₽</span>
+
+                    <!-- Новая цена с кастомным цветом -->
+                    <span class="detail-new-price" style="color: {{ new_price_color }} !important;">
+                        {{ product.price|floatformat:0 }} ₽
+                    </span>
+
+                    <!-- Стикер с процентом и кастомным цветом -->
+                    <span class="detail-sale-tag" style="background-color: {{ sticker_color }} !important; color: white;">
+                        {% if discount_percent %}
+                            -{{ discount_percent }}%
+                        {% else %}
+                            SALE
+                        {% endif %}
+                    </span>
+
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                {% else %}
+                    <!-- Если скидки нет - просто цена -->
+                    <span class="detail-regular-price">{{ product.price|floatformat:0 }} ₽</span>
+                {% endif %}
             </div>
 
             <!-- БЛОК ПОКУПКИ -->
@@ -212,19 +242,65 @@
 
 <!-- ================== СТИЛИ CSS ================== -->
 <style>
-    /* --- МОДАЛЬНОЕ ОКНО (Modern) --- */
-    .modal-backdrop {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
-        z-index: 10000; display: flex; justify-content: center; align-items: center;
+
+    .detail-old-price {
+        text-decoration: line-through; /* Зачеркивание */
+        color: #999;                   /* Серый цвет */
+        font-size: 1.5rem;
+        margin-right: 10px;
+        font-weight: normal;
     }
+    .detail-new-price {
+        color: #e53935;                /* Красный (акцентный) цвет по умолчанию */
+        font-weight: 700;
+        font-size: 2.4rem;
+    }
+    .detail-sale-tag {
+        background: #e85454;           /* Красный фон по умолчанию */
+        color: white;
+        font-size: 0.9rem;
+        padding: 4px 10px;
+        border-radius: 20px;
+        vertical-align: middle;
+        margin-left: 10px;
+        font-weight: bold;
+    }
+    .detail-regular-price {
+        font-size: 2.4rem;
+        font-weight: 600;
+        color: #111;
+    }
+
+    /* --- МОДАЛЬНОЕ ОКНО (FIXED) --- */
+    .modal-backdrop {
+        position: fixed !important; /* Принудительно фиксируем */
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(4px);
+        z-index: 99999; /* Поверх всего сайта */
+        display: flex;
+        justify-content: center;
+        align-items: center; /* Центрируем окно по вертикали и горизонтали */
+        overflow-y: auto; /* На случай очень маленьких экранов */
+    }
+
     .modal-content-modern {
-        background: #fff; border-radius: 20px;
-        width: 90%; max-width: 380px; overflow: hidden;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        background: #fff;
+        border-radius: 20px;
+        width: 90%;
+        max-width: 380px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         position: relative;
+        margin: auto; /* Дополнительная центровка */
     }
+
     @keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
     .close-modal {
@@ -244,15 +320,10 @@
     .modal-body { padding: 25px; }
 
     /* Поля ввода */
-    .input-group-modern {
-        position: relative; margin-bottom: 15px;
-    }
-    .input-icon {
-        position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
-        font-size: 1.2rem; opacity: 0.5;
-    }
+    .input-group-modern { position: relative; margin-bottom: 15px; }
+    .input-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 1.2rem; opacity: 0.5; }
     .form-input-modern {
-        width: 100%; padding: 12px 15px 12px 45px; /* Отступ для иконки */
+        width: 100%; padding: 12px 15px 12px 45px;
         border: 1px solid #eee; border-radius: 12px; background: #f9f9f9;
         font-size: 1rem; transition: 0.2s; box-sizing: border-box;
     }
@@ -269,10 +340,9 @@
         transition: 0.2s; margin-top: 10px;
     }
     .btn-submit-modern:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
-
     .privacy-hint { text-align: center; font-size: 0.75rem; color: #999; margin-top: 15px; }
 
-    /* --- АНИМАЦИЯ ГАЛОЧКИ (CSS Success) --- */
+    /* Галочка */
     .success-checkmark { width: 80px; height: 80px; margin: 0 auto 20px; position: relative; }
     .check-icon { width: 80px; height: 80px; position: relative; border-radius: 50%; box-sizing: content-box; border: 4px solid #4CAF50; }
     .check-icon::before { top: 3px; left: -2px; width: 30px; transform-origin: 100% 50%; border-radius: 100px 0 0 100px; }
@@ -284,8 +354,7 @@
     @keyframes icon-line-long { 0% { width: 0; right: 46px; top: 54px; } 65% { width: 0; right: 46px; top: 54px; } 84% { width: 55px; right: 0px; top: 35px; } 100% { width: 47px; right: 8px; top: 38px; } }
 
 
-    /* --- ОСНОВНОЙ CSS СТРАНИЦЫ (ТОТ ЖЕ ЧТО БЫЛ) --- */
-    /* Кнопка 1 клик */
+    /* --- ОСНОВНОЙ CSS СТРАНИЦЫ --- */
     .btn-one-click {
         white-space: nowrap; border-radius: 100px; font-weight: 600;
         display: flex; align-items: center; justify-content: center;
@@ -296,7 +365,6 @@
     }
     .btn-one-click:hover { background: var(--button-bg-color, #e53935); color: var(--button-text-color, #fff); }
 
-    /* Сетка */
     .product-detail-page { max-width: 1300px; margin: 0 auto; padding: 50px 20px; font-family: var(--default-font-family, sans-serif); }
     .product-detail-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 70px; align-items: start; }
     .product-gallery-wrapper { display: flex; flex-direction: column; gap: 20px; }
@@ -328,12 +396,21 @@
     .price-modern { font-size: 2.4rem; font-weight: 600; color: #111; margin-bottom: 30px; }
     .purchase-area { margin-bottom: 30px; }
     .add-to-cart-form-modern { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; }
+
+    /* === ПОЛЕ КОЛИЧЕСТВА (БЕЗ ФОНА И РАМОК) === */
     .qty-capsule { display: flex; align-items: center; justify-content: space-between; background: transparent !important; border: none !important; box-shadow: none !important; padding: 0; width: 120px; height: 56px; }
-    .qty-btn { width: 36px; height: 36px; border-radius: 50%; border: none !important; background: transparent !important; font-size: 1.5rem; cursor: pointer; color: #333; display: flex; align-items: center; justify-content: center; transition: transform 0.1s, color 0.2s; box-shadow: none !important; padding: 0; line-height: 1; }
+
+    .qty-btn {
+    background: transparent !important;
+    color: #333 !important;
+    /* ... */
+}
+
     .qty-btn:hover { color: #000; transform: scale(1.1); }
     .qty-btn:active { transform: scale(0.9); }
     .qty-capsule input { width: 40px; text-align: center; border: none !important; box-shadow: none !important; background: transparent !important; font-size: 1.3rem; font-weight: 600; color: #333; padding: 0; margin: 0; outline: none; }
     .qty-capsule input::-webkit-outer-spin-button, .qty-capsule input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
     .custom-cart-btn { flex-grow: 1; height: 56px; border-radius: 100px; font-size: 1.05rem; font-weight: 600; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
     .custom-cart-btn.disabled { background: #ccc !important; box-shadow: none; cursor: not-allowed; }
     .divider { border: 0; border-top: 1px solid #f0f0f0; margin: 30px 0; }
@@ -361,6 +438,20 @@
 </style>
 
 <script>
+    // 1. Глобальная функция переноса модалки (ВНЕ ДОМЛОАД)
+    // Это гарантирует доступ к ней в любой момент
+    function moveModalToBody() {
+        const modal = document.getElementById('oneClickModal');
+        if (modal && modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // 2. Переносим модалку сразу при загрузке
+        moveModalToBody();
+    });
+
     function updateQty(amount) {
         const input = document.querySelector('input[name="quantity"]');
         let val = parseInt(input.value) || 1;
@@ -385,6 +476,8 @@
 
     // Логика 1 клик
     function openOneClickModal() {
+        // На всякий случай еще раз проверяем, перенесена ли модалка
+        moveModalToBody();
         document.getElementById('oneClickModal').style.display = 'flex';
     }
     function closeOneClickModal() {
@@ -405,9 +498,8 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Скрываем форму, показываем успех
                 document.getElementById('oneClickForm').style.display = 'none';
-                document.querySelector('.modal-header-visual').style.display = 'none'; // Убираем шапку для чистоты
+                document.querySelector('.modal-header-visual').style.display = 'none';
                 document.getElementById('oneClickSuccess').style.display = 'block';
             } else {
                 alert('Ошибка: ' + (data.error || 'Проверьте данные'));
@@ -429,9 +521,19 @@
         });
     }
 
-    // Маска телефона
     if (typeof $ !== 'undefined') {
          $('#oneClickPhone').inputmask("+7 (999) 999-99-99");
     }
 </script>
 {% endblock %}
+
+{% comment %}
+<!-- Отладочная информация о режиме цветов -->
+{% if debug %}
+<div style="font-size: 10px; color: #999; margin-top: 5px;">
+    Режим: {{ site_settings.discount_colors_mode }}<br>
+    Цвет стикера: {{ product.get_discount_sticker_color }}<br>
+    Цвет цены: {{ product.get_new_price_color }}
+</div>
+{% endif %}
+{% endcomment %}

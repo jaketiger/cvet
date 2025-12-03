@@ -1,33 +1,35 @@
 <!-- users/templates/users/register.html -->
 {% extends "base.html" %}
 
-{% block title %}Регистрация нового пользователя{% endblock %}
+{% block title %}Регистрация{% endblock %}
 
 {% block content %}
 <div class="register-page-wrapper">
 
+    <!-- Карточка регистрации -->
     <div class="register-card fade-in">
 
-        <!-- ЛЕВАЯ ЧАСТЬ: ИМИДЖЕВАЯ -->
+        <!-- ЛЕВАЯ КОЛОНКА (ИНФО) -->
         <div class="register-visual">
             <div class="visual-content">
-                <h2>Добро пожаловать в мир цветов!</h2>
-                <p>Создайте аккаунт, чтобы отслеживать заказы, сохранять адреса и получать персональные скидки.</p>
+                <h2>Добро пожаловать!</h2>
+                <p>Создайте аккаунт, чтобы отслеживать заказы, сохранять адреса доставки и получать персональные предложения.</p>
             </div>
-            <!-- Декоративные круги -->
+            <!-- Декоративные элементы -->
             <div class="circle c1"></div>
             <div class="circle c2"></div>
         </div>
 
-        <!-- ПРАВАЯ ЧАСТЬ: ФОРМА -->
+        <!-- ПРАВАЯ КОЛОНКА (ФОРМА) -->
         <div class="register-form-container">
             <h1 class="form-title">Создание аккаунта</h1>
-            <p class="form-subtitle">Заполните данные для регистрации</p>
+            <!-- ИСПРАВЛЕННАЯ ССЫЛКА НИЖЕ -->
+            <p class="form-subtitle">Уже есть аккаунт? <a href="{% url 'login' %}" class="link-accent">Войти</a></p>
 
             <form method="post" class="modern-form">
                 {% csrf_token %}
 
-                <!-- Ошибки -->
+                <!-- Общие ошибки -->
                 {% if form.non_field_errors %}
                     <div class="form-error-alert">
                         {% for error in form.non_field_errors %}
@@ -36,179 +38,192 @@
                     </div>
                 {% endif %}
 
-                <!-- Поле: Имя -->
-                <div class="input-group">
+                <!-- Имя -->
+                <div class="input-group-modern">
                     <label>Ваше имя</label>
                     <div class="input-wrapper">
                         <span class="input-icon">👤</span>
                         {{ form.first_name }}
                     </div>
-                    {% if form.first_name.errors %}<div class="field-error">{{ form.first_name.errors }}</div>{% endif %}
+                    {% if form.first_name.errors %}
+                        <div class="field-error">{{ form.first_name.errors }}</div>
+                    {% endif %}
                 </div>
 
-                <!-- Поле: Телефон -->
-                <div class="input-group">
-                    <label>Номер телефона</label>
+                <!-- Телефон -->
+                <div class="input-group-modern">
+                    <label>Телефон</label>
                     <div class="input-wrapper">
                         <span class="input-icon">📞</span>
                         {{ form.phone }}
                     </div>
-                    <small class="help-text">{{ form.phone.help_text }}</small>
-                    {% if form.phone.errors %}<div class="field-error">{{ form.phone.errors }}</div>{% endif %}
+                    <small class="help-text">Формат: +7 (___) ___-__-__</small>
+                    {% if form.phone.errors %}
+                        <div class="field-error">{{ form.phone.errors }}</div>
+                    {% endif %}
                 </div>
 
-                <!-- Поле: Email -->
-                <div class="input-group">
-                    <label>Email <span class="optional">(не обязательно)</span></label>
+                <!-- Email -->
+                <div class="input-group-modern">
+                    <label>Email <span class="optional">(не обязательно, нужно для чеков и восстановления пароля)</span></label>
                     <div class="input-wrapper">
                         <span class="input-icon">✉️</span>
                         {{ form.email }}
                     </div>
-                    <small class="help-text">Для чеков и восстановления пароля</small>
-                    {% if form.email.errors %}<div class="field-error">{{ form.email.errors }}</div>{% endif %}
+                    {% if form.email.errors %}
+                        <div class="field-error">{{ form.email.errors }}</div>
+                    {% endif %}
                 </div>
 
-                <!-- Поля: Пароли (в ряд) -->
+                <!-- Пароли (в ряд на ПК) -->
                 <div class="password-row">
-                    <div class="input-group">
+                    <div class="input-group-modern">
                         <label>Пароль</label>
                         <div class="input-wrapper">
                             <span class="input-icon">🔒</span>
                             {{ form.password }}
                         </div>
-                        {% if form.password.errors %}<div class="field-error">{{ form.password.errors }}</div>{% endif %}
+                        {% if form.password.errors %}
+                            <div class="field-error">{{ form.password.errors }}</div>
+                        {% endif %}
                     </div>
 
-                    <div class="input-group">
+                    <div class="input-group-modern">
                         <label>Повторите пароль</label>
                         <div class="input-wrapper">
                             <span class="input-icon">🔑</span>
                             {{ form.password2 }}
                         </div>
-                        {% if form.password2.errors %}<div class="field-error">{{ form.password2.errors }}</div>{% endif %}
+                        {% if form.password2.errors %}
+                            <div class="field-error">{{ form.password2.errors }}</div>
+                        {% endif %}
                     </div>
                 </div>
 
-                <!-- Кнопка -->
-                <button type="submit" class="btn btn-primary btn-block register-btn">
+                <!-- Кнопка регистрации -->
+                <button type="submit" class="btn btn-primary register-btn">
                     Зарегистрироваться
                 </button>
-
-                <div class="form-footer">
-                    <p>Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
-                </div>
             </form>
         </div>
     </div>
 </div>
 
+<!-- СТИЛИ -->
 <style>
-    /* Анимация появления */
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .fade-in { animation: fadeIn 0.6s ease-out forwards; }
+    /* Анимация */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeInUp 0.6s ease-out forwards; }
 
-    /* Обертка на всю страницу */
+    /* Общий контейнер страницы */
     .register-page-wrapper {
-        display: flex; justify-content: center; align-items: center;
-        min-height: 80vh; padding: 40px 20px;
-        background-color: #f9f9f9;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 85vh;
+        padding: 40px 20px;
+        background-color: #f8f9fa;
         font-family: var(--default-font-family, sans-serif);
     }
 
-    /* Карточка (разделенная на 2 части) */
+    /* Карточка регистрации */
     .register-card {
         display: flex;
-        width: 100%; max-width: 900px;
+        width: 100%;
+        max-width: 950px;
         background: #fff;
-        border-radius: 20px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        border-radius: 24px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.08);
         overflow: hidden;
     }
 
-    /* --- ЛЕВАЯ ЧАСТЬ (ВИЗУАЛ) --- */
+    /* Левая колонка (Визуал) */
     .register-visual {
         flex: 1;
-        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-        padding: 40px;
-        display: flex; flex-direction: column; justify-content: center;
+        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+        padding: 50px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
         color: #fff;
         position: relative;
         overflow: hidden;
     }
     .visual-content { position: relative; z-index: 2; }
-    .register-visual h2 { font-size: 2.2rem; margin-bottom: 15px; text-shadow: 0 2px 5px rgba(0,0,0,0.1); line-height: 1.2; }
-    .register-visual p { font-size: 1.1rem; opacity: 0.95; line-height: 1.6; }
+    .register-visual h2 {
+        font-size: 2.4rem; margin-bottom: 20px; font-weight: 800;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.1); line-height: 1.1;
+    }
+    .register-visual p { font-size: 1.1rem; line-height: 1.6; opacity: 0.95; }
 
     /* Декор (круги) */
     .circle { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.15); }
-    .c1 { width: 200px; height: 200px; top: -50px; left: -50px; }
-    .c2 { width: 300px; height: 300px; bottom: -100px; right: -50px; }
+    .c1 { width: 250px; height: 250px; top: -50px; left: -50px; }
+    .c2 { width: 350px; height: 350px; bottom: -100px; right: -80px; }
 
-    /* --- ПРАВАЯ ЧАСТЬ (ФОРМА) --- */
+    /* Правая колонка (Форма) */
     .register-form-container {
-        flex: 1.2;
+        flex: 1.3;
         padding: 50px;
+        background: #fff;
     }
-    .form-title { font-size: 1.8rem; margin: 0 0 10px 0; color: #333; }
-    .form-subtitle { color: #888; margin-bottom: 30px; }
 
-    .modern-form { display: flex; flex-direction: column; gap: 20px; }
+    .form-title { margin: 0 0 10px 0; font-size: 2rem; color: #333; font-weight: 700; }
+    .form-subtitle { margin-bottom: 30px; color: #777; font-size: 1rem; }
+    .link-accent { color: var(--accent-color, #e53935); text-decoration: none; font-weight: 600; }
+    .link-accent:hover { text-decoration: underline; }
 
-    .input-group label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 8px; color: #555; }
-    .input-wrapper {
-        position: relative;
-        display: flex; align-items: center;
-    }
+    /* Поля ввода */
+    .input-group-modern { margin-bottom: 20px; }
+    .input-group-modern label { display: block; font-weight: 600; margin-bottom: 8px; color: #555; font-size: 0.9rem; }
+
+    .input-wrapper { position: relative; }
     .input-icon {
-        position: absolute; left: 15px;
-        font-size: 1.2rem; opacity: 0.5;
-        pointer-events: none;
+        position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+        font-size: 1.2rem; opacity: 0.5; pointer-events: none;
     }
 
-    /* Стили полей ввода */
-    .modern-form input {
+    /* Стили input */
+    .register-form-container input {
         width: 100%;
-        padding: 12px 15px 12px 45px; /* Отступ слева под иконку */
-        border: 1px solid #ddd;
-        border-radius: 8px;
+        padding: 14px 15px 14px 45px; /* Отступ слева для иконки */
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
         font-size: 1rem;
-        transition: border-color 0.2s, box-shadow 0.2s;
-        box-sizing: border-box; /* Важно для ширины */
+        transition: all 0.2s;
+        box-sizing: border-box;
+        background: #fcfcfc;
     }
-    .modern-form input:focus {
+    .register-form-container input:focus {
         border-color: var(--accent-color, #e53935);
+        background: #fff;
         outline: none;
-        box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.1);
+        box-shadow: 0 0 0 4px rgba(229, 57, 53, 0.1);
     }
 
-    .optional { font-weight: normal; color: #999; font-size: 0.85em; }
+    .password-row { display: flex; gap: 20px; }
+    .password-row .input-group-modern { flex: 1; }
+
+    .optional { font-weight: normal; color: #aaa; font-size: 0.85em; }
     .help-text { font-size: 0.8rem; color: #999; margin-top: 5px; display: block; }
     .field-error { color: #dc3545; font-size: 0.85rem; margin-top: 5px; }
-    .form-error-alert { background: #ffebee; color: #c62828; padding: 10px; border-radius: 8px; }
-
-    /* Пароли в ряд */
-    .password-row { display: flex; gap: 20px; }
-    .password-row .input-group { flex: 1; }
+    .form-error-alert { background: #ffebee; color: #c62828; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
 
     /* Кнопка */
     .register-btn {
-        margin-top: 10px;
-        padding: 15px;
-        font-size: 1.1rem;
-        border-radius: 10px;
-        /* Цвета берутся из глобального класса btn-primary */
+        width: 100%; padding: 16px; margin-top: 10px;
+        font-size: 1.1rem; font-weight: 600; border-radius: 12px;
     }
 
-    .form-footer { text-align: center; margin-top: 20px; font-size: 0.95rem; color: #666; }
-    .form-footer a { color: var(--accent-color, #e53935); text-decoration: none; font-weight: 600; }
-    .form-footer a:hover { text-decoration: underline; }
-
     /* АДАПТИВНОСТЬ */
-    @media (max-width: 850px) {
-        .register-card { flex-direction: column; }
-        .register-visual { padding: 30px; text-align: center; }
+    @media (max-width: 900px) {
+        .register-card { flex-direction: column; max-width: 500px; }
+        .register-visual { padding: 40px 30px; text-align: center; }
         .register-form-container { padding: 30px 20px; }
-        .password-row { flex-direction: column; gap: 20px; }
+        .password-row { flex-direction: column; gap: 0; }
     }
 </style>
 

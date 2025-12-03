@@ -1,0 +1,27 @@
+<!-- shop/templates/admin/shop/postcard/change_list_custom.html -->
+
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls %}
+
+{% block object-tools %}
+    {{ block.super }}
+
+    <div style="background: #fff; padding: 15px 20px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 20px;">
+        <form method="post" action="{% url 'admin:update_postcard_settings' %}" style="display: flex; align-items: center; gap: 15px; width: 100%;">
+            {% csrf_token %}
+
+            <div style="font-size: 16px; font-weight: bold; color: #333;">
+                📸 Настройка "Своё фото":
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <label for="id_custom_postcard_price" style="color: #555;">Цена (руб):</label>
+                {{ settings_form.custom_postcard_price }}
+            </div>
+
+            <button type="submit" style="background: #28a745; color: #fff; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-weight: bold;">
+                Сохранить цену
+            </button>
+        </form>
+    </div>
+{% endblock %}

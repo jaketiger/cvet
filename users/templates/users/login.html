@@ -1,0 +1,150 @@
+<!-- users/templates/users/login.html -->
+{% extends "base.html" %}
+
+{% block title %}Вход в аккаунт{% endblock %}
+
+{% block content %}
+<div class="login-page-wrapper">
+
+    <div class="login-card fade-in">
+        <h1 class="login-title">Вход в аккаунт</h1>
+        <p class="login-subtitle">Рады видеть вас снова!</p>
+
+        <!-- Форма входа -->
+        <form method="post" class="modern-form">
+            {% csrf_token %}
+
+            <!-- Блок ошибок (если пароль неверный) -->
+            {% if form.non_field_errors %}
+                <div class="error-alert">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Поле: Логин (Email/Телефон) -->
+            <div class="input-group-modern">
+                <label for="{{ form.username.id_for_label }}">Email или Телефон</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">👤</span>
+                    {{ form.username }}
+                </div>
+                {% if form.username.errors %}
+                    <div class="field-error">{{ form.username.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Поле: Пароль -->
+            <div class="input-group-modern">
+                <label for="{{ form.password.id_for_label }}">Пароль</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🔒</span>
+                    {{ form.password }}
+                </div>
+                {% if form.password.errors %}
+                    <div class="field-error">{{ form.password.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Кнопка войти -->
+            <button type="submit" class="btn btn-primary btn-block login-btn">
+                Войти
+            </button>
+
+            <!-- Ссылки (Забыли пароль / Регистрация) -->
+            <div class="form-footer">
+                <p>
+                    <a href="{% url 'password_reset' %}" class="footer-link">Забыли пароль?</a>
+                </p>
+                <hr class="divider">
+                <p>
+                    Нет аккаунта?
+                    <a href="{% url 'users:register' %}" class="footer-link register-link">Зарегистрируйтесь</a>
+                </p>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ================== СТИЛИ CSS ================== -->
+<style>
+    /* Анимация появления */
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeInUp 0.5s ease-out forwards; }
+
+    /* Обертка на весь экран */
+    .login-page-wrapper {
+        display: flex; justify-content: center; align-items: center;
+        min-height: 70vh; padding: 40px 20px;
+        background-color: #f9f9f9;
+        font-family: var(--default-font-family, sans-serif);
+    }
+
+    /* Карточка */
+    .login-card {
+        width: 100%; max-width: 420px;
+        background: #fff; padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        text-align: center;
+    }
+
+    .login-title { font-size: 2rem; margin: 0 0 10px 0; color: #333; font-weight: 700; }
+    .login-subtitle { color: #888; margin-bottom: 30px; font-size: 1.1rem; }
+
+    /* Форма */
+    .modern-form { text-align: left; }
+
+    .input-group-modern { margin-bottom: 20px; }
+    .input-group-modern label { display: block; font-weight: 600; font-size: 0.95rem; margin-bottom: 8px; color: #555; }
+
+    .input-wrapper { position: relative; }
+    .input-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 1.2rem; }
+
+    /* Стилизация полей ввода (как в регистрации) */
+    .modern-form input {
+        width: 100%; padding: 12px 15px 12px 45px; /* Отступ под иконку */
+        border: 1px solid #ddd; border-radius: 10px;
+        font-size: 1rem; transition: 0.2s; box-sizing: border-box;
+        background: #fcfcfc;
+    }
+    .modern-form input:focus {
+        border-color: var(--accent-color, #e53935);
+        background: #fff;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.1);
+    }
+
+    .error-alert { background: #ffebee; color: #c62828; padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; text-align: center; }
+    .field-error { color: #dc3545; font-size: 0.85rem; margin-top: 5px; }
+
+    /* Кнопка */
+    .login-btn {
+        margin-top: 10px; padding: 14px; font-size: 1.1rem;
+        border-radius: 10px; width: 100%;
+        /* Цвета берутся из глобального класса btn-primary (из base.html) */
+    }
+
+    /* --- ПОДВАЛ И ССЫЛКИ (ИСПРАВЛЕНИЕ) --- */
+    .form-footer { margin-top: 30px; text-align: center; font-size: 0.95rem; color: #666; }
+    .divider { border: 0; border-top: 1px solid #eee; margin: 15px 0; }
+
+    .footer-link {
+        color: #555; /* Цвет по умолчанию */
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s ease, text-decoration 0.2s ease;
+        border-bottom: 1px solid transparent; /* Для плавного подчеркивания */
+    }
+
+    /* Эффект при наведении (Используем глобальный акцентный цвет) */
+    .footer-link:hover {
+        color: var(--accent-color, #e53935);
+        border-bottom-color: var(--accent-color, #e53935);
+    }
+
+    /* Ссылка регистрации чуть жирнее */
+    .register-link { font-weight: 600; }
+</style>
+{% endblock %}

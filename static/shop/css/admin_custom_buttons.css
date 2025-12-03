@@ -1,0 +1,110 @@
+/* static/shop/css/admin_custom_buttons.css */
+
+/* ============================================================ */
+/* 1. БАЗОВЫЕ СТИЛИ КОНТЕЙНЕРА (ПАНЕЛИ) КНОПОК                */
+/* ============================================================ */
+.submit-row {
+    background: none !important;              /* Убираем серый фон */
+    background-color: transparent !important; /* Для надежности прозрачность */
+    border: none !important;                  /* Убираем рамки */
+    box-shadow: none !important;              /* Убираем тени */
+    padding: 10px 0 !important;               /* Отступы */
+    margin-bottom: 15px !important;
+    text-align: right;                        /* Кнопки справа */
+}
+
+/* ============================================================ */
+/* 2. СТИЛИЗАЦИЯ САМИХ КНОПОК                                   */
+/* ============================================================ */
+.submit-row input {
+    height: 38px !important;
+    line-height: 38px !important;
+    padding: 0 25px !important;
+    border-radius: 20px !important;            /* Скругление углов */
+    font-weight: bold !important;
+    text-transform: uppercase !important;     /* Текст заглавными */
+    font-size: 11px !important;
+    letter-spacing: 0.5px;
+    border: none !important;
+    transition: background-color 0.2s ease, transform 0.1s ease !important;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);   /* Легкая тень */
+    margin-left: 10px !important;             /* Отступ между кнопками */
+}
+
+/* Эффект нажатия (кнопка чуть проваливается) */
+.submit-row input:active {
+    transform: translateY(2px);
+    box-shadow: none;
+}
+
+/* --- ЦВЕТА КНОПОК --- */
+
+/* Кнопка "СОХРАНИТЬ" (Зеленая) */
+.submit-row input.default {
+    background-color: #28a745 !important;
+    color: white !important;
+}
+.submit-row input.default:hover {
+    background-color: #218838 !important;
+}
+
+/* Кнопка "СОХРАНИТЬ И ПРОДОЛЖИТЬ" (Синяя) */
+.submit-row input[name="_continue"] {
+    background-color: #17a2b8 !important;
+    color: white !important;
+}
+.submit-row input[name="_continue"]:hover {
+    background-color: #138496 !important;
+}
+
+/* Кнопка "СОХРАНИТЬ И ДОБАВИТЬ ДРУГОЙ" (Серая) */
+.submit-row input[name="_addanother"] {
+    background-color: #6c757d !important;
+    color: white !important;
+}
+.submit-row input[name="_addanother"]:hover {
+    background-color: #5a6268 !important;
+}
+
+/* Кнопка "УДАЛИТЬ" (Красная ссылка слева) */
+.submit-row .deletelink {
+    background-color: #dc3545 !important;
+    color: white !important;
+    height: 30px !important;
+    line-height: 30px !important;
+    padding: 0 15px !important;
+    border-radius: 20px !important;            /* Скругление углов */
+    font-weight: bold;
+    text-decoration: none !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    float: left; /* Прижимаем влево */
+}
+.submit-row .deletelink:hover {
+    background-color: #c82333 !important;
+}
+
+/* Спец. стиль для кнопки в списке заказов (чтобы не наезжала) */
+.submit-row.top-save-button {
+    margin-bottom: 5px !important;
+    padding-bottom: 5px !important;
+    clear: both;
+}
+
+
+/* ============================================================ */
+/* 3. СКРЫТИЕ НИЖНИХ КНОПОК (НОВОЕ!)                            */
+/* ============================================================ */
+
+/* А) На странице списка (Change List):
+      Скрываем все панели кнопок, у которых НЕТ класса top-save-button.
+      Т.е. нашу верхнюю оставляем, а стандартную нижнюю скрываем. */
+#changelist-form .submit-row:not(.top-save-button) {
+    display: none !important;
+}
+
+/* Б) На странице редактирования (Change Form):
+      Django выводит две одинаковые панели. Мы скрываем последнюю (нижнюю). */
+#content-main form .submit-row:last-of-type {
+    display: none !important;
+}

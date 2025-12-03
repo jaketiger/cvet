@@ -2,17 +2,11 @@
 
 from django.shortcuts import render, redirect
 from .forms import RegistrationForm
-from django.contrib.auth import login  # <--- Импортируем функцию входа
+from django.contrib.auth import login
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.models import User
-from django.template.loader import render_to_string
 from django.db.models.query_utils import Q
-from django.utils.http import urlsafe_base64_encode
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.encoding import force_bytes
-from django.core.mail import EmailMultiAlternatives
-from django.conf import settings
-from shop.models import SiteSettings
+from django_q.tasks import async_task  # <--- ВАЖНЫЙ ИМПОРТ ДЛЯ АСИНХРОННОСТИ
 
 
 def register(request):
@@ -25,57 +19,46 @@ def register(request):
             # 1. Сохраняем пользователя
             user = form.save()
 
-            # 2. АВТОМАТИЧЕСКИЙ ВХОД (Решает проблему с CSRF и удобнее)
-            # Указываем наш кастомный бэкенд, чтобы Django знал, как работать с юзером
+            # 2. АВТОМАТИЧЕСКИЙ ВХОД
             login(request, user, backend='users.backends.EmailOrPhoneBackend')
 
-            # 3. Перенаправляем сразу в личный кабинет (или на главную)
+            # 3. Перенаправляем в личный кабинет
             return redirect('shop:cabinet')
     else:
         form = RegistrationForm()
     return render(request, 'users/register.html', {'form': form})
 
+
 def password_reset_request(request):
     """
-    Обрабатывает запрос на сброс пароля. Находит пользователя по email
-    и отправляет ему письмо со ссылкой для сброса.
+    Обрабатывает запрос на сброс пароля.
+    Находит пользователя и запускает АСИНХРОННУЮ задачу отправки письма.
     """
     if request.method == "POST":
         form = PasswordResetForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data['email']
             associated_users = User.objects.filter(Q(email=email))
+
             if associated_users.exists():
                 for user in associated_users:
-                    # --- ИЗМЕНЕНИЕ: Теперь SiteSettings импортирован ---
-                    site_settings = SiteSettings.get_solo()
-                    subject = f"Сброс пароля на сайте {site_settings.shop_name}"
+                    # Определение протокола (http или https)
+                    protocol = 'https' if request.is_secure() else 'http'
+                    domain = request.get_host()
 
-                    context = {
-                        "email": user.email,
-                        'domain': request.get_host(),
-                        'site_name': site_settings.shop_name,
-                        "uid": urlsafe_base64_encode(force_bytes(user.pk)),
-                        "user": user,
-                        'token': default_token_generator.make_token(user),
-                        'protocol': 'http',
-                        'site_settings': site_settings  # <-- Передаем в шаблон
-                    }
-
-                    html_content = render_to_string("registration/password_reset_email.html", context)
-                    text_content = render_to_string("registration/password_reset_subject.txt", context)
-
-                    msg = EmailMultiAlternatives(
-                        subject,
-                        text_content,
-                        settings.EMAIL_HOST_USER,
-                        [user.email]
+                    # === АСИНХРОННЫЙ ЗАПУСК ===
+                    # Мы передаем только ID пользователя и параметры домена.
+                    # Вся тяжелая работа (генерация токена, рендеринг, SMTP) будет в воркере.
+                    async_task(
+                        'users.utils.send_password_reset_email_task',
+                        user_id=user.pk,
+                        domain=domain,
+                        protocol=protocol
                     )
-                    msg.attach_alternative(html_content, "text/html")
-                    msg.send(fail_silently=False)
 
+                # Сразу перенаправляем пользователя, не дожидаясь отправки письма
                 return redirect('password_reset_done')
     else:
         form = PasswordResetForm()
 
-    return render(request=request, template_name="registration/password_reset_form.html", context={"form": form})
+    return render(request=request, template_name="users/password_reset_form.html", context={"form": form})

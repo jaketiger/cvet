@@ -1,0 +1,718 @@
+<!-- orders/templates/orders/create.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Оформление заказа{% endblock %}
+
+{% block content %}
+<!-- Flatpickr -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/airbnb.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/ru.js"></script>
+
+<!-- Swiper -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+
+<div class="checkout-page-wrapper fade-in">
+
+    <div class="checkout-header">
+        <h1>Оформление заказа</h1>
+    </div>
+
+    {% if form.errors %}
+        <div class="error-banner">
+            <div class="error-icon">⚠️</div>
+            <div class="error-content">
+                <h4>Проверьте данные:</h4>
+                <ul>
+                {% for field in form %}
+                    {% if field.errors %}
+                        <li><strong>{{ field.label }}:</strong> {{ field.errors|striptags }}</li>
+                    {% endif %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+
+    <form action="." method="post" class="checkout-form" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <div class="checkout-grid">
+
+            <!-- === ЛЕВАЯ КОЛОНКА === -->
+            <div class="form-column">
+
+                <!-- 1. ДОСТАВКА -->
+                <section class="checkout-section">
+                    <div class="section-head">
+                        <div class="step-badge">1</div>
+                        <h2>Доставка и Время</h2>
+                    </div>
+
+                    <div class="delivery-toggle-group">
+                        {% for radio in form.delivery_option %}
+                            <label class="delivery-card" for="{{ radio.id_for_label }}">
+                                {{ radio.tag }}
+                                <div class="delivery-content">
+                                    <div class="icon-circle">
+                                        {% if 'delivery' in radio.choice_value %}🚚{% else %}🏪{% endif %}
+                                    </div>
+                                    <span class="radio-title">{{ radio.choice_label }}</span>
+                                </div>
+                                <div class="check-mark"></div>
+                            </label>
+                        {% endfor %}
+                    </div>
+
+                    <div id="delivery-fields" class="dynamic-block">
+                        <div class="input-grid-2">
+                            <div class="input-box">
+                                <label>Город</label>
+                                {{ form.city }}
+                            </div>
+                            <div class="input-box">
+                                <label>Улица, дом</label>
+                                {{ form.address }}
+                            </div>
+                        </div>
+                        <div style="display:none;">{{ form.postal_code }}</div>
+                    </div>
+
+                    <div class="datetime-wrapper" id="datetime-block">
+                        <div class="dt-header">
+                            <label>Когда доставить?</label>
+                            <!-- КНОПКИ-ССЫЛКИ -->
+                            <div class="dt-presets">
+                                <a href="javascript:void(0)" class="date-link" onclick="setToday()">Сегодня</a>
+                                <a href="javascript:void(0)" class="date-link" onclick="setTomorrow()">Завтра</a>
+                            </div>
+                        </div>
+
+                        <div class="datetime-grid">
+                            <div class="input-box date-input-box">
+                                <label>Дата</label>
+                                <div class="date-input-wrapper">
+                                    {{ form.delivery_date }}
+                                    <span class="calendar-icon">📅</span>
+                                </div>
+                            </div>
+                            <div class="input-box time-input-box">
+                                <label>Время</label>
+                                {{ form.delivery_time }}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. ПОЛУЧАТЕЛЬ -->
+                <section class="checkout-section" id="recipient-section">
+                    <div class="section-head">
+                        <div class="step-badge">2</div>
+                        <h2>Получатель</h2>
+                    </div>
+
+                    <div class="recipient-switcher">
+                        <label class="switch-option">
+                            <input type="radio" name="recipient_who" value="me" checked onchange="toggleRecipient(this)">
+                            <span>Я получу сам</span>
+                        </label>
+                        <label class="switch-option">
+                            <input type="radio" name="recipient_who" value="other" onchange="toggleRecipient(this)">
+                            <span>Другой человек</span>
+                        </label>
+                    </div>
+
+                    <div id="recipient-fields" class="dynamic-block" style="display: none;">
+                        <div class="info-alert">
+                            🤫 Мы не сообщим получателю о заказчике до вручения.
+                        </div>
+                        <div class="input-grid-2">
+                            <div class="input-box">
+                                <label>Имя получателя</label>
+                                {{ form.recipient_name }}
+                            </div>
+                            <div class="input-box">
+                                <label>Телефон получателя</label>
+                                {{ form.recipient_phone }}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. ОТКРЫТКА (ИСПРАВЛЕННАЯ КАРУСЕЛЬ) -->
+                <section class="checkout-section postcard-section-wrapper">
+                    <div class="section-head">
+                        <div class="step-badge">3</div>
+                        <h2>Открытка к букету</h2>
+                    </div>
+
+                    <div class="swiper-container-wrapper">
+                        <!-- Стрелка Влево -->
+                        <div class="swiper-button-prev custom-nav">
+                            <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+                        </div>
+
+                        <div class="swiper postcard-swiper">
+                            <div class="swiper-wrapper">
+
+                                <!-- 1. Без открытки -->
+                                <div class="swiper-slide">
+                                    <label class="postcard-slide-content">
+                                        <input type="radio" name="postcard" value="" data-price="0" checked onchange="handlePostcardChange(this)">
+                                        <div class="pc-visual">
+                                            <div class="pc-emoji">🚫</div>
+                                            <span class="pc-name">Без открытки</span>
+                                            <span class="pc-price-tag">0 ₽</span>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- 2. Своё фото -->
+                                <div class="swiper-slide">
+                                    <label class="postcard-slide-content">
+                                        <input type="radio" name="postcard" value="custom" data-price="0" onchange="handlePostcardChange(this)">
+                                        <div class="pc-visual">
+                                            <div class="pc-emoji">📸</div>
+                                            <span class="pc-name">Своё фото</span>
+                                            <span class="pc-price-tag">0 ₽</span>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- 3+. Открытки из базы -->
+                                {% for card in postcards %}
+                                <div class="swiper-slide">
+                                    <label class="postcard-slide-content">
+                                        <input type="radio" name="postcard" value="{{ card.id }}" data-price="{{ card.price|stringformat:'.0f' }}" onchange="handlePostcardChange(this)">
+                                        <div class="pc-visual">
+                                            {% if card.image %}
+                                                <img src="{{ card.image.url }}" alt="{{ card.title }}">
+                                            {% else %}
+                                                <div class="pc-emoji">💌</div>
+                                            {% endif %}
+                                            <span class="pc-name">{{ card.title }}</span>
+                                            <span class="pc-price-tag">
+                                                {% if card.price > 0 %}+{{ card.price }}₽{% else %}Бесплатно{% endif %}
+                                            </span>
+                                        </div>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Стрелка Вправо -->
+                        <div class="swiper-button-next custom-nav">
+                            <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+                        </div>
+                    </div>
+
+                    <div id="postcard-extras" class="dynamic-block" style="display: none; margin-top: 20px;">
+                        <div id="custom-upload-field" style="display: none; margin-bottom: 15px;">
+                            <div class="input-box">
+                                <label>Загрузить фото</label>
+                                {{ form.custom_postcard_image }}
+                            </div>
+                        </div>
+                        <div class="input-box">
+                            <label>Текст поздравления:</label>
+                            {{ form.postcard_text }}
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. КОНТАКТЫ -->
+                <section class="checkout-section">
+                    <div class="section-head">
+                        <div class="step-badge">4</div>
+                        <h2>Ваши контакты</h2>
+                    </div>
+                    <div class="input-grid-2">
+                        <div class="input-box">
+                            <label>Ваше Имя</label>
+                            {{ form.first_name }}
+                        </div>
+                        <div class="input-box">
+                            <label>Ваш Телефон</label>
+                            {{ form.phone }}
+                        </div>
+                    </div>
+                    <div class="input-box" style="margin-top: 15px;">
+                        <label>Email (для чека)</label>
+                        {{ form.email }}
+                    </div>
+                    <div style="display:none;">{{ form.last_name }}</div>
+                </section>
+
+            </div>
+
+            <!-- === ПРАВАЯ КОЛОНКА === -->
+            <div class="sidebar-column">
+                <div class="order-summary-card sticky-block">
+                    <div class="summary-header-bg">
+                        <h3>Ваш заказ</h3>
+                    </div>
+
+                    <div class="summary-body">
+                        <div class="cart-items-mini">
+                            {% for item in cart %}
+                            <a href="{{ item.product.get_absolute_url }}" class="mini-item">
+                                <div class="mi-thumb">
+                                    {% if item.product.image %}
+                                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                                    {% else %}
+                                        <span style="font-size: 20px;">🌸</span>
+                                    {% endif %}
+                                </div>
+                                <div class="mi-info">
+                                    <div class="mi-name">{{ item.product.name }}</div>
+                                    <div class="mi-qty">{{ item.quantity }} шт.</div>
+                                </div>
+                                <div class="mi-price">{{ item.total_price }} ₽</div>
+                            </a>
+                            {% endfor %}
+                        </div>
+
+                        <div class="summary-divider"></div>
+
+                        <div class="summary-row">
+                            <span>Товары</span>
+                            <span>{{ cart_total_js }} ₽</span>
+                        </div>
+                        <div class="summary-row" id="delivery-row">
+                            <span>Доставка</span>
+                            <span id="delivery-price-display">{{ delivery_cost_js }} ₽</span>
+                        </div>
+                        <div class="summary-row highlight" id="postcard-row" style="display: none;">
+                            <span>Открытка</span>
+                            <span id="postcard-price-display">0 ₽</span>
+                        </div>
+
+                        <div class="summary-divider dashed"></div>
+
+                        <div class="grand-total">
+                            <span>Итого:</span>
+                            <span id="final-total-display" class="total-val">0 ₽</span>
+                        </div>
+
+                        <!-- КНОПКА (ЕДИНАЯ ДЛЯ ВСЕХ) -->
+                        <button type="submit" class="btn-checkout">
+                            Подтвердить заказ
+                        </button>
+
+                        <p class="policy-text">
+                            Нажимая кнопку, вы соглашаетесь с условиями оферты.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+<!-- ================== СТИЛИ CSS ================== -->
+<style>
+    :root {
+        --card-bg: #ffffff;
+        --input-bg: #f9f9f9;
+        --border-color: #eee;
+        --primary: var(--accent-color, #e53935);
+        --text-main: #333;
+        --radius: 16px;
+    }
+
+    .checkout-page-wrapper * { box-sizing: border-box; }
+
+    .checkout-page-wrapper {
+        max-width: 1200px; margin: 0 auto; padding: 20px;
+        font-family: var(--default-font-family, sans-serif);
+        padding-bottom: 120px;
+    }
+    .checkout-header { text-align: center; margin-bottom: 30px; }
+    .checkout-header h1 { font-size: 1.8rem; margin: 0; font-weight: 800; color: var(--text-main); }
+
+    .fade-in { animation: fadeIn 0.6s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* СЕТКА */
+    .checkout-grid {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 30px;
+        align-items: start;
+    }
+    .form-column { min-width: 0; }
+    .sidebar-column { position: sticky; top: 20px; min-width: 0; }
+
+    /* Карточки */
+    .checkout-section {
+        background: var(--card-bg); padding: 25px; border-radius: var(--radius);
+        margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid var(--border-color);
+    }
+    .section-head { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .step-badge {
+        width: 30px; height: 30px; background: var(--primary); color: #fff;
+        border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        font-weight: bold; font-size: 0.9rem; box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    }
+    .section-head h2 { margin: 0; font-size: 1.2rem; font-weight: 700; }
+
+    /* Инпуты */
+    .input-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .datetime-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .input-box { width: 100%; margin-bottom: 15px; }
+    .input-box label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 6px; color: #555; }
+    .input-box input, .input-box select, .input-box textarea {
+        width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid #e0e0e0;
+        font-size: 0.95rem; background: var(--input-bg); transition: 0.2s;
+    }
+    .input-box input:focus, .input-box textarea:focus {
+        border-color: var(--primary); background: #fff; outline: none; box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.1);
+    }
+
+    .date-input-wrapper { position: relative; }
+    .calendar-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: 0.5; font-size: 1.1rem; }
+    .datepicker-input { background: #fff !important; cursor: pointer; padding-right: 40px !important; }
+
+    /* ССЫЛКИ ДАТЫ (Новый стиль) */
+    .dt-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .dt-presets { display: flex; gap: 15px; }
+    .date-link {
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: var(--primary);
+        border-bottom: 2px solid transparent;
+        transition: 0.2s;
+    }
+    .date-link:hover {
+        border-bottom-color: var(--primary);
+        opacity: 0.8;
+    }
+
+    /* Доставка */
+    .delivery-toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+    .delivery-card, .switch-option { cursor: pointer; position: relative; width: 100%; }
+    .delivery-card input, .switch-option input { display: none; }
+
+    .delivery-content, .recipient-switcher {
+        border: 2px solid #f0f0f0; border-radius: 12px; padding: 15px;
+        display: flex; align-items: center; gap: 12px; transition: 0.2s;
+    }
+    .recipient-switcher { background: #f0f0f0; padding: 4px; margin-bottom: 15px; border: none; }
+    .switch-option span {
+        display: block; text-align: center; padding: 10px; border-radius: 8px;
+        font-weight: 600; color: #777; transition: 0.2s; font-size: 0.9rem;
+    }
+    .switch-option input:checked + span { background: #fff; color: #333; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .icon-circle { width: 36px; height: 36px; background: #f5f5f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+    .radio-title { font-weight: 600; font-size: 0.95rem; color: #555; }
+    .check-mark { position: absolute; top: 15px; right: 15px; width: 10px; height: 10px; border-radius: 50%; background: #ddd; transition: 0.2s; }
+    .delivery-card input:checked + .delivery-content { border-color: var(--primary); background: #fff5f5; }
+    .delivery-card input:checked ~ .check-mark { background: var(--primary); box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--primary); }
+    .info-alert { background: #e3f2fd; color: #0d47a1; padding: 10px; border-radius: 8px; margin-bottom: 12px; font-size: 0.85rem; }
+
+    /* === КАРУСЕЛЬ SWIPER === */
+    .swiper-container-wrapper { position: relative; padding: 0 40px; }
+
+    /* Оверфлоу visible важно для эффекта ухода влево */
+    .postcard-swiper { width: 100%; height: 240px; padding: 20px 0; overflow: visible; }
+
+    .swiper-slide {
+        width: 140px !important; height: 180px;
+        border-radius: 16px; transition: all 0.4s ease;
+        transform-style: preserve-3d; flex-shrink: 0; transform-origin: left center;
+        /* Легкая тень по умолчанию */
+        box-shadow: -2px 0 10px rgba(0,0,0,0.05);
+    }
+
+    .postcard-slide-content { display: block; width: 100%; height: 100%; cursor: pointer; position: relative; }
+    .postcard-slide-content input { display: none; }
+
+    .pc-visual {
+        width: 100%; height: 100%; background: #fff; border-radius: 16px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1); border: 2px solid transparent;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        padding: 10px; box-sizing: border-box; transition: 0.4s ease; position: relative; overflow: hidden;
+    }
+    .pc-visual::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--primary), #ff6b6b); transform: scaleX(0); transition: 0.3s ease; }
+    .swiper-slide-active .pc-visual::before { transform: scaleX(1); }
+
+    .pc-emoji { font-size: 2.5rem; margin-bottom: 10px; transition: 0.3s; }
+    .swiper-slide-active .pc-emoji { transform: scale(1.2); }
+    .pc-visual img { width: 100%; height: 80px; object-fit: cover; margin-bottom: 10px; border-radius: 8px; transition: 0.3s; }
+    .swiper-slide-active .pc-visual img { transform: scale(1.05); }
+
+    .pc-name { font-size: 0.85rem; font-weight: 700; color: #333; margin-bottom: 5px; text-align: center; line-height: 1.1; height: 30px; display: flex; align-items: center; justify-content: center; transition: color 0.3s; }
+    .swiper-slide-active .pc-name { color: var(--primary); }
+    .pc-price-tag { background: #7e57c2; color: white; padding: 4px 12px; border-radius: 15px; font-size: 0.75rem; font-weight: 700; transition: 0.3s; }
+    .swiper-slide-active .pc-price-tag { transform: scale(1.1); box-shadow: 0 4px 12px rgba(126, 87, 194, 0.4); }
+
+    .postcard-slide-content input:checked + .pc-visual {
+        border-color: var(--primary); box-shadow: 0 12px 35px rgba(229, 57, 53, 0.25); transform: translateY(-5px);
+    }
+
+    /* Стрелки */
+    .custom-nav {
+        position: absolute; top: 50%; margin-top: -20px;
+        width: 36px; height: 36px; background: #fff; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        color: var(--primary); cursor: pointer; transition: 0.3s; box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3); z-index: 10;
+    }
+    .custom-nav svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
+    .custom-nav:hover { transform: scale(1.1); background: #d32f2f; color: #fff; }
+    .swiper-button-prev { left: 0; }
+    .swiper-button-next { right: 0; }
+
+    /* Правая колонка */
+    .order-summary-card { background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.08); border: 1px solid #f0f0f0; }
+    .summary-header-bg { background: #f8f9fa; padding: 20px; border-bottom: 1px solid #eee; }
+    .summary-header-bg h3 { margin: 0; font-size: 1.2rem; font-weight: 800; color: #222; }
+    .summary-body { padding: 20px; }
+
+    .cart-items-mini { margin-bottom: 20px; max-height: 350px; overflow-y: auto; }
+    .mini-item { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #f5f5f5; text-decoration: none; transition: background 0.2s; border-radius: 8px; }
+    .mini-item:hover { background: #fafafa; }
+    .mi-thumb { width: 55px; height: 55px; border-radius: 10px; overflow: hidden; background: #f4f4f4; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .mi-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .mi-info { flex: 1; }
+    .mi-name { font-size: 0.9rem; font-weight: 600; line-height: 1.3; color: #333; margin-bottom: 2px; }
+    .mi-qty { font-size: 0.8rem; color: #888; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
+    .mi-price { font-weight: 700; font-size: 0.95rem; color: #333; }
+
+    .summary-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; color: #666; }
+    .summary-row.highlight { color: #28a745; font-weight: 600; }
+    .summary-divider { height: 1px; background: #eee; margin: 15px 0; }
+    .summary-divider.dashed { border-top: 1px dashed #ccc; background: none; }
+    .grand-total { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 15px; font-size: 1.4rem; font-weight: 800; color: var(--text-main); }
+    .btn-checkout { width: 100%; padding: 16px; margin-top: 20px; border-radius: 12px; border: none; background: var(--primary); color: #fff; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
+    .btn-checkout:hover { opacity: 0.9; transform: translateY(-2px); }
+    .policy-text { text-align: center; font-size: 0.75rem; color: #999; margin-top: 15px; line-height: 1.4; }
+
+    /* === АДАПТАЦИЯ === */
+    @media (max-width: 1024px) {
+        .checkout-grid { grid-template-columns: 1fr; gap: 30px; }
+        .sidebar-column { position: static; order: 2; }
+        .form-column { order: 1; }
+    }
+
+    @media (max-width: 768px) {
+        .checkout-page-wrapper { padding: 15px 10px 140px 10px; }
+        .input-grid-2, .datetime-grid, .delivery-toggle-group { grid-template-columns: 1fr; gap: 10px; }
+
+        /* На мобильном кнопку внутри блока показываем (так как липкой панели больше нет) */
+
+        /* Карусель мобильная */
+        .swiper-container-wrapper { padding: 0 25px; }
+        .custom-nav { width: 28px !important; height: 28px !important; margin-top: -14px; background: rgba(255,255,255,0.9); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .custom-nav svg { width: 14px; height: 14px; }
+        .swiper-button-prev { left: -5px !important; }
+        .swiper-button-next { right: -5px !important; }
+
+        .postcard-swiper { height: 160px; padding: 10px 0; }
+        .swiper-slide { width: 85px !important; height: 120px; }
+        .pc-visual { padding: 5px; border-radius: 10px; }
+        .pc-emoji { font-size: 1.6rem; margin-bottom: 5px; }
+        .pc-visual img { height: 45px; margin-bottom: 5px; }
+        .pc-name { font-size: 0.65rem; height: 22px; }
+        .pc-price-tag { font-size: 0.6rem; padding: 2px 6px; }
+    }
+</style>
+
+<script>
+    const cartTotal = {{ cart_total_js|stringformat:".0f" }};
+    const deliveryCostBase = {{ delivery_cost_js|stringformat:".0f" }};
+    let currentDeliveryCost = deliveryCostBase;
+    let currentPostcardPrice = 0;
+
+    const deliveryFields = document.getElementById('delivery-fields');
+    const datetimeBlock = document.getElementById('datetime-block');
+    const deliveryRow = document.getElementById('delivery-row');
+    const deliveryPriceDisplay = document.getElementById('delivery-price-display');
+    const postcardRow = document.getElementById('postcard-row');
+    const postcardPriceDisplay = document.getElementById('postcard-price-display');
+    const finalTotalDisplay = document.getElementById('final-total-display');
+
+    const postcardExtras = document.getElementById('postcard-extras');
+    const customUpload = document.getElementById('custom-upload-field');
+    const textInput = document.querySelector('#id_postcard_text');
+    const recipientFields = document.getElementById('recipient-fields');
+
+    // 1. Доставка
+    document.querySelectorAll('input[name="delivery_option"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'pickup') {
+                deliveryFields.style.display = 'none';
+                datetimeBlock.style.display = 'none';
+                deliveryRow.style.display = 'none';
+                currentDeliveryCost = 0;
+            } else {
+                deliveryFields.style.display = 'block';
+                datetimeBlock.style.display = 'block';
+                deliveryRow.style.display = 'flex';
+                currentDeliveryCost = deliveryCostBase;
+            }
+            recalcTotal();
+        });
+    });
+
+    function toggleRecipient(radio) {
+        recipientFields.style.display = (radio.value === 'other') ? 'block' : 'none';
+    }
+
+    function handlePostcardChange(input) {
+        const price = parseInt(input.getAttribute('data-price')) || 0;
+        currentPostcardPrice = price;
+
+        if (input.value === "") {
+            postcardExtras.style.display = 'none';
+            textInput.value = '';
+        } else {
+            postcardExtras.style.display = 'block';
+            customUpload.style.display = (input.value === "custom") ? 'block' : 'none';
+        }
+
+        if (price > 0) {
+            postcardRow.style.display = 'flex';
+            postcardPriceDisplay.innerText = '+' + price + ' ₽';
+        } else {
+            postcardRow.style.display = 'none';
+        }
+        recalcTotal();
+    }
+
+    function recalcTotal() {
+        const total = cartTotal + currentDeliveryCost + currentPostcardPrice;
+        if(finalTotalDisplay) finalTotalDisplay.innerText = total + ' ₽';
+    }
+
+    let fpInstance;
+    let swiper;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        recalcTotal();
+
+        const activeDelivery = document.querySelector('input[name="delivery_option"]:checked');
+        if(activeDelivery && activeDelivery.value === 'pickup') {
+             deliveryFields.style.display = 'none';
+             datetimeBlock.style.display = 'none';
+             deliveryRow.style.display = 'none';
+             currentDeliveryCost = 0;
+             recalcTotal();
+        }
+
+        fpInstance = flatpickr(".datepicker-input", {
+            locale: "ru",
+            minDate: "today",
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "j F Y",
+            disableMobile: "true",
+            allowInput: true
+        });
+
+        const isMobile = window.innerWidth <= 768;
+        const spaceBetween = isMobile ? -25 : -50;
+
+        swiper = new Swiper('.postcard-swiper', {
+            slidesPerView: 'auto',
+            centeredSlides: false,
+            spaceBetween: spaceBetween,
+
+            // 1. Огромный отступ в конце (чтобы последняя карта была одна)
+            slidesOffsetAfter: isMobile ? 200 : 450,
+
+            // 2. Отступ слева (чтобы видеть "хвостик")
+            slidesOffsetBefore: isMobile ? 30 : 60,
+
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            on: {
+                init: function () {
+                    const checkedInput = document.querySelector('.postcard-slide-content input:checked');
+                    if(checkedInput) handlePostcardChange(checkedInput);
+                    updateCardStyles(this);
+                },
+                slideChange: function () {
+                    updateCardStyles(this);
+                    const activeSlide = this.slides[this.activeIndex];
+                    const input = activeSlide.querySelector('input[type="radio"]');
+                    if(input && !input.checked) {
+                        input.checked = true;
+                        handlePostcardChange(input);
+                    }
+                },
+                transitionEnd: function () {
+                    updateCardStyles(this);
+                }
+            }
+        });
+
+        function updateCardStyles(swiperInstance) {
+            const slides = swiperInstance.slides;
+            const activeIndex = swiperInstance.activeIndex;
+            const isMob = window.innerWidth <= 768;
+            const offsetStep = isMob ? 15 : 30;
+
+            slides.forEach((slide, index) => {
+                slide.style.transform = '';
+                slide.style.zIndex = '';
+                slide.style.opacity = '';
+                slide.style.filter = '';
+
+                const diff = index - activeIndex;
+
+                if (diff < 0) {
+                    // ЭФФЕКТ "ХВОСТИКА" СЛЕВА
+                    if (diff === -1) {
+                        // Сдвигаем ВПРАВО (положительный X), чтобы заехала под активную
+                        // 65% - это достаточно глубоко, торчит только край
+                        slide.style.transform = 'translateX(65%) scale(0.85)';
+                        slide.style.zIndex = '40'; // Ниже активной (50)
+                        slide.style.opacity = '1'; // Полностью видна
+                        slide.style.filter = 'brightness(0.7)'; // Затемняем корешок
+                    } else {
+                        slide.style.opacity = '0'; // Остальные левые прячем
+                    }
+                } else {
+                    // ЭФФЕКТ ВЕЕРА СПРАВА
+                    const translateX = diff * offsetStep;
+                    const scale = 1 - (diff * 0.05);
+                    const opacity = 1 - (diff * 0.05);
+                    const blur = diff * 0.2; // Минимальный блюр
+
+                    slide.style.transform = `translateX(-${translateX}px) scale(${scale})`;
+                    slide.style.zIndex = 100 - diff;
+                    slide.style.filter = `blur(${blur}px)`;
+                    slide.style.opacity = opacity;
+                }
+            });
+        }
+
+        document.querySelectorAll('.postcard-slide-content').forEach(slide => {
+            slide.addEventListener('click', function(e) {
+                const input = this.querySelector('input[type="radio"]');
+                if(input) {
+                    input.checked = true;
+                    handlePostcardChange(input);
+                    const slideElement = this.closest('.swiper-slide');
+                    const slideIndex = Array.from(slideElement.parentNode.children).indexOf(slideElement);
+                    swiper.slideTo(slideIndex);
+                }
+            });
+        });
+    });
+
+    function setToday() { if (fpInstance) fpInstance.setDate(new Date()); }
+    function setTomorrow() { if (fpInstance) fpInstance.setDate(new Date().fp_incr(1)); }
+</script>
+{% endblock %}

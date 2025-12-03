@@ -1,16 +1,56 @@
 <!-- orders/templates/orders/email/status_update.html -->
-<div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
-    <h2 style="color: #333;">Статус заказа #{{ order.id }} изменен</h2>
-    <p>Здравствуйте, {{ order.first_name }}!</p>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Обновление статуса заказа</title>
+</head>
+<body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;">
 
-    <div style="background-color: #e7f3ff; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0;">
-        Новый статус: <strong style="font-size: 1.2em; color: #0056b3;">{{ order.get_status_display }}</strong>
+    <div style="max-width: 500px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+
+        <div style="padding: 30px; text-align: center;">
+            <h2 style="margin-top: 0; color: #333; font-size: 22px;">Статус заказа #{{ order.id }}</h2>
+            <p style="font-size: 16px; color: #555; margin-bottom: 25px;">Здравствуйте, {{ order.first_name }}!</p>
+
+            <!-- ЛОГИКА ЦВЕТОВ И ИКОНОК -->
+            {% if order.status == 'delivered' %}
+                <div style="background-color: #d4edda; color: #155724; border: 2px solid #c3e6cb; padding: 20px; border-radius: 12px; margin: 20px 0;">
+                    <div style="font-size: 40px; margin-bottom: 10px;">✅</div>
+                    <strong style="font-size: 20px; display: block; margin-bottom: 5px;">ДОСТАВЛЕН</strong>
+                    <span style="font-size: 14px; opacity: 0.9;">Спасибо, что выбрали нас!</span>
+                </div>
+            {% elif order.status == 'shipped' %}
+                 <div style="background-color: #cce5ff; color: #004085; border: 2px solid #b8daff; padding: 20px; border-radius: 12px; margin: 20px 0;">
+                    <div style="font-size: 40px; margin-bottom: 10px;">🚚</div>
+                    <strong style="font-size: 20px; display: block; margin-bottom: 5px;">ОТПРАВЛЕН</strong>
+                    <span style="font-size: 14px; opacity: 0.9;">Курьер уже в пути к вам.</span>
+                </div>
+            {% elif order.status == 'cancelled' %}
+                 <div style="background-color: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; padding: 20px; border-radius: 12px; margin: 20px 0;">
+                    <div style="font-size: 40px; margin-bottom: 10px;">❌</div>
+                    <strong style="font-size: 20px; display: block; margin-bottom: 5px;">ОТМЕНЕН</strong>
+                    <span style="font-size: 14px; opacity: 0.9;">Если это ошибка, свяжитесь с нами.</span>
+                </div>
+            {% else %}
+                <div style="background-color: #fff3cd; color: #856404; border: 2px solid #ffeeba; padding: 20px; border-radius: 12px; margin: 20px 0;">
+                    <div style="font-size: 40px; margin-bottom: 10px;">⏳</div>
+                    <strong style="font-size: 20px; display: block; margin-bottom: 5px;">{{ order.get_status_display|upper }}</strong>
+                    <span style="font-size: 14px; opacity: 0.9;">Мы работаем над вашим заказом.</span>
+                </div>
+            {% endif %}
+
+            <div style="margin-top: 30px;">
+                <a href="{{ base_url }}{% url 'shop:cabinet' %}" style="display: inline-block; padding: 14px 30px; background-color: #333; color: #fff; text-decoration: none; border-radius: 50px; font-weight: bold;">
+                    Посмотреть детали
+                </a>
+            </div>
+        </div>
+
+        <div style="background-color: #f9f9f9; padding: 15px; text-align: center; color: #999; font-size: 12px;">
+            {{ site_settings.shop_name }}
+        </div>
+
     </div>
-
-    {% if order.delivery_option == 'delivery' and order.recipient_name %}
-        <p>Получатель: <strong>{{ order.recipient_name }}</strong></p>
-    {% endif %}
-
-    <p>Следить за заказом можно в <a href="{% url 'shop:cabinet' %}">Личном кабинете</a>.</p>
-    <p>Магазин {{ site_settings.shop_name }}</p>
-</div>
+</body>
+</html>

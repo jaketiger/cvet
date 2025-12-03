@@ -3,12 +3,8 @@
 from django.core.management.base import BaseCommand
 from shop.models import Product, SiteSettings
 
-
 class Command(BaseCommand):
-    help = 'Переписывает артикулы ВСЕМ товарам, начиная с указанного в настройках числа.'
-
-    def add_arguments(self, parser):
-        parser.add_argument('--force', action='store_true', help='Тихий режим')
+    help = 'Переписывает артикулы ВСЕМ товарам.'
 
     def handle(self, *args, **options):
         try:
@@ -20,27 +16,17 @@ class Command(BaseCommand):
         count = products.count()
 
         if count == 0:
-            self.stdout.write("Нет товаров для обновления.")
+            self.stdout.write("Нет товаров.")
             return
 
-        # === ГЛАВНОЕ ИСПРАВЛЕНИЕ ===
-        # Сначала сбрасываем артикулы в NULL, чтобы освободить номера
-        # и избежать ошибки "уникальное значение уже существует"
         self.stdout.write("Сброс текущих артикулов...")
+        # Сначала обнуляем, чтобы избежать конфликтов уникальности
         Product.objects.all().update(sku=None)
-        # ===========================
 
-        updated_count = 0
-        current_sku = start_num
+        current = start_num
+        for p in products:
+            p.sku = str(current)
+            p.save()
+            current += 1
 
-        # Проходим по всем товарам и ПРИСВАИВАЕМ новые номера
-        for product in products:
-            new_sku_str = str(current_sku)
-
-            product.sku = new_sku_str
-            product.save()
-            updated_count += 1
-
-            current_sku += 1
-
-        self.stdout.write(f"Готово! Обработано товаров: {count}. Нумерация с {start_num}.")
+        self.stdout.write(f"Готово! Артикулы обновлены с {start_num}.")

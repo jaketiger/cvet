@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'shop',
     'cart',
     'orders',
+    'promo',
     'users',
     'imagekit',
     'favorites', # <-- Добавляем
@@ -47,6 +48,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'shop.middleware.SiteTimezoneMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -114,9 +116,18 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 CART_SESSION_ID = 'cart'
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
+#LOGIN_REDIRECT_URL = '/'
+#LOGOUT_REDIRECT_URL = '/'
 ACCOUNT_LOGOUT_ON_GET = True
+
+# Указываем Django, где находится НАША страница входа (app_name:url_name)
+LOGIN_URL = 'users:login'
+
+# Куда перенаправлять после успешного входа (в Личный кабинет)
+LOGIN_REDIRECT_URL = 'shop:cabinet'
+
+# Куда перенаправлять после выхода (на Главную)
+LOGOUT_REDIRECT_URL = 'shop:home_page'
 
 AUTHENTICATION_BACKENDS = [
     'users.backends.EmailOrPhoneBackend',

@@ -1,126 +1,289 @@
 <!-- shop/templates/shop/order_detail.html -->
-
 {% extends "base.html" %}
-{% block title %}Детали заказа #{{ order.id }}{% endblock %}
+{% load static %}
+
+{% block title %}Заказ #{{ order.id }} - Детали{% endblock %}
+
 {% block content %}
-<div class="container" style="max-width: 800px; padding-top: 2rem; padding-bottom: 2rem;">
-    <h1>Детали заказа #{{ order.id }}</h1>
-    <p><strong>Статус:</strong> {{ order.get_status_display }}</p>
 
-    <!-- Блок с деталями заказа -->
-    <div class="order-details-block">
-        <h3>Детали заказа:</h3>
+<div class="order-page-container fade-in">
 
-        <table class="order-details-table">
-            <thead>
-                <tr>
-                    <th>Товар</th>
-                    <th>Количество</th>
-                    <th>Цена</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in order.items.all %}
-                    <tr>
-                        <td>{{ item.product.name }}</td>
-                        <td>{{ item.quantity }}</td>
-                        <td>{{ item.get_cost }} руб.</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <!-- === БЛОК ОТОБРАЖЕНИЯ ОТКРЫТКИ === -->
-        {% if order.postcard or order.custom_postcard_image or order.postcard_text %}
-        <div class="postcard-details-block">
-            <h4>Открытка к заказу</h4>
-
-            <div class="postcard-container">
-                <!-- 1. Изображение открытки -->
-                {% if order.custom_postcard_image %}
-                    <div class="postcard-image-box">
-                        <span class="postcard-label">Загруженное фото:</span>
-                        <a href="{{ order.custom_postcard_image.url }}" target="_blank">
-                            <img src="{{ order.custom_postcard_image.url }}" alt="Своя открытка" class="postcard-img">
-                        </a>
-                    </div>
-                {% elif order.postcard %}
-                    <div class="postcard-image-box">
-                        <span class="postcard-label">{{ order.postcard.title }} ({{ order.postcard.price }} руб.)</span>
-                        {% if order.postcard.image %}
-                            <img src="{{ order.postcard.image.url }}" alt="{{ order.postcard.title }}" class="postcard-img">
-                        {% endif %}
-                    </div>
-                {% endif %}
-
-                <!-- 2. Текст поздравления -->
-                {% if order.postcard_text %}
-                    <div class="postcard-text-box">
-                        <span class="postcard-label">Текст поздравления:</span>
-                        <div class="postcard-message">
-                            {{ order.postcard_text|linebreaksbr }}
-                        </div>
-                    </div>
-                {% endif %}
-            </div>
+    <!-- Шапка с кнопкой Назад -->
+    <div class="order-header-row">
+        <a href="{% url 'shop:cabinet' %}" class="back-link">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Назад в кабинет
+        </a>
+        <div class="order-title-block">
+            <h1>Заказ #{{ order.id }}</h1>
+            <span class="status-badge status-{{ order.status }}">
+                {{ order.get_status_display }}
+            </span>
         </div>
-        {% endif %}
-        <!-- === КОНЕЦ БЛОКА ОТКРЫТКИ === -->
-
-        <div class="order-summary-footer">
-            <p>Стоимость товаров: {{ order.get_items_cost }} руб.</p>
-            <p>Стоимость доставки: {{ order.delivery_cost }} руб.</p>
-
-            {% if order.postcard and order.postcard.price > 0 %}
-                <p style="color: green;">+ Открытка: {{ order.postcard.price }} руб.</p>
-            {% endif %}
-
-            <h4>Итого к оплате: {{ order.get_total_cost }} руб.</h4>
-        </div>
-
-        <hr>
-
-        {% if order.delivery_option == 'delivery' %}
-            <hr>
-            <h4>Информация о доставке</h4>
-
-            <!-- Блок получателя -->
-            {% if order.recipient_name %}
-                <div style="background: #fff3cd; padding: 10px; border-radius: 5px; margin-bottom: 10px; color: #856404;">
-                    <strong>🎁 Получатель (другой человек):</strong><br>
-                    Имя: {{ order.recipient_name }}<br>
-                    Телефон: {{ order.recipient_phone }}
-                </div>
-            {% else %}
-                <p style="color: #666;">Получатель: Вы ({{ order.phone }})</p>
-            {% endif %}
-
-            <p>
-                <strong>Адрес:</strong><br>
-                {{ order.postal_code }}, {{ order.city }}<br>
-                {{ order.address }}
-            </p>
-        {% else %}
-            <hr>
-            <h4>Способ получения</h4>
-            <p>Самовывоз. Мы свяжемся с вами по телефону {{ order.phone }}, когда заказ будет готов к выдаче.</p>
-        {% endif %}
+        <div class="order-date">{{ order.created|date:"d.m.Y в H:i" }}</div>
     </div>
 
-    <!-- Блок отмены заказа (появляется по условию) -->
-    {% if order.can_be_cancelled %}
-        <hr>
-        <div class="cancel-zone">
-            <h4>Изменение или отмена заказа</h4>
-            <p>Вы можете отменить этот заказ. Все товары из него будут возвращены в вашу корзину, после чего вы сможете отредактировать ее и оформить новый заказ.</p>
-            <form action="{% url 'shop:cancel_order' order.id %}" method="post" style="margin-top: 15px;">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-danger" onclick="return confirm('Вы уверены, что хотите отменить этот заказ?')">Отменить заказ</button>
-            </form>
-        </div>
+    <!-- ЕСЛИ ЗАКАЗ ОТМЕНЕН -->
+    {% if order.status == 'cancelled' %}
+    <div class="cancelled-alert">
+        ⛔ Этот заказ был отменен. Товары возвращены на склад.
+    </div>
     {% endif %}
 
-    <!-- Ссылка "Назад" в виде кнопки -->
-    <a href="{% url 'shop:cabinet' %}" class="btn btn-secondary back-to-cabinet-btn">← Назад в личный кабинет</a>
+    <div class="order-layout">
+
+        <!-- === ЛЕВАЯ КОЛОНКА: ТОВАРЫ И ИНФО === -->
+        <div class="order-items-column">
+
+            <!-- Карточка состава заказа -->
+            <div class="section-card">
+                <h3>Состав заказа</h3>
+                <div class="items-list">
+                    {% for item in order.items.all %}
+                    <div class="order-item-row">
+                        <div class="item-img">
+                            {% if item.product.image %}
+                                <a href="{{ item.product.get_absolute_url }}">
+                                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                                </a>
+                            {% else %}
+                                <div class="no-img">🌸</div>
+                            {% endif %}
+                        </div>
+                        <div class="item-info">
+                            <a href="{{ item.product.get_absolute_url }}" class="item-name">{{ item.product.name }}</a>
+                            <div class="item-meta">
+                                {{ item.quantity }} шт. x {{ item.price }} ₽
+                            </div>
+                        </div>
+                        <div class="item-total">
+                            {{ item.get_cost }} ₽
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Сетка: Доставка и Получатель -->
+            <div class="info-grid">
+                <div class="section-card">
+                    <h3>Доставка</h3>
+                    {% if order.delivery_option == 'delivery' %}
+                        <p><strong>Тип:</strong> Курьер</p>
+                        <p><strong>Адрес:</strong> {{ order.city }}, {{ order.address }}</p>
+                        {% if order.delivery_date %}
+                            <p><strong>Дата:</strong> {{ order.delivery_date|date:"d.m.Y" }}</p>
+                        {% endif %}
+                    {% else %}
+                        <p><strong>Тип:</strong> Самовывоз</p>
+                        <p><strong>Адрес магазина:</strong> {{ site_settings.pickup_address }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="section-card">
+                    <h3>Получатель</h3>
+                    {% if order.recipient_name %}
+                        <p><strong>Имя:</strong> {{ order.recipient_name }}</p>
+                        <p><strong>Телефон:</strong> {{ order.recipient_phone }}</p>
+                    {% else %}
+                        <p><strong>Заказчик:</strong> {{ order.first_name }} {{ order.last_name }}</p>
+                        <p><strong>Телефон:</strong> {{ order.phone }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Блок Открытки -->
+            {% if order.postcard or order.custom_postcard_image %}
+            <div class="section-card postcard-info">
+                <div class="pc-icon">💌</div>
+                <div class="pc-text">
+                    <strong>Открытка:</strong>
+                    {% if order.postcard %}
+                        {{ order.postcard.title }}
+                    {% else %}
+                        Своё фото
+                    {% endif %}
+
+                    {% if order.postcard_text %}
+                        <div class="pc-message">"{{ order.postcard_text }}"</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- === ПРАВАЯ КОЛОНКА: ИТОГИ === -->
+        <div class="order-sidebar">
+            <div class="summary-card sticky-block">
+                <h3>Итого</h3>
+
+                <div class="summary-row">
+                    <span>Товары</span>
+                    <span>{{ order.get_items_cost }} ₽</span>
+                </div>
+
+                <!-- БЛОК СКИДКИ -->
+                {% if order.discount > 0 %}
+                <div class="summary-row discount">
+                    <span>Скидка ({{ order.promo_code.code|default:"PROMO" }} {{ order.discount }}%)</span>
+                    <span>-{{ order.get_discount_amount|floatformat:0 }} ₽</span>
+                </div>
+                {% endif %}
+
+                {% if order.delivery_cost > 0 %}
+                <div class="summary-row">
+                    <span>Доставка</span>
+                    <span>{{ order.delivery_cost }} ₽</span>
+                </div>
+                {% endif %}
+
+                {% if order.postcard and order.postcard.price > 0 %}
+                <div class="summary-row highlight">
+                    <span>Открытка</span>
+                    <span>+{{ order.postcard.price }} ₽</span>
+                </div>
+                {% endif %}
+
+                <div class="summary-divider"></div>
+
+                <div class="grand-total">
+                    <span>К оплате</span>
+                    <span class="total-price">{{ order.get_total_cost }} ₽</span>
+                </div>
+            </div>
+
+            <!-- === КНОПКА ОТМЕНЫ ЗАКАЗА === -->
+            <!-- Показываем, только если заказ можно отменить (статус 'created' или 'processing') -->
+            {% if order.can_be_cancelled %}
+                <form action="{% url 'shop:cancel_order' order.id %}" method="post" style="margin-top: 15px;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-cancel-order" onclick="return confirm('Вы уверены, что хотите отменить этот заказ?');">
+                        Отменить заказ
+                    </button>
+                </form>
+            {% endif %}
+            <!-- ============================= -->
+
+        </div>
+
+    </div>
 </div>
+
+<style>
+    /* CSS ПЕРЕМЕННЫЕ */
+    :root {
+        --bg-color: #f8f9fa;
+        --card-bg: #ffffff;
+        --primary: var(--accent-color, #e53935);
+        --text-dark: #333;
+        --radius: 12px;
+        --shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    .order-page-container {
+        max-width: 1000px; margin: 0 auto; padding: 20px 20px 60px 20px;
+        font-family: var(--default-font-family, sans-serif);
+    }
+
+    /* ШАПКА */
+    .order-header-row {
+        display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+        margin-bottom: 30px; gap: 15px;
+    }
+    .back-link {
+        display: flex; align-items: center; gap: 5px; text-decoration: none;
+        color: #777; font-weight: 600; font-size: 0.9rem; transition: 0.2s;
+    }
+    .back-link:hover { color: var(--primary); }
+    .back-link svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+    .order-title-block { display: flex; align-items: center; gap: 15px; }
+    .order-title-block h1 { margin: 0; font-size: 1.8rem; color: var(--text-dark); }
+
+    .status-badge {
+        padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
+    }
+    .status-created { background: #e3f2fd; color: #1976d2; }
+    .status-processing { background: #fff3e0; color: #f57c00; }
+    .status-shipped { background: #e8f5e9; color: #388e3c; }
+    .status-delivered { background: #dcedc8; color: #33691e; }
+    .status-cancelled { background: #ffebee; color: #c62828; }
+
+    .order-date { color: #999; font-size: 0.9rem; }
+
+    /* Уведомление об отмене */
+    .cancelled-alert {
+        background: #ffebee; color: #c62828; padding: 15px; border-radius: var(--radius);
+        margin-bottom: 20px; border: 1px solid #ffcdd2; text-align: center; font-weight: 500;
+    }
+
+    /* СЕТКА */
+    .order-layout {
+        display: grid; grid-template-columns: 1fr 320px; gap: 30px; align-items: start;
+    }
+
+    /* КАРТОЧКИ */
+    .section-card {
+        background: var(--card-bg); border-radius: var(--radius); padding: 20px;
+        box-shadow: var(--shadow); border: 1px solid #eee; margin-bottom: 20px;
+    }
+    .section-card h3 { margin-top: 0; margin-bottom: 15px; font-size: 1.1rem; color: #555; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; }
+    .section-card p { margin: 5px 0; color: #333; font-size: 0.95rem; }
+
+    /* СПИСОК ТОВАРОВ */
+    .order-item-row {
+        display: flex; align-items: center; gap: 15px; padding: 10px 0; border-bottom: 1px solid #f9f9f9;
+    }
+    .order-item-row:last-child { border-bottom: none; }
+    .item-img { width: 60px; height: 60px; border-radius: 8px; overflow: hidden; background: #f4f4f4; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .item-img img { width: 100%; height: 100%; object-fit: cover; }
+    .no-img { font-size: 24px; }
+
+    .item-info { flex-grow: 1; }
+    .item-name { font-weight: 600; color: var(--text-dark); text-decoration: none; font-size: 1rem; }
+    .item-meta { color: #888; font-size: 0.85rem; margin-top: 3px; }
+    .item-total { font-weight: 700; font-size: 1rem; white-space: nowrap; }
+
+    /* СЕТКА ИНФО */
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+    /* ОТКРЫТКА */
+    .postcard-info { display: flex; gap: 15px; align-items: flex-start; background: #fff8e1; border-color: #ffe082; }
+    .pc-icon { font-size: 1.5rem; }
+    .pc-message { font-style: italic; color: #666; margin-top: 5px; background: rgba(255,255,255,0.5); padding: 8px; border-radius: 6px; }
+
+    /* САЙДБАР (ИТОГИ) */
+    .summary-card {
+        background: var(--card-bg); padding: 25px; border-radius: var(--radius);
+        box-shadow: var(--shadow); border: 1px solid #eee; position: sticky; top: 20px;
+    }
+    .summary-row { display: flex; justify-content: space-between; margin-bottom: 10px; color: #555; font-size: 0.95rem; }
+
+    .summary-row.discount { color: #2e7d32; font-weight: 700; }
+    .summary-row.highlight { color: #1976d2; }
+    .summary-divider { height: 1px; background: #eee; margin: 15px 0; }
+    .grand-total { display: flex; justify-content: space-between; font-size: 1.4rem; font-weight: 800; color: var(--text-dark); }
+    .total-price { color: var(--primary); }
+
+    /* КНОПКА ОТМЕНЫ */
+    .btn-cancel-order {
+        display: block; width: 100%; padding: 12px;
+        background: transparent; border: 1px solid #dc3545; color: #dc3545;
+        border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s;
+    }
+    .btn-cancel-order:hover {
+        background: #dc3545; color: #fff;
+    }
+
+    .fade-in { animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* АДАПТИВ */
+    @media (max-width: 768px) {
+        .order-layout { grid-template-columns: 1fr; }
+        .info-grid { grid-template-columns: 1fr; }
+        .order-sidebar { order: -1; } /* Итоги сверху на мобильных */
+    }
+</style>
+
 {% endblock %}

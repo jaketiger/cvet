@@ -6,17 +6,34 @@
 
 {% block content %}
     {% if banners %}
-    <div class="swiper-container">
+    <!-- Подключение Swiper CSS (на случай, если не подключен в base) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+
+    <!-- КОНТЕЙНЕР СЛАЙДЕРА (БЕЗ СТРЕЛОК И ТОЧЕК) -->
+    <div class="swiper-container main-slider">
+
+        <!-- Обертка для эффекта параллакс (если выбран) -->
+        {% if site_settings.slider_effect == 'parallax' %}
+            <div class="parallax-bg" style="background-image: url('{{ banners.0.image.url }}');" data-swiper-parallax="-23%"></div>
+        {% endif %}
+
         <div class="swiper-wrapper">
             {% for banner in banners %}
                 <div class="swiper-slide">
-                    <img src="{{ banner.image.url }}" class="swiper-slide-image" alt="{{ banner.title|default:'Баннер' }}">
-                    <div class="slide-content-wrapper pos-{{ banner.content_position }}">
+
+                    <!-- КАРТИНКА -->
+                    <!-- Добавляем класс kenburns-anim, если выбран этот эффект -->
+                    <img src="{{ banner.image.url }}"
+                         class="swiper-slide-image fit-mode-img {% if site_settings.slider_effect == 'kenburns' %}kenburns-anim{% endif %}"
+                         alt="{{ banner.title|default:'Баннер' }}"
+                         {% if site_settings.slider_effect == 'parallax' %}data-swiper-parallax="-100"{% endif %}>
+
+                    <div class="slide-content-wrapper pos-{{ banner.content_position }}" {% if site_settings.slider_effect == 'parallax' %}data-swiper-parallax="-300"{% endif %}>
                         {% if banner.title or banner.subtitle or banner.button_text %}
                             <div class="slide-content" style="
                                 background-color: rgba(0, 0, 0, {{ banner.background_opacity_css }});
                                 color: {{ banner.font_color|default:'#FFFFFF' }};
-                                font-family: {% with font=banner.font_family|default:'roboto' %}{% if font == 'roboto' %}'Roboto', sans-serif{% elif font == 'montserrat' %}'Montserrat', sans-serif{% elif font == 'open-sans' %}'Open Sans', sans-serif{% elif font == 'lora' %}'Lora', serif{% elif font == 'merriweather' %}'Merriweather', serif{% elif font == 'playfair-display' %}'Playfair Display', serif{% elif font == 'lobster' %}'Lobster', cursive{% elif font == 'pacifico' %}'Pacifico', cursive{% else %}'Roboto', sans-serif{% endif %}{% endwith %};
+                                font-family: var(--font-{{ banner.font_family }});
                             ">
                                 {% if banner.title %}<h1>{{ banner.title }}</h1>{% endif %}
                                 {% if banner.subtitle %}<p>{{ banner.subtitle }}</p>{% endif %}
@@ -33,12 +50,73 @@
                 </div>
             {% endfor %}
         </div>
-        <!-- Точки пагинации (если нужны) -->
-        <!-- <div class="swiper-pagination"></div> -->
+
+        <!-- Пагинация и стрелки УДАЛЕНЫ по просьбе пользователя -->
     </div>
+
+    <!-- СТИЛИ И АНИМАЦИИ -->
+    <style>
+        /* 1. ВЫСОТА И РЕЖИМЫ (ДЕСКТОП) */
+        .main-slider {
+            width: 100%;
+            /* Если режим Auto - высота авто, иначе берем из настроек */
+            height: {% if site_settings.slider_desktop_fit_mode == 'auto' %}auto{% else %}{{ site_settings.slider_height_desktop|default:550 }}px{% endif %} !important;
+        }
+
+        .fit-mode-img {
+            width: 100% !important;
+            height: 100% !important;
+            /* Если Auto - обычное заполнение, иначе cover/contain */
+            object-fit: {% if site_settings.slider_desktop_fit_mode == 'auto' %}fill{% else %}{{ site_settings.slider_desktop_fit_mode|default:'cover' }}{% endif %} !important;
+
+            /* Центровка */
+            object-position: center !important;
+
+            /* Отключаем возможные конфликты */
+            display: block !important;
+            margin: 0 auto !important;
+            transition: transform 6s ease; /* Плавность для Ken Burns */
+        }
+
+        .swiper-slide {
+            background-color: #f5f5f5; /* Серый фон, чтобы не было белых дыр при Contain */
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 2. ВЫСОТА И РЕЖИМЫ (МОБИЛЬНЫЙ) */
+        @media (max-width: 768px) {
+            .main-slider {
+                height: {% if site_settings.slider_mobile_fit_mode == 'auto' %}auto{% else %}{{ site_settings.slider_height_mobile|default:350 }}px{% endif %} !important;
+            }
+            .fit-mode-img {
+                object-fit: {% if site_settings.slider_mobile_fit_mode == 'auto' %}fill{% else %}{{ site_settings.slider_mobile_fit_mode|default:'cover' }}{% endif %} !important;
+            }
+        }
+
+        /* 3. ЭФФЕКТ KEN BURNS (Медленное приближение) */
+        .kenburns-anim {
+            transform: scale(1);
+        }
+        .swiper-slide-active .kenburns-anim {
+            animation: kenBurns 10s infinite alternate;
+        }
+        @keyframes kenBurns {
+            from { transform: scale(1); }
+            to { transform: scale(1.15); }
+        }
+
+        /* Фон для параллакса */
+        .parallax-bg {
+            position: absolute; left: 0; top: 0; width: 130%; height: 100%;
+            background-size: cover; background-position: center;
+        }
+    </style>
     {% endif %}
 
-    <!-- ИСПРАВЛЕНИЕ: Используем класс custom-popular-title для применения настроек из админки -->
+    <!-- ОСТАЛЬНОЙ КОНТЕНТ -->
     <h2 class="responsive-title custom-popular-title" style="text-align: center; margin: 40px 0;">
         {{ site_settings.popular_title|default:'Популярные букеты' }}
     </h2>
@@ -47,58 +125,84 @@
         {% for product in featured_products %}
             {% include "shop/includes/product_card.html" with product=product %}
         {% empty %}
-            <p style="text-align: center; grid-column: 1 / -1;">Избранных товаров пока нет. Отметьте их в админ-панели.</p>
+            <p style="text-align: center; grid-column: 1 / -1;">Нет избранных товаров.</p>
         {% endfor %}
     </div>
 {% endblock %}
 
 {% block extra_scripts %}
+<!-- JS СЛАЙДЕРА -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        if (typeof Swiper !== 'undefined') {
-            const effectName = '{{ site_settings.slider_effect|default:"slide" }}';
+        const container = document.querySelector('.main-slider');
 
-            // Базовые настройки для всех слайдеров
-            let swiperOptions = {
+        if (container && typeof Swiper !== 'undefined') {
+            // Получаем настройки из Django
+            const effectName = '{{ site_settings.slider_effect|default:"slide" }}';
+            const duration = {{ site_settings.slider_duration|default:5 }} * 1000;
+
+            let swiperConfig = {
                 autoplay: {
-                    delay: {{ site_settings.slider_duration|default:5 }} * 1000,
+                    delay: duration,
                     disableOnInteraction: false,
                 },
                 loop: true,
-                // Пагинация (точки)
-                pagination: {
-                    el: '.swiper-pagination',
-                    clickable: true,
-                },
+                speed: 1000, // Базовая плавность смены
                 grabCursor: true,
-                effect: effectName.startsWith('creative') ? 'creative' : effectName,
+                // Навигация (стрелки/точки) удалены, но свайп работает
             };
 
-            // Применяем специфичные настройки для каждого эффекта
-            if (effectName === 'cube') {
-                swiperOptions.cubeEffect = { shadow: true, slideShadows: true, shadowOffset: 20, shadowScale: 0.94 };
+            // === ЛОГИКА ЭФФЕКТОВ ===
+
+            if (effectName === 'fade') {
+                swiperConfig.effect = 'fade';
+                swiperConfig.fadeEffect = { crossFade: true };
+            }
+            else if (effectName === 'cube') {
+                swiperConfig.effect = 'cube';
+                swiperConfig.cubeEffect = { shadow: true, slideShadows: true, shadowOffset: 20, shadowScale: 0.94 };
             }
             else if (effectName === 'coverflow') {
-                swiperOptions.slidesPerView = 'auto';
-                swiperOptions.centeredSlides = true;
-                swiperOptions.coverflowEffect = { rotate: 50, stretch: 0, depth: 100, modifier: 1, slideShadows: true };
+                swiperConfig.effect = 'coverflow';
+                swiperConfig.centeredSlides = true;
+                swiperConfig.slidesPerView = 'auto';
+                swiperConfig.coverflowEffect = { rotate: 50, stretch: 0, depth: 100, modifier: 1, slideShadows: true };
+            }
+            else if (effectName === 'flip') {
+                swiperConfig.effect = 'flip';
+                swiperConfig.flipEffect = { slideShadows: false };
             }
             else if (effectName === 'cards') {
-                swiperOptions.cardsEffect = { slideShadows: true, perSlideRotate: 2, perSlideOffset: 8 };
-                swiperOptions.loop = false; // Эффект карточек плохо работает с зацикливанием
+                swiperConfig.effect = 'cards';
+                swiperConfig.cardsEffect = { slideShadows: true, perSlideRotate: 2 };
             }
-            // Креативные эффекты
-            else if (effectName === 'creative_one') { // Перспектива
-                swiperOptions.creativeEffect = { prev: { shadow: true, translate: [0, 0, -400] }, next: { translate: ['100%', 0, 0] } };
+            else if (effectName === 'creative') {
+                swiperConfig.effect = 'creative';
+                swiperConfig.creativeEffect = {
+                    prev: { shadow: true, translate: [0, 0, -400] },
+                    next: { translate: ['100%', 0, 0] }
+                };
             }
-            else if (effectName === 'creative_two') { // Сдвиг справа
-                swiperOptions.creativeEffect = { prev: { shadow: true, origin: 'left center', rotate: [0, 90, 0] }, next: { origin: 'right center', rotate: [0, -90, 0] } };
+            else if (effectName === 'fade_zoom' || effectName === 'kenburns') {
+                // Для этих эффектов ставим базовый Fade, а зум работает через CSS (класс .kenburns-anim)
+                swiperConfig.effect = 'fade';
+                swiperConfig.fadeEffect = { crossFade: true };
+                swiperConfig.speed = 1500; // Чуть медленнее для плавности
             }
-            else if (effectName === 'creative_three') { // Вращение
-                swiperOptions.creativeEffect = { prev: { shadow: true, translate: ['-20%', 0, -1], rotate: [0, 0, -20] }, next: { translate: ['100%', 0, 0], rotate: [0, 0, 20] } };
+            else if (effectName === 'parallax') {
+                 swiperConfig.parallax = true;
+                 swiperConfig.speed = 600;
+                 // Если параллакс, используем стандартный slide как основу
+                 swiperConfig.effect = 'slide';
+            }
+            else {
+                // Стандартный слайд
+                swiperConfig.effect = 'slide';
             }
 
-            const swiper = new Swiper('.swiper-container', swiperOptions);
+            // Запуск
+            const swiper = new Swiper('.main-slider', swiperConfig);
         }
     });
 </script>

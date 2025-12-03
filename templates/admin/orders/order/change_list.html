@@ -1,0 +1,37 @@
+<!-- templates/admin/orders/order/change_list.html -->
+
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block result_list %}
+    {% if cl.formset and cl.result_count %}
+
+        <div class="submit-row top-save-button" style="display: flex; justify-content: flex-end; align-items: center; gap: 15px; background: none; border: none; box-shadow: none;">
+
+            <!-- КНОПКА ПЕРЕКЛЮЧЕНИЯ РЕЖИМА -->
+            <a href="{% url 'admin:order_toggle_autosave' %}"
+               style="text-decoration: none; font-weight: bold; font-size: 12px; padding: 8px 15px; border-radius: 20px; transition: 0.3s; border: 1px solid #ccc;
+               {% if autosave_enabled %}
+                   background-color: #e8f5e9; color: #2e7d32; border-color: #a5d6a7;
+               {% else %}
+                   background-color: #fff; color: #666;
+               {% endif %}">
+
+               {% if autosave_enabled %}
+                   ⚡ Автосохранение: ВКЛ
+               {% else %}
+                   💤 Автосохранение: ВЫКЛ
+               {% endif %}
+            </a>
+
+            <!-- КНОПКА СОХРАНИТЬ (Показываем только если автосохранение ВЫКЛЮЧЕНО) -->
+            {% if not autosave_enabled %}
+                <input type="submit" name="_save" class="default" value="Сохранить изменения">
+            {% endif %}
+
+        </div>
+
+    {% endif %}
+
+    {{ block.super }}
+{% endblock %}

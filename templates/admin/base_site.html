@@ -5,38 +5,67 @@
 
 {% block extrahead %}
     {{ block.super }}
-    <!-- Этот тег заставляет мобильный браузер показывать нормальный интерфейс, а не микро-текст -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
-        /* Небольшие улучшения для мобильных, чтобы интерфейс не разваливался,
-           но сохранял "графический вид" */
+        /* === 1. ГЛАВНАЯ СТРАНИЦА (ЦЕНТР) === */
+        /* Синяя полоска заголовка */
+        .dashboard .module caption {
+            background-color: #417690 !important;
+            color: #ffffff !important;
+        }
+        /* Ссылка внутри заголовка */
+        .dashboard .module caption a {
+            color: #ffffff !important;
+        }
 
+        /* === 2. БОКОВОЕ МЕНЮ (СЛЕВА) === */
+        #nav-sidebar .app-name,
+        #nav-sidebar .app-name a,
+        #nav-sidebar a.section:link,
+        #nav-sidebar a.section:visited {
+            color: #ffffff !important;
+        }
+        #nav-sidebar .model-name a {
+            color: #f0f0f0 !important; /* Светло-серый */
+        }
+
+        /* === 3. ЗАГОЛОВКИ БЛОКОВ НАСТРОЕК ("Основные настройки") === */
+        /* Сама синяя полоса и основной текст */
+        fieldset.module h2 {
+            background-color: #417690 !important; /* Синий фон */
+            color: #ffffff !important;            /* Белый текст заголовка */
+        }
+
+        /* === 4. ИСПРАВЛЕНИЕ: ССЫЛКИ (ПОКАЗАТЬ / СКРЫТЬ) === */
+        /* Принудительно красим ссылку внутри заголовка в белый */
+        fieldset.collapse h2 a,
+        fieldset.collapse h2 a:link,
+        fieldset.collapse h2 a:visited {
+            color: #ffffff !important;
+            font-weight: bold;
+            opacity: 1;
+            text-decoration: underline; /* Добавил подчеркивание, чтобы было видно, что это ссылка */
+        }
+
+        fieldset.collapse h2 a:hover {
+            color: #eeeeee !important; /* Чуть серее при наведении */
+        }
+
+        /* === 5. МОБИЛЬНАЯ АДАПТАЦИЯ === */
         @media (max-width: 767px) {
-            /* Делаем таблицы прокручиваемыми, чтобы не рвали дизайн */
             .change-list .results {
                 overflow-x: auto;
                 width: 100%;
                 display: block;
             }
-
-            /* Шапка */
             #header {
                 padding: 10px;
                 height: auto;
                 overflow: visible;
             }
-
-            /* Кнопки действий */
-            .submit-row {
-                padding: 10px;
-            }
-            .submit-row input {
-                width: 100%;
-                margin-bottom: 10px;
-            }
-
-            /* Поля ввода на всю ширину */
+            .submit-row { padding: 10px; }
+            .submit-row input { width: 100%; margin-bottom: 10px; }
             .form-row input[type=text],
             .form-row input[type=password],
             .form-row select {

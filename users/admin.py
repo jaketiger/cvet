@@ -16,6 +16,23 @@ class ProfileInline(admin.StackedInline):
 
 # 2. Настраиваем кастомную админку для User
 class CustomUserAdmin(UserAdmin):
+    # 1. ВКЛЮЧАЕМ КНОПКИ СВЕРХУ
+    # Эта настройка заставляет Django добавить панель "Сохранить" над формой.
+    # Нижняя панель тоже добавляется, но мы скрываем её через CSS.
+    save_on_top = True
+
+    # 2. ШАБЛОН ДЛЯ СПИСКА
+    # Подключаем шаблон, который добавляет кнопку "Сохранить" над ТАБЛИЦЕЙ (списком).
+    # Используем универсальный шаблон без лишних кнопок.
+    change_list_template = "admin/change_list_save_top.html"
+
+    # 3. ПОДКЛЮЧАЕМ СТИЛИ
+    # Этот CSS делает кнопки красивыми и СКРЫВАЕТ нижние дубликаты.
+    class Media:
+        css = {
+            'all': ('shop/css/admin_custom_buttons.css',)
+        }
+
     # Добавляем наш инлайн с профилем
     inlines = (ProfileInline,)
 

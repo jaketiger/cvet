@@ -3,24 +3,55 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Заказ отменен</title>
+    <title>Отмена заказа</title>
 </head>
-<body style="font-family: Arial, sans-serif; color: #333;">
-    <h1 style="color: #dc3545;">⛔ Заказ #{{ order.id }} отменен</h1>
-    <p>Клиент отменил заказ через личный кабинет.</p>
+<body style="font-family: Arial, sans-serif; color: #333; background-color: #fff0f0; margin: 0; padding: 20px;">
 
-    <h3>Краткая информация:</h3>
-    <ul>
-        <li><strong>Клиент:</strong> {{ order.first_name }} {{ order.last_name }}</li>
-        <li><strong>Сумма возврата (если оплачено):</strong> {{ order.get_total_cost }} руб.</li>
-    </ul>
+    <div style="max-width: 600px; margin: 0 auto; background: #fff; border-radius: 12px; border: 2px solid #dc3545; overflow: hidden; box-shadow: 0 5px 20px rgba(220, 53, 69, 0.2);">
 
-    {% if order.postcard or order.custom_postcard_image %}
-        <p><em>⚠️ В заказе была открытка. Не забудьте отменить её печать.</em></p>
-    {% endif %}
+        <div style="background-color: #dc3545; color: #fff; padding: 20px; text-align: center;">
+            <h1 style="margin: 0; font-size: 24px; font-weight: 800;">⛔ ЗАКАЗ #{{ order.id }} ОТМЕНЕН</h1>
+            <p style="margin: 5px 0 0; opacity: 0.9;">Клиент отменил заказ самостоятельно</p>
+        </div>
 
-    <a href="{{ admin_order_url }}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px;">
-        Перейти к заказу
-    </a>
+        <div style="padding: 30px;">
+            <p style="font-size: 16px; margin-top: 0;">
+                Клиент <strong>{{ order.first_name }} {{ order.last_name }}</strong> ({{ order.phone }}) отменил заказ через личный кабинет.
+            </p>
+
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #eee;">
+                <h3 style="margin: 0 0 15px; font-size: 16px; text-transform: uppercase; color: #555;">💰 Финансовая информация</h3>
+
+                <p style="margin: 0 0 10px;">
+                    Статус оплаты:
+                    {% if order.paid %}
+                        <span style="color: #fff; background: #28a745; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 14px;">ОПЛАЧЕН</span>
+                        <span style="color: #dc3545; font-weight: bold; margin-left: 5px;">➔ ТРЕБУЕТСЯ ВОЗВРАТ СРЕДСТВ!</span>
+                    {% else %}
+                        <span style="color: #666; background: #eee; padding: 3px 8px; border-radius: 4px; font-size: 14px;">Не оплачен</span>
+                    {% endif %}
+                </p>
+
+                <p style="margin: 0; font-size: 18px;">
+                    Сумма заказа: <strong>{{ order.get_total_cost }} руб.</strong>
+                </p>
+            </div>
+
+            <!-- Предупреждение об открытке -->
+            {% if order.postcard or order.custom_postcard_image %}
+                <div style="border-left: 5px solid #ff9800; background: #fffbe6; padding: 15px; margin-bottom: 25px; border-radius: 0 8px 8px 0;">
+                    <strong style="color: #d35400; font-size: 16px; display: block; margin-bottom: 5px;">⚠️ Внимание!</strong>
+                    В заказе была персональная открытка. Если вы уже отправили её на печать, отмените задание.
+                </div>
+            {% endif %}
+
+            <div style="text-align: center;">
+                <a href="{{ admin_order_url }}" style="display: inline-block; padding: 14px 30px; background-color: #333; color: #ffffff; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px;">
+                    Перейти к заказу
+                </a>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

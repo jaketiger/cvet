@@ -14,6 +14,19 @@
                 </svg>
             </button>
 
+            <!-- СТИКЕР СКИДКИ С КАСТОМНЫМ ЦВЕТОМ -->
+            {% if product.old_price and product.old_price > product.price %}
+                {% with discount_percent=product.get_discount_percent %}
+                {% with sticker_color=product.get_discount_sticker_color %}
+                {% with new_price_color=product.get_new_price_color %}
+                <div class="discount-badge" style="position: absolute; top: 10px; left: 10px; background: {{ sticker_color }}; color: white; font-weight: bold; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; z-index: 5;">
+                    -{{ discount_percent }}%
+                </div>
+                {% endwith %}
+                {% endwith %}
+                {% endwith %}
+            {% endif %}
+
             {% if product.combined_rank %}
                 <div class="product-rank-badge">{{ product.combined_rank|floatformat:2 }}</div>
             {% endif %}
@@ -28,14 +41,26 @@
         </h2>
 
         <div class="product-footer">
-            <span class="product-price">{{ product.price }} ₽</span>
+            <div class="price-block">
+                {% if product.old_price and product.old_price > product.price %}
+                    <!-- Если есть скидка -->
+                    {% with new_price_color=product.get_new_price_color %}
+                    <span class="old-price" style="text-decoration: line-through; color: #999; font-size: 0.9em; margin-right: 5px;">{{ product.old_price }} ₽</span>
+                    <span class="product-price" style="color: {{ new_price_color }} !important;">{{ product.price }} ₽</span>
+                    {% endwith %}
+                {% else %}
+                    <!-- Обычная цена -->
+                    <span class="product-price">{{ product.price }} ₽</span>
+                {% endif %}
+            </div>
+
             {% if product.name_similarity and product.name_similarity > 0.3 %}
                 <span class="product-similarity-badge">Высокое соответствие</span>
             {% endif %}
         </div>
     </a>
 
-    <!-- ИСПРАВЛЕННЫЙ БЛОК: Класс вместо style -->
+    <!-- КНОПКА В КОРЗИНУ -->
     <div class="product-card-actions">
         <form action="{% url 'cart:cart_add' product.id %}" method="post" class="add-to-cart-form">
             {% csrf_token %}
@@ -53,3 +78,14 @@
         </form>
     </div>
 </div>
+
+{% comment %}
+<!-- Отладочная информация о режиме цветов -->
+{% if debug %}
+<div style="font-size: 10px; color: #999; margin-top: 5px;">
+    Режим: {{ site_settings.discount_colors_mode }}<br>
+    Цвет стикера: {{ product.get_discount_sticker_color }}<br>
+    Цвет цены: {{ product.get_new_price_color }}
+</div>
+{% endif %}
+{% endcomment %}

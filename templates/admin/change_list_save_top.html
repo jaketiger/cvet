@@ -1,0 +1,15 @@
+<!-- templates/admin/change_list.html -->
+
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block result_list %}
+    {% if cl.formset and cl.result_count %}
+        <!-- Простая кнопка Сохранить (без переключателей автосохранения) -->
+        <div class="submit-row top-save-button">
+            <input type="submit" name="_save" class="default" value="Сохранить изменения">
+        </div>
+    {% endif %}
+
+    {{ block.super }}
+{% endblock %}

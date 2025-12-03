@@ -5,7 +5,7 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 
 # Импорты для поиска (PostgreSQL)
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank, SearchHeadline
@@ -17,6 +17,9 @@ from orders.models import Order
 # Импорты форм
 from cart.forms import CartAddProductForm
 from users.forms import UserEditForm, ProfileEditForm
+
+# Для асинхронных задач
+from django_q.tasks import async_task
 
 
 def search_results(request):
@@ -51,7 +54,7 @@ def search_results(request):
                 ),
             )
             .filter(available=True)
-            .filter(rank__gte=0.05)  # Отсеиваем совсем слабые совпадения
+            .filter(rank__gte=0.05)
             .order_by('-rank')
         )
 
@@ -142,31 +145,66 @@ def profile_edit(request):
     })
 
 
+# === УМНЫЙ КОНТРОЛЛЕР СТРАНИЦ ФУТЕРА ===
+
 def contact_page(request):
     """
-    Страница контактов.
-    Пытается взять заголовок из меню 'Страницы в футере', если там есть страница 'contacts'.
+    Редирект на единый обработчик страниц.
     """
-    page_config = SiteSettings.get_solo()
-
-    try:
-        footer_page = FooterPage.objects.get(slug='contacts')
-        custom_title = footer_page.get_page_title()
-    except FooterPage.DoesNotExist:
-        custom_title = page_config.contacts_page_title
-
-    return render(request, 'shop/contacts.html', {
-        'page_config': page_config,
-        'custom_title': custom_title,
-    })
+    return redirect('shop:footer_page_detail', slug='contacts')
 
 
 def footer_page_detail(request, slug):
     """
-    Отображение текстовых страниц из футера (О нас, Доставка и т.д.).
+    Универсальное отображение страниц из футера.
+    Работает как маршрутизатор: выбирает шаблон в зависимости от slug.
     """
-    page = get_object_or_404(FooterPage, slug=slug)
-    return render(request, 'shop/footer_page_detail.html', {'page': page})
+    # Ищем страницу в базе
+    page = FooterPage.objects.filter(slug=slug).first()
+    site_settings = SiteSettings.get_solo()
+
+    # Определяем заголовок
+    custom_title = ""
+    if page and page.page_title:
+        custom_title = page.page_title
+    elif page:
+        custom_title = page.title
+    else:
+        # Дефолтные заголовки, если страницы нет в базе
+        if slug == 'contacts':
+            custom_title = site_settings.contacts_page_title or "Контакты"
+        elif slug == 'about':
+            custom_title = "О нас"
+        elif slug == 'payment':
+            custom_title = "Оплата и доставка"
+        elif slug == 'terms':
+            custom_title = "Договор оферты"
+
+    # Если страницы нет и это не системный slug - 404
+    if not page and slug not in ['contacts', 'about', 'payment', 'terms']:
+        raise Http404("Страница не найдена")
+
+    context = {
+        'page': page,
+        'custom_title': custom_title,
+        'site_settings': site_settings
+    }
+
+    # Маршрутизация
+    if slug == 'contacts':
+        return render(request, 'shop/contacts.html', context)
+
+    elif slug == 'about':
+        return render(request, 'shop/about.html', context)
+
+    elif slug == 'payment':
+        return render(request, 'shop/payment.html', context)
+
+    elif slug == 'terms':
+        return render(request, 'shop/terms.html', context)
+
+    # Обычная текстовая страница
+    return render(request, 'shop/footer_page_detail.html', context)
 
 
 @login_required
@@ -183,19 +221,23 @@ def order_detail(request, order_id):
 def cancel_order(request, order_id):
     """
     Отмена заказа пользователем.
-    Возвращает товары на склад.
+    Возвращает товары на склад и отправляет уведомление админу.
     """
     order = get_object_or_404(Order, id=order_id, user=request.user)
 
     if order.can_be_cancelled:
         # Возвращаем товары на склад
         for item in order.items.all():
-            product = item.product
-            product.stock += item.quantity
-            product.save()
+            item.product.stock += item.quantity
+            item.product.save()
 
         order.status = 'cancelled'
         order.save()
+
+        # Отправка письма админу асинхронно
+        base_url = f"{request.scheme}://{request.get_host()}"
+        async_task('orders.utils.send_cancellation_email_task', order_id=order.id, base_url=base_url)
+
         messages.success(request, f'Заказ #{order.id} успешно отменен.')
     else:
         messages.error(request, 'Этот заказ уже нельзя отменить (он уже отправлен или доставлен).')

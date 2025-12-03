@@ -5,9 +5,17 @@ from shop.models import Product, Postcard, SiteSettings
 from django.contrib.auth.models import User
 from decimal import Decimal
 from django.db.models import Max
+from decimal import Decimal
+from promo.models import PromoCode
+
 
 
 class Order(models.Model):
+    # Поля для промокодов
+    promo_code = models.ForeignKey(PromoCode, related_name='orders', null=True, blank=True, on_delete=models.SET_NULL,
+                                   verbose_name="Промокод")
+    discount = models.IntegerField(default=0, verbose_name="Скидка %")
+
     STATUS_CHOICES = [
         ('created', 'Оформлен'),
         ('processing', 'В обработке'),
@@ -19,15 +27,14 @@ class Order(models.Model):
         "Статус заказа", max_length=20, choices=STATUS_CHOICES, default='created'
     )
 
-    DELIVERY_TIME_CHOICES = [
-        ('09-12', '09:00 - 12:00'),
-        ('12-15', '12:00 - 15:00'),
-        ('15-18', '15:00 - 18:00'),
-        ('18-21', '18:00 - 21:00'),
-        ('any', 'В любое время'),
-    ]
+    delivery_time = models.CharField(
+        "Время доставки",
+        max_length=50,
+        default='asap',
+        help_text="Выбранный интервал или 'Как можно быстрее'"
+    )
     delivery_date = models.DateField("Дата доставки", null=True, blank=True)
-    delivery_time = models.CharField("Время доставки", max_length=20, choices=DELIVERY_TIME_CHOICES, default='any')
+#    delivery_time = models.CharField("Время доставки", max_length=20, choices=DELIVERY_TIME_CHOICES, default='any')
 
     DELIVERY_CHOICES = [('delivery', 'Доставка'), ('pickup', 'Самовывоз')]
     delivery_option = models.CharField("Способ получения", max_length=10, choices=DELIVERY_CHOICES, default='delivery')
@@ -92,10 +99,28 @@ class Order(models.Model):
     def get_items_cost(self):
         return sum(item.get_cost() for item in self.items.all())
 
+    def get_discount_amount(self):
+        """Возвращает сумму скидки в рублях"""
+        if self.discount > 0:
+            # Превращаем проценты в деньги: Сумма * (Процент / 100)
+            return self.get_items_cost() * (Decimal(self.discount) / Decimal(100))
+        return Decimal(0)
+
     def get_total_cost(self):
-        total = self.get_items_cost() + self.delivery_cost
+        """Полная стоимость заказа: Товары - Скидка + Доставка + Открытка"""
+        total_items = self.get_items_cost()
+
+        # 1. Вычитаем скидку
+        discount_amount = self.get_discount_amount()
+        total = total_items - discount_amount
+
+        # 2. Добавляем доставку
+        total += self.delivery_cost
+
+        # 3. Добавляем открытку
         if self.postcard and self.postcard.price > 0:
             total += self.postcard.price
+
         return total
 
 
