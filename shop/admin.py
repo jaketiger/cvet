@@ -14,24 +14,24 @@ import subprocess
 import zipfile
 import io
 from io import StringIO
-from .forms import PostcardSettingsForm
 
 from solo.admin import SingletonModelAdmin
 from adminsortable2.admin import SortableAdminMixin
 
 from .models import (Category, Product, SiteSettings, FooterPage, ProductImage, Banner, Benefit, Postcard)
-from .forms import SiteSettingsForm, BannerAdminForm, ProductAdminForm, SliderSettingsForm
+from .forms import SiteSettingsForm, BannerAdminForm, ProductAdminForm, SliderSettingsForm, PostcardSettingsForm
 
 
 # === 1. МИКСИН СТИЛЕЙ ===
 class ShopAdminStyleMixin:
     """
     Добавляет кнопки сверху и подключает CSS.
+    Использует class Media, чтобы НЕ ломать сортировку.
     """
     save_on_top = True
     change_list_template = "admin/change_list_save_top.html"
 
-    # Используем class Media для безопасного объединения
+    # ВАЖНО: Подключаем CSS через внутренний класс, чтобы не конфликтовать с SortableAdminMixin
     class Media:
         css = {'all': ('shop/css/admin_custom_buttons.css',)}
 
@@ -40,18 +40,16 @@ class ShopAdminStyleMixin:
 
 @admin.register(Postcard)
 class PostcardAdmin(SortableAdminMixin, ShopAdminStyleMixin, admin.ModelAdmin):
-
-    # Подключаем наш шаблон
-    change_list_template = "admin/shop/postcard/change_list_custom.html"
-
-    list_display = ('title', 'preview', 'price', 'is_active', 'order')
-    list_editable = ('price', 'is_active')
-
     # Сортировка
     default_order_field = 'order'
 
+    list_display = ('title', 'preview', 'price', 'is_active', 'order')
+    list_editable = ('price', 'is_active')  # Убрал 'order' отсюда
     list_filter = ('is_active',)
     list_display_links = ('title', 'preview')
+
+    # Шаблон для цены настройки сверху
+    change_list_template = "admin/shop/postcard/change_list_custom.html"
 
     def preview(self, obj):
         if obj.image:
@@ -60,8 +58,7 @@ class PostcardAdmin(SortableAdminMixin, ShopAdminStyleMixin, admin.ModelAdmin):
 
     preview.short_description = "Фото"
 
-
-# === ЛОГИКА ДЛЯ ФОРМЫ ЦЕНЫ ===
+    # === ЛОГИКА ДЛЯ ФОРМЫ ЦЕНЫ (ОТКРЫТКИ) ===
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
         settings = SiteSettings.get_solo()
@@ -93,22 +90,13 @@ class BannerAdmin(SortableAdminMixin, ShopAdminStyleMixin, admin.ModelAdmin):
     form = BannerAdminForm
     change_list_template = "admin/shop/banner/change_list_slider.html"
 
-    # 1. В list_display order ДОЛЖЕН быть
-    list_display = ('get_title_display', 'image_preview', 'is_active', 'order')
-
-    # 2. В list_display_links order НЕ ДОЛЖЕН быть
-    list_display_links = ('get_title_display', 'image_preview')
-
-    # 3. В list_editable order НЕ ДОЛЖЕН быть
-    list_editable = ('is_active',)
-
-    # 4. Важные настройки для сортировки
+    # === ВАЖНО ДЛЯ СОРТИРОВКИ ===
     ordering = ['order']
-    sortable_by = []  # Отключаем сортировку по клику на заголовок
-    search_fields = ('title', 'subtitle')
 
-    # 5. Для sortable обязательно указать поле порядка
-    list_per_page = 50  # Можно увеличить для лучшего drag-and-drop
+    list_display = ('get_title_display', 'image_preview', 'is_active', 'order')
+    list_display_links = ('get_title_display', 'image_preview')
+    list_editable = ('is_active',)
+    search_fields = ('title', 'subtitle')
 
     fieldsets = (
         ('Контент', {'fields': ('title', 'subtitle', 'button_text', 'link', 'content_position')}),
@@ -118,9 +106,11 @@ class BannerAdmin(SortableAdminMixin, ShopAdminStyleMixin, admin.ModelAdmin):
     )
     readonly_fields = ('image_preview',)
 
+    # === МЕТОД ДЛЯ ЗАГОЛОВКА (ИСПРАВЛЕНО ДЛЯ DJANGO 6.0) ===
     def get_title_display(self, obj):
-        if obj.title: return obj.title
-        return format_html('<span style="color: #999; font-style: italic;">(Без заголовка)</span>')
+        if obj.title:
+            return obj.title
+        return mark_safe('<span style="color: #999; font-style: italic;">(Без заголовка)</span>')
 
     get_title_display.short_description = "Заголовок"
     get_title_display.admin_order_field = 'title'
@@ -137,10 +127,10 @@ class BannerAdmin(SortableAdminMixin, ShopAdminStyleMixin, admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
         form.base_fields['image'].label = "Изображение"
-        form.base_fields['image'].help_text = "В режиме Адаптивно растянутся по большей высоте (если они разные)."
+        form.base_fields['image'].help_text = "Рекомендуется: 1920x600 (ПК). Система сама обрежет края."
         return form
 
-
+    # === НАСТРОЙКИ СЛАЙДЕРА ===
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
         try:
@@ -154,7 +144,6 @@ class BannerAdmin(SortableAdminMixin, ShopAdminStyleMixin, admin.ModelAdmin):
         urls = super().get_urls()
         custom_urls = [
             path('update-slider/', self.admin_site.admin_view(self.update_slider_view), name='update_slider_settings'),
-
         ]
         return custom_urls + urls
 
@@ -194,7 +183,6 @@ class ProductImageInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(ShopAdminStyleMixin, admin.ModelAdmin):
-    # У товаров НЕТ сортировки, поэтому SortableAdminMixin не нужен
     form = ProductAdminForm
     list_display = ['sku', 'name', 'price', 'old_price', 'stock', 'available', 'is_featured', 'discount_colors_preview']
     list_filter = ['available', 'is_featured', 'created', 'updated']
@@ -254,16 +242,16 @@ class FooterPageAdmin(SortableAdminMixin, ShopAdminStyleMixin, admin.ModelAdmin)
     fieldsets = (
         (None, {'fields': ('title', 'slug', 'special_page_warning')}),
         ('Контент', {'fields': ('page_title', 'content')}),
-        #('Настройки', {'fields': ('order',)}),
+        ('Настройки', {'fields': ('order',)}),
     )
 
+    # === ИСПРАВЛЕНО ДЛЯ DJANGO 6.0 (mark_safe) ===
     def special_page_warning(self, obj):
-        # Показываем подсказку всегда, чтобы админ знал, какие слаги использовать
-        hint = (
-            '<div style="background-color: #6e8091; border: 1px solid #b3d7ff; color: #004085; padding: 12px; border-radius: 5px; margin-bottom: 10px;">'
-            '<strong>💡 Подсказка:</strong> Для подключения специальных шаблонов используйте следующие URL-адреса:'
+        hint = mark_safe(
+            '<div style="background-color: #e3f2fd; border: 1px solid #b3d7ff; color: #004085; padding: 12px; border-radius: 5px; margin-bottom: 10px;">'
+            '<strong>💡 Подсказка:</strong> Для подключения специальных шаблонов используйте следующие URL-адреса (slug):'
             '<ul style="margin: 5px 0 0 20px; padding: 0;">'
-            '<li><code>contacts</code> — Страница "Контакты" (берет данные из настроек сайта)</li>'
+            '<li><code>contacts</code> — Страница "Контакты" (берет данные из настроек)</li>'
             '<li><code>about</code> — О нас</li>'
             '<li><code>payment</code> — Оплата и доставка</li>'
             '<li><code>terms</code> — Договор оферты</li>'
@@ -274,12 +262,14 @@ class FooterPageAdmin(SortableAdminMixin, ShopAdminStyleMixin, admin.ModelAdmin)
         if obj:
             if obj.slug == 'contacts':
                 return format_html(
-                    hint + '<div style="color: red; font-weight: bold; margin-top: 5px;">⚠️ ВНИМАНИЕ: Контент этой страницы берется из "Настроек сайта"!</div>')
+                    '{}<div style="color: red; font-weight: bold; margin-top: 5px;">⚠️ ВНИМАНИЕ: Контент этой страницы берется из "Настроек сайта"!</div>',
+                    hint)
             elif obj.slug in ['about', 'payment', 'terms']:
                 return format_html(
-                    hint + f'<div style="color: green; font-weight: bold; margin-top: 5px;">✔ Используется шаблон: {obj.slug}.html</div>')
+                    '{}<div style="color: green; font-weight: bold; margin-top: 5px;">✔ Используется шаблон: {}.html</div>',
+                    hint, obj.slug)
 
-        return format_html(hint)
+        return hint
 
     special_page_warning.short_description = "Статус шаблона"
 
@@ -295,6 +285,7 @@ class BenefitAdmin(SortableAdminMixin, ShopAdminStyleMixin, admin.ModelAdmin):
     )
     readonly_fields = ('icon_preview',)
 
+    # === ИСПРАВЛЕНО (mark_safe для SVG) ===
     def icon_preview(self, obj):
         if obj.icon_svg:
             return format_html('<div style="width: 30px; height: 30px; color: #333;">{}</div>', mark_safe(obj.icon_svg))
@@ -338,6 +329,12 @@ class SiteSettingsAdmin(SingletonModelAdmin):
                 'delivery_cost', 'background_image',
                 ('site_sheet_bg_color', 'site_sheet_opacity', 'site_sheet_blur'),
             )
+        }),
+        # === БЛОК ОТКРЫТОК ===
+        ('Настройки открыток', {
+            'classes': ('collapse',),
+            'fields': ('custom_postcard_price',),
+            'description': 'Цена за услугу печати пользовательского фото.'
         }),
         ('Время работы и Интервалы', {
             'classes': ('collapse',),
@@ -441,23 +438,24 @@ class SiteSettingsAdmin(SingletonModelAdmin):
         }),
     )
 
+    # === ИСПРАВЛЕНО (mark_safe) ===
     def timezone_preview(self, obj):
-        # ИСПОЛЬЗУЕМ mark_safe ДЛЯ ПРОСТОГО HTML
         return mark_safe(
-            '<span id="timezone-clock-preview" style="font-size: 14px; padding-left: 10px; line-height: 35px;">Загрузка времени...</span>'
-        )
+            '<span id="timezone-clock-preview" style="font-size: 14px; padding-left: 10px; line-height: 35px;">Загрузка времени...</span>')
+
+    timezone_preview.short_description = "Текущее время в регионе"
 
     def image_preview(self, obj):
         if obj.logo_image:
-            # Здесь format_html НУЖЕН, так как есть {}
             return format_html('<img src="{}" width="150" />', obj.logo_image.url)
         return "Логотип не загружен"
 
+    image_preview.short_description = "Превью логотипа"
+
     def discount_colors_info(self, obj):
-        # ИСПОЛЬЗУЕМ mark_safe
         return mark_safe(
-            '<div style="background-color: #363a36; border-left: 4px solid #e53935; padding: 10px 15px; margin-bottom: 15px;">...</div>'
-        )
+            '<div style="background-color: #363a36; border-left: 4px solid #e53935; padding: 10px 15px; margin-bottom: 15px;">...</div>')
+
     discount_colors_info.short_description = "Информация"
 
     def save_model(self, request, obj, form, change):
@@ -475,21 +473,18 @@ class SiteSettingsAdmin(SingletonModelAdmin):
             self.message_user(request, "Настройки сохранены. Заказы перенумерованы!", level='success')
 
     def apply_sku_logic_button(self, obj):
-        # ИСПОЛЬЗУЕМ mark_safe
         return mark_safe(
-            '<button type="submit" name="_run_sku_script" value="1" style="...">💾 Сохранить и Обновить артикулы</button>'
-        )
+            '<button type="submit" name="_run_sku_script" value="1" style="background:#28a745; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;">💾 Сохранить и Обновить артикулы</button>')
 
     apply_sku_logic_button.short_description = "Действие"
 
     def apply_order_logic_button(self, obj):
-        # ИСПОЛЬЗУЕМ mark_safe
         return mark_safe(
-            '<button type="submit" name="_run_order_script" value="1" style="...">💾 Сохранить и Перенумеровать заказы</button>'
-        )
+            '<button type="submit" name="_run_order_script" value="1" style="background:#dc3545; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;">💾 Сохранить и Перенумеровать заказы</button>')
 
     apply_order_logic_button.short_description = "Действие"
 
+    # ... методы download_* оставляем ...
     def download_backup_view(self, request):
         backup_dir = os.path.join(settings.BASE_DIR, 'backups')
         os.makedirs(backup_dir, exist_ok=True)
