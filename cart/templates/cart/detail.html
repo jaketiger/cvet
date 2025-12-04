@@ -42,6 +42,22 @@
                             {% endif %}
                         </div>
 
+                        <!-- ДОБАВЛЕНО: Информация об открытке -->
+                        {% if item.postcard_info %}
+                            <div class="postcard-info-in-cart">
+                                <span style="color: #28a745; font-weight: 600;">
+                                    💌 Открытка: {{ item.postcard_info.title }}
+                                </span>
+                                {% if item.postcard_info.price and item.postcard_info.price != '0' %}
+                                    <span style="color: #28a745; margin-left: 8px;">
+                                        +{{ item.postcard_info.price }} ₽
+                                    </span>
+                                {% else %}
+                                    <span style="color: #666; margin-left: 8px;">(Бесплатно)</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
                         {% if item.is_stock_sufficient == False %}
                             <div class="stock-error-msg">Мало на складе! Доступно: {{ product.stock }} шт.</div>
                         {% endif %}
@@ -50,11 +66,24 @@
                     <!-- 3. ПРАВЫЙ БЛОК (Цена, Кол-во, Удалить) -->
                     <div class="cart-item-actions">
 
-                        <!-- ЦЕНА -->
+                        <!-- ЦЕНА (ОБНОВЛЕНО: включая открытку) -->
                         <div class="cart-item-price">
-                            {{ item.total_price }}&nbsp;₽
-                            {% if item.quantity > 1 %}
-                                <span class="price-per-item">({{ item.price }} ₽/шт)</span>
+                            {% if item.postcard_info and item.postcard_info.price and item.postcard_info.price != '0' %}
+                                <!-- Если есть платная открытка, показываем две строки -->
+                                <div style="text-align: right; line-height: 1.4;">
+                                    <div style="font-size: 1rem; color: #666;">
+                                        Товар: {{ item.total_price }} ₽
+                                    </div>
+                                    <div style="color: #28a745; font-weight: 600; font-size: 1.2rem;">
+                                        Всего: {{ item.total_price|add:item.postcard_info.price|floatformat:2 }} ₽
+                                    </div>
+                                </div>
+                            {% else %}
+                                <!-- Без открытки или с бесплатной -->
+                                {{ item.total_price }} ₽
+                                {% if item.quantity > 1 %}
+                                    <span class="price-per-item">({{ item.price }} ₽/шт)</span>
+                                {% endif %}
                             {% endif %}
                         </div>
 
@@ -122,39 +151,41 @@
                             <button type="submit">→</button>
                         </form>
                     {% endif %}
-<!--
-                    {% if messages %}
-                        <div class="promo-messages">
-                            {% for message in messages %}
-                                <div class="{{ message.tags }}">{{ message }}</div>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
--->
                 </div>
 
                 <div class="summary-details">
+                    <!-- ТОВАРЫ -->
                     <div class="summary-row">
                         <span>Товары ({{ cart|length }}):</span>
-                        <span>{{ cart.get_total_price }} ₽</span>
+                        <span>{{ cart.get_total_price|floatformat:2 }} ₽</span>
                     </div>
 
+                    <!-- ОТКРЫТКИ (ДОБАВЛЕНО) -->
+                    {% if postcards_total and postcards_total > 0 %}
+                    <div class="summary-row" style="color: #28a745;">
+                        <span>+ Открытки:</span>
+                        <span>+{{ postcards_total|floatformat:2 }} ₽</span>
+                    </div>
+                    {% endif %}
+
+                    <!-- ПРОМОКОД -->
                     {% if cart.promo %}
                     <div class="summary-row discount">
-                        <span>Скидка</span>
-                        <span>-{{ cart.get_discount|floatformat:0 }} ₽</span>
+                        <span>Скидка ({{ cart.promo.code }}):</span>
+                        <span>-{{ cart.get_discount|floatformat:2 }} ₽</span>
                     </div>
                     {% endif %}
 
                     <hr>
 
+                    <!-- ИТОГО (ОБНОВЛЕНО) -->
                     <div class="summary-total">
                         <span>К оплате:</span>
                         <span class="total-price">
                             {% if cart.promo %}
-                                {{ cart.get_total_price_after_discount|floatformat:0 }}
+                                {{ cart.get_total_price_after_discount|floatformat:2 }}
                             {% else %}
-                                {{ cart.get_total_price }}
+                                {{ cart.get_total_price|add:postcards_total|default:0|floatformat:2 }}
                             {% endif %} ₽
                         </span>
                     </div>
@@ -199,6 +230,17 @@
     .cart-item-info { flex-grow: 1; display: flex; flex-direction: column; gap: 5px; }
     .cart-item-title { font-size: 1.1rem; font-weight: bold; color: #333; text-decoration: none; }
     .category-label { font-size: 0.85rem; color: #888; background: #f8f8f8; padding: 2px 8px; border-radius: 4px; display: inline-block; }
+
+    /* Стили для информации об открытке */
+    .postcard-info-in-cart {
+        margin: 5px 0;
+        padding: 8px 12px;
+        background: #f0f9f0;
+        border-radius: 6px;
+        border-left: 3px solid #28a745;
+        font-size: 0.9rem;
+    }
+
     .stock-error-msg { color: #dc3545; font-size: 0.8em; font-weight: bold; }
 
     /* Правый блок карточки */
@@ -305,6 +347,11 @@
         .cart-item-image { grid-area: img; width: 70px; height: 70px; }
         .cart-item-info { grid-area: info; margin-bottom: 0; }
         .cart-item-title { font-size: 0.95rem; margin-bottom: 2px; }
+        .postcard-info-in-cart {
+            font-size: 0.8rem;
+            padding: 5px 8px;
+            margin: 3px 0;
+        }
 
         .cart-item-actions {
             grid-area: actions; flex-direction: row; flex-wrap: nowrap;

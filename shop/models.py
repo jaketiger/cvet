@@ -679,7 +679,7 @@ class FooterPage(models.Model):
 class Postcard(models.Model):
     title = models.CharField("Название", max_length=100)
     image = models.ImageField("Изображение открытки", upload_to='postcards/')
-    price = models.DecimalField("Цена (0 = бесплатно)", max_digits=10, decimal_places=2, default=0.00)
+    price = models.DecimalField("Цена", max_digits=10, decimal_places=2, default=0.00)
     order = models.PositiveIntegerField("Порядок сортировки", default=0)
     is_active = models.BooleanField("Активна", default=True)
 

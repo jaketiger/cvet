@@ -152,6 +152,11 @@
                     </p>
                 {% endif %}
 
+    <!-- ЦЕНА ОТКРЫТКИ -->
+                {% if order.postcard and order.postcard.price > 0 %}
+                    <p style="margin: 5px 0; color: #666; font-size: 14px;">Открытка "{{ order.postcard.title }}": {{ order.postcard.price }} ₽</p>
+                {% endif %}
+
                 {% if order.delivery_cost > 0 %}
                     <p style="margin: 5px 0; color: #666; font-size: 14px;">Доставка: {{ order.delivery_cost }} ₽</p>
                 {% endif %}

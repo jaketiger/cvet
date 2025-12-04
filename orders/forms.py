@@ -4,6 +4,7 @@ from django import forms
 from django.utils import timezone
 from .models import Order
 from shop.models import Postcard, SiteSettings
+from decimal import Decimal
 
 
 # === ФОРМА ДЛЯ БЫСТРОГО ЗАКАЗА (1 Клик) ===
@@ -95,15 +96,52 @@ class OrderCreateForm(forms.ModelForm):
         time_mode = self.data.get('time_mode')
         raw_postcard = self.data.get('postcard')
 
+        # ИСПРАВЛЕНО: Также получаем ID для кастомной открытки
+        selected_for_custom = self.data.get('selected_postcard_for_custom', '')
+        postcard_id_for_custom = self.data.get('postcard_id_for_custom', '')
+
+        print(f"DEBUG forms.py clean: raw_postcard = {raw_postcard}")
+        print(f"DEBUG forms.py clean: selected_for_custom = {selected_for_custom}")
+        print(f"DEBUG forms.py clean: postcard_id_for_custom = {postcard_id_for_custom}")
+
         # ОБРАБОТКА ОТКРЫТКИ ВРУЧНУЮ
         self.postcard_value = None  # Сохраняем объект Postcard здесь
+        self.postcard_price = Decimal('0.00')  # ИСПРАВЛЕНО: Сохраняем цену
 
+        # ИСПРАВЛЕНО: Правильная логика обработки открытки
         if raw_postcard == 'custom':
-            # Кастомная открытка - postcard будет None
-            self.postcard_value = None
+            # Кастомная открытка
+            print("DEBUG forms.py: Обработка кастомной открытки")
+
+            # ИСПРАВЛЕНО: Для кастомной открытки с фото всегда берем цену из настроек сайта
+            try:
+                site_settings = SiteSettings.get_solo()
+                custom_price = site_settings.custom_postcard_price or Decimal('0.00')
+                self.postcard_price = custom_price
+                print(f"DEBUG forms.py: Цена кастомной открытки из настроек сайта: {custom_price}")
+
+                # ИСПРАВЛЕНО: Проверяем, есть ли ID платной открытки для комбинации
+                postcard_id = selected_for_custom or postcard_id_for_custom
+                if postcard_id and postcard_id != '':
+                    try:
+                        postcard = Postcard.objects.get(id=int(postcard_id))
+                        self.postcard_value = postcard
+                        # Если есть платная основа, добавляем её цену
+                        if postcard.price and postcard.price > 0:
+                            self.postcard_price += postcard.price
+                            print(f"DEBUG forms.py: + цена основы {postcard.price} = итого {self.postcard_price}")
+                    except (ValueError, Postcard.DoesNotExist) as e:
+                        print(f"DEBUG forms.py: Платная открытка не найдена: {e}")
+                        self.postcard_value = None
+            except Exception as e:
+                print(f"DEBUG forms.py: Ошибка получения настроек сайта: {e}")
+                self.postcard_price = Decimal('100.00')  # значение по умолчанию
+
         elif raw_postcard == '':
             # Без открытки
             self.postcard_value = None
+            self.postcard_price = Decimal('0.00')
+            print("DEBUG forms.py: Без открытки")
             # Очищаем текст и фото
             cleaned_data['postcard_text'] = ''
             if 'custom_postcard_image' in self.files:
@@ -113,11 +151,15 @@ class OrderCreateForm(forms.ModelForm):
             try:
                 postcard = Postcard.objects.get(id=int(raw_postcard))
                 self.postcard_value = postcard
+                self.postcard_price = postcard.price
+                print(f"DEBUG forms.py: Найдена обычная открытка: {postcard.title}, цена: {postcard.price}")
             except (ValueError, Postcard.DoesNotExist):
                 self.add_error('postcard', 'Выбранная открытка не найдена')
+                print(f"DEBUG forms.py: Открытка не найдена: {raw_postcard}")
 
         # Сохраняем raw значение в cleaned_data для дальнейшего использования
         cleaned_data['postcard_raw'] = raw_postcard
+        cleaned_data['selected_for_custom'] = selected_for_custom
 
         # Заглушки для необязательных полей
         if not cleaned_data.get('last_name'):
@@ -153,8 +195,8 @@ class OrderCreateForm(forms.ModelForm):
 
         # === ВАЛИДАЦИЯ КАСТОМНОЙ ОТКРЫТКИ ===
         if raw_postcard == 'custom' and not cleaned_data.get('custom_postcard_image'):
-            # Предупреждение, но не ошибка
-            pass
+            # Предупреждение, но не ошибка (можно загрузить позже или использовать без фото)
+            print("DEBUG forms.py: Кастомная открытка без загруженного фото")
 
         # === ВАЛИДАЦИЯ ПОЛУЧАТЕЛЯ ===
         r_name = cleaned_data.get('recipient_name')
@@ -168,12 +210,24 @@ class OrderCreateForm(forms.ModelForm):
         # Переопределяем save, чтобы установить postcard вручную
         order = super().save(commit=False)
 
-        # Устанавливаем postcard из сохраненного значения
+        # ИСПРАВЛЕНО: Устанавливаем postcard и его цену
         if hasattr(self, 'postcard_value'):
             order.postcard = self.postcard_value
+
+        # ИСПРАВЛЕНО: Всегда устанавливаем финальную цену из postcard_price
+        if hasattr(self, 'postcard_price'):
+            order.postcard_final_price = self.postcard_price
+            print(f"DEBUG forms.py save: Установлена postcard_final_price = {self.postcard_price}")
+        else:
+            # Fallback: если почему-то нет postcard_price
+            order.postcard_final_price = Decimal('0.00')
 
         if commit:
             order.save()
             self.save_m2m()
+            print(f"DEBUG forms.py save: Заказ сохранен, ID={order.id}")
+            print(f"DEBUG forms.py save: postcard_final_price = {order.postcard_final_price}")
+            print(f"DEBUG forms.py save: postcard = {order.postcard}")
+            print(f"DEBUG forms.py save: custom_postcard_image = {bool(order.custom_postcard_image)}")
 
         return order

@@ -16,6 +16,16 @@
     <div class="order-message">
         <p>Ваш заказ <strong>#{{ order.id }}</strong> успешно оформлен.</p>
 
+        <!-- Время доставки -->
+        <p>
+            <strong>Время получения:</strong>
+            {% if order.delivery_time == 'asap' %}
+                <span style="color: #ff9800; font-weight: bold;">🚀 Как можно быстрее</span>
+            {% else %}
+                {{ order.delivery_date|date:"d.m.Y" }} / <strong>{{ order.delivery_time }}</strong>
+            {% endif %}
+        </p>
+
         <!-- Проверка на email-заглушку -->
         {% if order.email and order.email != 'no-email@provided.com' %}
             <p>Мы отправили письмо с подтверждением на <strong>{{ order.email }}</strong>.</p>
@@ -31,40 +41,146 @@
 
     <!-- Блок с итоговой суммой -->
     <div class="order-summary-card">
-        <h3>Сумма к оплате: <span class="total-highlight">{{ order.get_total_cost }} руб.</span></h3>
+        <h3>Сумма к оплате: <span class="total-highlight">{{ order.get_total_cost|floatformat:0 }} руб.</span></h3>
 
         <ul class="summary-details">
             <li>
                 <span class="label">Товары:</span>
-                <span class="value">{{ order.get_items_cost }} руб.</span>
+                <span class="value">{{ order.get_items_cost|floatformat:0 }} руб.</span>
             </li>
 
-            <!-- НОВОЕ: СКИДКА -->
+            <!-- СКИДКА -->
             {% if order.discount > 0 %}
                 <li style="color: #28a745;">
                     <span class="label">Скидка ({{ order.promo_code.code|default:"PROMO" }}):</span>
-                    <span class="value">-{{ order.get_discount_amount }} руб.</span>
+                    <span class="value">-{{ order.get_discount_amount|floatformat:0 }} руб.</span>
                 </li>
             {% endif %}
 
+            <!-- ИСПРАВЛЕНО: Открытка - правильная логика отображения -->
+            {% if order.postcard_final_price > 0 %}
+                <li class="postcard-row">
+                    <span class="label">
+                        {% if order.custom_postcard_image %}
+                            📸 Своё фото открытки:
+                            {% if order.postcard %}
+                                <br><small>(с основой "{{ order.postcard.title }}")</small>
+                            {% endif %}
+                        {% elif order.postcard %}
+                            💌 Открытка "{{ order.postcard.title }}":
+                        {% endif %}
+                    </span>
+                    <span class="value">{{ order.postcard_final_price|floatformat:0 }} руб.</span>
+                </li>
+            {% elif order.custom_postcard_image %}
+                <li class="postcard-row">
+                    <span class="label">
+                        📸 Своё фото открытки:
+                        {% if order.postcard %}
+                            <br><small>(с основой "{{ order.postcard.title }}")</small>
+                        {% endif %}
+                    </span>
+                    <span class="value">Бесплатно</span>
+                </li>
+            {% elif order.postcard %}
+                <li class="postcard-row">
+                    <span class="label">
+                        💌 Открытка "{{ order.postcard.title }}":
+                    </span>
+                    <span class="value">Бесплатно</span>
+                </li>
+            {% endif %}
+
+            <!-- ДОСТАВКА -->
             {% if order.delivery_cost > 0 %}
                 <li>
-                    <span class="label">Доставка:</span>
-                    <span class="value">{{ order.delivery_cost }} руб.</span>
-                </li>
-            {% endif %}
-
-            {% if order.postcard and order.postcard.price > 0 %}
-                <li class="postcard-row">
-                    <span class="label">+ Открытка:</span>
-                    <span class="value">{{ order.postcard.price }} руб.</span>
+                    <span class="label">🚚 Доставка:</span>
+                    <span class="value">{{ order.delivery_cost|floatformat:0 }} руб.</span>
                 </li>
             {% endif %}
         </ul>
     </div>
 
+    <!-- Уменьшенное превью открытки -->
+    {% if order.postcard and order.postcard.image %}
+    <div class="postcard-preview-section" style="margin: 20px 0; padding: 15px; background: #f0f9ff; border-radius: 10px; border: 1px solid #b3e0ff; max-width: 500px; margin-left: auto; margin-right: auto;">
+        <h3 style="margin-top: 0; color: #0066cc; font-size: 1.1em; display: flex; align-items: center; gap: 8px; margin-bottom: 15px;">
+            <span>💌</span>
+            Ваша открытка "{{ order.postcard.title }}"
+        </h3>
+
+        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+            <div style="flex-shrink: 0;">
+                <img src="{{ order.postcard.image.url }}"
+                     style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 2px solid #4dabf7;">
+            </div>
+            <div style="flex-grow: 1; min-width: 200px;">
+                <p style="margin: 8px 0; font-size: 0.95em;">
+                    <strong>Цена:</strong>
+                    {% if order.postcard_final_price and order.postcard_final_price > 0 %}
+                        <span style="color: #28a745; font-weight: bold;">{{ order.postcard_final_price|floatformat:0 }} руб.</span>
+                    {% else %}
+                        <span style="color: #666;">Бесплатно</span>
+                    {% endif %}
+                </p>
+
+                {% if order.postcard_text %}
+                <div style="background: white; padding: 10px; border-radius: 6px; border-left: 3px solid #4dabf7; margin-top: 8px; font-size: 0.9em;">
+                    <p style="margin: 0; color: #666; font-size: 0.85em; margin-bottom: 3px;">Текст поздравления:</p>
+                    <p style="margin: 0; font-style: italic; color: #333; line-height: 1.3;">"{{ order.postcard_text|truncatechars:100 }}"</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if order.custom_postcard_image %}
+    <div class="postcard-preview-section" style="margin: 20px 0; padding: 15px; background: #f9f0ff; border-radius: 10px; border: 1px solid #d9b3ff; max-width: 500px; margin-left: auto; margin-right: auto;">
+        <h3 style="margin-top: 0; color: #8e44ad; font-size: 1.1em; display: flex; align-items: center; gap: 8px; margin-bottom: 15px;">
+            <span>📸</span>
+            {% if order.postcard %}
+                Ваше фото на основе "{{ order.postcard.title }}"
+            {% else %}
+                Ваше фото открытки
+            {% endif %}
+        </h3>
+
+        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+            <div style="flex-shrink: 0;">
+                <img src="{{ order.custom_postcard_image.url }}"
+                     style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 2px solid #9b59b6;">
+            </div>
+            <div style="flex-grow: 1; min-width: 200px;">
+                <p style="margin: 8px 0; font-size: 0.95em;">
+                    <strong>Цена:</strong>
+                    {% if order.postcard_final_price > 0 %}
+                        <span style="color: #28a745; font-weight: bold;">{{ order.postcard_final_price|floatformat:0 }} руб.</span>
+                        {% if order.postcard %}
+                            <br><small style="color: #666;">({{ site_settings.custom_postcard_price|default:100|floatformat:0 }} руб. своё фото + {{ order.postcard.price|floatformat:0 }} руб. основа)</small>
+                        {% else %}
+                            <br><small style="color: #666;">(своё фото)</small>
+                        {% endif %}
+                    {% else %}
+                        <span style="color: #666;">Бесплатно</span>
+                        {% if order.postcard %}
+                            <br><small style="color: #666;">(с основой "{{ order.postcard.title }}")</small>
+                        {% endif %}
+                    {% endif %}
+                </p>
+
+                {% if order.postcard_text %}
+                <div style="background: white; padding: 10px; border-radius: 6px; border-left: 3px solid #9b59b6; margin-top: 8px; font-size: 0.9em;">
+                    <p style="margin: 0; color: #666; font-size: 0.85em; margin-bottom: 3px;">Текст поздравления:</p>
+                    <p style="margin: 0; font-style: italic; color: #333; line-height: 1.3;">"{{ order.postcard_text|truncatechars:100 }}"</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- КНОПКА -->
-    <!-- Используем стандартные классы, чтобы сработал пресет из настроек -->
     <div class="action-area">
         <a href="{% url 'shop:product_list_all' %}" class="btn btn-primary custom-btn-size">
             Вернуться в каталог
@@ -73,26 +189,20 @@
 </div>
 
 <style>
-
-    .discount-highlight {
-    color: #28a745; /* Зеленый цвет для скидки */
-    /*font-weight: 600;*/
-    }
-
     .created-order-container {
         max-width: 600px;
         margin: 0 auto;
-        padding: 60px 20px;
+        padding: 30px 15px;
         text-align: center;
         font-family: var(--default-font-family, sans-serif);
     }
 
     /* Галочка */
     .success-icon-wrapper {
-        margin-bottom: 20px;
+        margin-bottom: 15px;
     }
     .success-icon {
-        font-size: 4em;
+        font-size: 3em;
         color: #28a745;
         animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
@@ -102,44 +212,48 @@
     }
 
     h1 {
-        margin-bottom: 20px;
+        margin-bottom: 15px;
         color: #333;
+        font-size: 1.8em;
     }
 
     .order-message {
-        font-size: 1.1em;
-        line-height: 1.6;
+        font-size: 1em;
+        line-height: 1.5;
         color: #555;
-        margin-bottom: 40px;
+        margin-bottom: 30px;
     }
 
     /* Карточка с суммой */
     .order-summary-card {
         background: #f9f9f9;
-        padding: 30px;
-        border-radius: 16px;
+        padding: 20px;
+        border-radius: 12px;
         border: 1px solid #eee;
-        margin-bottom: 40px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        margin-bottom: 30px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.03);
     }
 
     .order-summary-card h3 {
         margin-top: 0;
         margin-bottom: 20px;
         color: #333;
-        font-size: 1.4em;
+        font-size: 1.2em;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
     }
 
     .total-highlight {
         color: var(--accent-color, #e53935);
         font-weight: 700;
+        font-size: 1.1em;
     }
 
     .summary-details {
         list-style: none;
         padding: 0;
         margin: 0;
-        font-size: 1.05em;
+        font-size: 0.95em;
     }
 
     .summary-details li {
@@ -154,28 +268,28 @@
         border-bottom: none;
     }
 
+    .summary-details .label {
+        font-weight: 500;
+    }
+
     .summary-details .value {
         font-weight: 600;
         color: #333;
     }
 
-    .postcard-row {
-        color: #28a745 !important;
-    }
     .postcard-row .value {
         color: #28a745;
     }
 
     /* --- Стили кнопки --- */
-    /* Мы задаем только размеры и отступы.
-       Цвета, границы и тени подтянутся из глобального класса .btn-primary */
     .custom-btn-size {
         display: inline-block;
-        padding: 15px 40px;
-        font-size: 1.1rem;
+        padding: 12px 30px;
+        font-size: 1rem;
         text-decoration: none;
         font-weight: 600;
         cursor: pointer;
+        margin-top: 20px;
     }
 
     /* Центровка */

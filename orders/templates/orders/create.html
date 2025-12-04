@@ -43,6 +43,10 @@
     <form action="." method="post" class="checkout-form" enctype="multipart/form-data" novalidate>
         {% csrf_token %}
 
+        <!-- Скрытые поля для передачи ID открытки -->
+        <input type="hidden" name="postcard_id_for_custom" id="postcard_id_for_custom" value="">
+        <input type="hidden" name="selected_postcard_for_custom" id="selected_postcard_for_custom" value="">
+
         <div class="checkout-grid">
 
             <!-- === ЛЕВАЯ КОЛОНКА === -->
@@ -86,7 +90,7 @@
 
                     <hr class="section-divider" style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
 
-                    <!-- === НОВЫЙ БЛОК ВРЕМЕНИ (ВМЕСТО СТАРОГО DATETIME-WRAPPER) === -->
+                    <!-- БЛОК ВРЕМЕНИ -->
                     <div class="time-selection-wrapper">
                         <h3 style="font-size: 1.1rem; margin-bottom: 15px; color: #333;">Когда получить заказ?</h3>
 
@@ -117,11 +121,24 @@
                             </label>
                         </div>
 
-                        <!-- Блок выбора даты и интервала (Скрыт по умолчанию, если выбрано ASAP) -->
+                        <!-- Блок выбора даты и интервала -->
                         <div id="exact-time-picker" style="display: none; margin-top: 20px;">
                             <div class="datetime-grid">
                                 <div class="input-box date-input-box">
                                     <label>Дата</label>
+
+                                    <!-- БЛОК БЫСТРОГО ВЫБОРА ДАТЫ -->
+                                    <div class="quick-date-buttons">
+                                        <button type="button" class="quick-date-btn today-btn" onclick="setDateToday()">
+                                            <span class="quick-date-icon">📅</span>
+                                            <span class="quick-date-text">Сегодня</span>
+                                        </button>
+                                        <button type="button" class="quick-date-btn tomorrow-btn" onclick="setDateTomorrow()">
+                                            <span class="quick-date-icon">📅</span>
+                                            <span class="quick-date-text">Завтра</span>
+                                        </button>
+                                    </div>
+
                                     <div class="date-input-wrapper">
                                         {{ form.delivery_date }}
                                         <span class="calendar-icon">📅</span>
@@ -129,7 +146,6 @@
                                 </div>
                                 <div class="input-box time-input-box">
                                     <label>Интервал</label>
-                                    <!-- Важно: Этот select заполняется через JS (AJAX) -->
                                     <select name="delivery_time" id="delivery-time-select" class="form-control">
                                         <option value="">Сначала выберите дату...</option>
                                     </select>
@@ -140,7 +156,6 @@
                             </p>
                         </div>
                     </div>
-                    <!-- ============================================================== -->
 
                 </section>
 
@@ -210,16 +225,14 @@
                                 <!-- 2. Своё фото -->
                                 <div class="swiper-slide">
                                     <label class="postcard-slide-content">
-        <!-- ВАЖНО: data-price берется из site_settings -->
                                         <input type="radio" name="postcard" value="custom"
-                                            data-price="{{ site_settings.custom_postcard_price|stringformat:'.0f' }}"
+                                            data-price="{{ site_settings.custom_postcard_price|default:0|stringformat:'.0f' }}"
                                             onchange="handlePostcardChange(this)">
 
                                         <div class="pc-visual">
                                             <div class="pc-emoji">📸</div>
                                             <span class="pc-name">Своё фото</span>
                                             <span class="pc-price-tag">
-                <!-- Отображение цены на карточке -->
                                                 {% if site_settings.custom_postcard_price > 0 %}
                                                     +{{ site_settings.custom_postcard_price|floatformat:0 }}₽
                                                 {% else %}
@@ -234,7 +247,10 @@
                                 {% for card in postcards %}
                                 <div class="swiper-slide">
                                     <label class="postcard-slide-content">
-                                        <input type="radio" name="postcard" value="{{ card.id }}" data-price="{{ card.price|stringformat:'.0f' }}" onchange="handlePostcardChange(this)">
+                                        <input type="radio" name="postcard" value="{{ card.id }}"
+                                               data-price="{{ card.price|stringformat:'.0f' }}"
+                                               data-title="{{ card.title }}"
+                                               onchange="handlePostcardChange(this)">
                                         <div class="pc-visual">
                                             {% if card.image %}
                                                 <img src="{{ card.image.url }}" alt="{{ card.title }}">
@@ -258,11 +274,17 @@
                         </div>
                     </div>
 
+                    <!-- Поля для загрузки фото и текста -->
                     <div id="postcard-extras" class="dynamic-block" style="display: none; margin-top: 20px;">
-                        <div id="custom-upload-field" style="display: none; margin-bottom: 15px;">
+                        <div id="custom-upload-field" style="display: none; margin-bottom: 20px;">
                             <div class="input-box">
                                 <label>Загрузить фото</label>
-                                {{ form.custom_postcard_image }}
+                                <div class="file-upload-wrapper">
+                                    {{ form.custom_postcard_image }}
+                                </div>
+                                <small style="color: #666; display: block; margin-top: 5px;">
+                                    Поддерживаются JPG, PNG до 5 МБ
+                                </small>
                             </div>
                         </div>
                         <div class="input-box">
@@ -270,6 +292,7 @@
                             {{ form.postcard_text }}
                         </div>
                     </div>
+
                 </section>
 
                 <!-- 4. КОНТАКТЫ -->
@@ -367,41 +390,6 @@
 
         </div>
 
-
-
-
-
-        <!-- В форме вместо ModelChoiceField используем простое поле -->
-<input type="hidden" name="postcard" id="postcard-hidden-field" value="">
-
-<!-- Обновим JavaScript: -->
-<script>
-function handlePostcardChange(input) {
-    const price = parseInt(input.getAttribute('data-price')) || 0;
-    currentPostcardPrice = price;
-
-    // Обновляем скрытое поле с выбранным значением
-    document.getElementById('postcard-hidden-field').value = input.value;
-
-    if (input.value === "") {
-        postcardExtras.style.display = 'none';
-        textInput.value = '';
-    } else {
-        postcardExtras.style.display = 'block';
-        customUpload.style.display = (input.value === "custom") ? 'block' : 'none';
-    }
-    if (price > 0) {
-        postcardRow.style.display = 'flex';
-        postcardPriceDisplay.innerText = '+' + price + ' ₽';
-    } else {
-        postcardRow.style.display = 'none';
-    }
-    recalcTotal();
-}
-</script>
-
-
-
     </form>
 </div>
 
@@ -473,30 +461,142 @@ function handlePostcardChange(input) {
         border-color: var(--primary); background: #fff; outline: none; box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.1);
     }
 
+    /* СТИЛЬ ДЛЯ ЗАГРУЗКИ ФАЙЛА */
+    .file-upload-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .file-upload-wrapper input[type="file"] {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+        z-index: 2;
+    }
+
+    .file-upload-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        z-index: 1;
+        user-select: none;
+    }
+
+    .file-upload-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .file-upload-btn:active {
+        transform: translateY(0);
+    }
+
+    .file-upload-btn.has-file {
+        background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+        box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    }
+
+    .file-upload-icon {
+        font-size: 1.1rem;
+    }
+
+    .file-name-display {
+        flex-grow: 1;
+        font-size: 0.85rem;
+        color: #666;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 1px dashed #ddd;
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .file-name-display.has-file {
+        color: #2E7D32;
+        background: #e8f5e9;
+        border-color: #c8e6c9;
+        font-weight: 500;
+    }
+
+    /* БЫСТРЫЙ ВЫБОР ДАТЫ (СЕГОДНЯ/ЗАВТРА) */
+    .quick-date-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .quick-date-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 15px;
+        border: 2px solid transparent;
+        border-radius: 10px;
+        background: #f8f9fa;
+        color: #555;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .quick-date-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .quick-date-btn.today-btn:hover {
+        background: #e3f2fd;
+        border-color: #2196f3;
+        color: #1565c0;
+    }
+
+    .quick-date-btn.tomorrow-btn:hover {
+        background: #e8f5e9;
+        border-color: #4caf50;
+        color: #2e7d32;
+    }
+
+    .quick-date-btn.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    .quick-date-icon {
+        font-size: 1.1rem;
+    }
+
+    .quick-date-text {
+        font-weight: 600;
+    }
+
     .date-input-wrapper { position: relative; }
     .calendar-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: 0.5; font-size: 1.1rem; }
     .datepicker-input { background: #fff !important; cursor: pointer; padding-right: 40px !important; }
-
-    /* Ссылки даты (в оригинале были, сейчас заменены на новый блок, но стили оставим на всякий случай) */
-    .dt-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-    .dt-presets { display: flex; gap: 15px; }
-    .date-link { text-decoration: none; font-weight: 700; font-size: 0.9rem; color: var(--primary); border-bottom: 2px solid transparent; transition: 0.2s; user-select: none; }
-    .date-link:hover { border-bottom-color: var(--primary); opacity: 0.8; }
-
-    /* КНОПКА ЗАГРУЗКИ ФАЙЛА */
-    .file-input-wrapper { position: relative; margin-top: 5px; display: flex; align-items: center; gap: 10px; }
-    .file-input-wrapper input[type="file"] { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2; }
-    .file-custom-btn {
-        display: inline-flex; align-items: center; gap: 6px;
-        background-color: #fff; color: #333; border: 1px solid #ddd;
-        padding: 6px 14px; border-radius: 20px; font-weight: 600;
-        font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05); user-select: none;
-    }
-    .file-custom-btn:hover { background-color: #f5f5f5; border-color: #ccc; }
-    .file-custom-btn.file-selected { background-color: #e8f5e9; border-color: #a5d6a7; color: #2e7d32; }
-    .file-name-display { font-size: 0.8rem; color: #888; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
-    .upload-icon { font-size: 1rem; }
 
     /* Доставка */
     .delivery-toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
@@ -641,6 +741,27 @@ function handlePostcardChange(input) {
         /* Убираем выделение */
         .postcard-slide-content:active, .postcard-slide-content:focus { background: transparent; outline: none; }
         .pc-visual:active, .pc-visual:focus { background: #fff; outline: none; }
+
+        /* Быстрый выбор даты на мобильных */
+        .quick-date-buttons {
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .quick-date-btn {
+            padding: 12px 10px;
+            font-size: 0.85rem;
+        }
+
+        /* Загрузка файла на мобильных */
+        .file-upload-btn {
+            padding: 10px 15px;
+            font-size: 0.8rem;
+        }
+        .file-name-display {
+            font-size: 0.75rem;
+            padding: 6px 10px;
+        }
     }
 
     /* Большие экраны */
@@ -652,12 +773,15 @@ function handlePostcardChange(input) {
 </style>
 
 <script>
+    // Глобальные переменные
     const cartTotal = {{ cart_total_js|stringformat:".0f" }};
     const deliveryCostBase = {{ delivery_cost_js|stringformat:".0f" }};
     let currentDeliveryCost = deliveryCostBase;
     let currentPostcardPrice = 0;
+    let lastSelectedPostcardId = '';
+    let lastSelectedPostcardPrice = 0;
 
-    // Elements
+    // DOM элементы
     const deliveryFields = document.getElementById('delivery-fields');
     const deliveryRow = document.getElementById('delivery-row');
     const deliveryPriceDisplay = document.getElementById('delivery-price-display');
@@ -669,7 +793,7 @@ function handlePostcardChange(input) {
     const textInput = document.querySelector('#id_postcard_text');
     const recipientFields = document.getElementById('recipient-fields');
 
-    // New Elements for Time Logic
+    // Новые элементы для времени
     const exactPicker = document.getElementById('exact-time-picker');
     const timeSelect = document.getElementById('delivery-time-select');
     const dateInput = document.querySelector('.datepicker-input');
@@ -677,45 +801,19 @@ function handlePostcardChange(input) {
     const asapSubtitle = document.getElementById('asap-subtitle');
     const noSlotsMsg = document.getElementById('no-slots-message');
 
+    // Элементы быстрого выбора даты
+    const todayBtn = document.querySelector('.today-btn');
+    const tomorrowBtn = document.querySelector('.tomorrow-btn');
+
     let fpInstance;
     let swiper;
     let isAnimating = false;
 
-    // === КНОПКА ЗАГРУЗКИ ФАЙЛА (СКРИПТ) ===
-    function initFileInput() {
-        const fileInputOriginal = document.querySelector('input[type="file"]');
-        if (fileInputOriginal) {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'file-input-wrapper';
-            const fakeBtn = document.createElement('div');
-            fakeBtn.className = 'file-custom-btn';
-            fakeBtn.innerHTML = '<span class="upload-icon">📷</span> <span>Загрузить фото</span>';
-            const fileName = document.createElement('span');
-            fileName.className = 'file-name-display';
-
-            fileInputOriginal.parentNode.insertBefore(wrapper, fileInputOriginal);
-            wrapper.appendChild(fileInputOriginal);
-            wrapper.appendChild(fakeBtn);
-            wrapper.appendChild(fileName);
-
-            fileInputOriginal.addEventListener('change', function() {
-                if (this.files && this.files.length > 0) {
-                    fileName.innerText = this.files[0].name;
-                    fakeBtn.classList.add('file-selected');
-                    fakeBtn.innerHTML = '<span class="upload-icon">✅</span> <span>Фото выбрано</span>';
-                } else {
-                    fileName.innerText = '';
-                    fakeBtn.classList.remove('file-selected');
-                    fakeBtn.innerHTML = '<span class="upload-icon">📷</span> <span>Загрузить фото</span>';
-                }
-            });
-        }
-    }
-
+    // === ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ ===
     document.addEventListener('DOMContentLoaded', function() {
         recalcTotal();
-        checkAsapAvailability(); // Проверяем часы работы
-        initFileInput();
+        checkAsapAvailability();
+        initFileUpload();
 
         // Проверяем начальное состояние доставки
         const activeDelivery = document.querySelector('input[name="delivery_option"]:checked');
@@ -736,161 +834,161 @@ function handlePostcardChange(input) {
             disableMobile: "true",
             allowInput: true,
             onChange: function(selectedDates, dateStr) {
+                // Сброс активных кнопок быстрого выбора
+                resetQuickDateButtons();
+
+                // Загрузка интервалов для выбранной даты
                 loadSlots(dateStr);
             }
         });
 
         // Если дата уже есть при загрузке (ошибка формы)
         if(dateInput && dateInput.value) {
+            const selectedDate = new Date(dateInput.value);
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            // Автовыбор кнопки быстрого выбора
+            if (isSameDate(selectedDate, today)) {
+                setActiveQuickDateButton('today');
+            } else if (isSameDate(selectedDate, tomorrow)) {
+                setActiveQuickDateButton('tomorrow');
+            }
+
             loadSlots(dateInput.value);
-            // Если выбран режим exact - показываем блок
             const tm = document.querySelector('input[name="time_mode"]:checked');
             if(tm && tm.value === 'exact') exactPicker.style.display = 'block';
         }
 
-        // === SWIPER INIT (ОРИГИНАЛЬНАЯ ЛОГИКА) ===
-        function initSwiper() {
-            const container = document.querySelector('.postcard-swiper');
-            if (!container) return;
-
-            const containerWidth = container.clientWidth;
-            const isMob = window.innerWidth <= 768;
-            const isTablet = window.innerWidth <= 1024 && window.innerWidth > 768;
-
-            let spaceBetween, slidesOffsetBefore, slidesOffsetAfter;
-            // Ширина слайда (совпадает с CSS)
-            const slideWidth = isMob ? 85 : (isTablet ? 120 : 140);
-
-            if (isMob) {
-                spaceBetween = -25;
-                slidesOffsetBefore = 30;
-                slidesOffsetAfter = 200;
-            } else if (isTablet) {
-                spaceBetween = -40;
-                slidesOffsetBefore = 50;
-                slidesOffsetAfter = 400;
-            } else {
-                // ДЕСКТОП (ВАЖНОЕ ИСПРАВЛЕНИЕ ИЗ ПРОШЛОГО РАЗА)
-                spaceBetween = -50;
-                slidesOffsetBefore = 50;
-                // Формула: (Ширина контейнера) - (Ширина слайда) - (Отступ слева)
-                slidesOffsetAfter = containerWidth - slideWidth - slidesOffsetBefore;
-            }
-
-            if (swiper) swiper.destroy(true, true);
-
-            swiper = new Swiper('.postcard-swiper', {
-                slidesPerView: 'auto',
-                // Разрешаем работу даже если слайдов мало
-                watchOverflow: false,
-                centeredSlides: false,
-                spaceBetween: spaceBetween,
-                speed: 600,
-                resistanceRatio: 0.7,
-                freeMode: false,
-                watchSlidesProgress: true,
-
-                slidesOffsetBefore: slidesOffsetBefore,
-                slidesOffsetAfter: slidesOffsetAfter,
-
-                navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-                on: {
-                    init: function () {
-                        // Сброс и выбор первой карты при старте
-                        const allInputs = document.querySelectorAll('.postcard-slide-content input');
-                        const firstInput = allInputs[0];
-                        if (firstInput && !document.querySelector('input[name="postcard"]:checked')) {
-                            firstInput.checked = true;
-                            handlePostcardChange(firstInput);
-                            this.slideTo(0, 0);
-                        }
-                        updateCardStyles(this, true);
-                    },
-                    slideChangeTransitionStart: function () { isAnimating = true; updateCardStyles(this, false); },
-                    slideChangeTransitionEnd: function () {
-                        isAnimating = false;
-                        updateCardStyles(this, true);
-                        const activeSlide = this.slides[this.activeIndex];
-                        const input = activeSlide.querySelector('input[type="radio"]');
-                        if(input && !input.checked) {
-                            input.checked = true;
-                            handlePostcardChange(input);
-                        }
-                    },
-                    transitionStart: function () { isAnimating = true; updateCardStyles(this, false); },
-                    transitionEnd: function () { isAnimating = false; updateCardStyles(this, true); },
-                    touchMove: function () { if (!isAnimating) updateCardStyles(this, false); },
-                    progress: function () { if (!isAnimating) updateCardStyles(this, false); }
-                }
-            });
-
-            document.querySelectorAll('.swiper-slide').forEach((slide, index) => {
-                slide.addEventListener('click', function() {
-                    swiper.slideTo(index, 600);
-                    const input = slide.querySelector('input');
-                    if (input) {
-                        input.checked = true;
-                        handlePostcardChange(input);
-                    }
-                });
-            });
-            updateNavigationButtons();
-        }
-
-        function updateNavigationButtons() {
-            if (!swiper) return;
-            const prev = document.querySelector('.swiper-button-prev');
-            const next = document.querySelector('.swiper-button-next');
-            if (prev) { prev.style.opacity = swiper.isBeginning ? '0.3' : '1'; prev.style.pointerEvents = swiper.isBeginning ? 'none' : 'auto'; }
-            if (next) { next.style.opacity = swiper.isEnd ? '0.3' : '1'; next.style.pointerEvents = swiper.isEnd ? 'none' : 'auto'; }
-        }
-
-        function updateCardStyles(swiperInstance, isFinalState = false) {
-            const slides = swiperInstance.slides;
-            const activeIndex = swiperInstance.activeIndex;
-            const isMob = window.innerWidth <= 768;
-            const isTablet = window.innerWidth <= 1024 && window.innerWidth > 768;
-
-            let overlapAmount, scaleStep, opacityStep;
-            if (isMob) { overlapAmount = 35; scaleStep = 0.06; opacityStep = 0.15; }
-            else if (isTablet) { overlapAmount = 45; scaleStep = 0.07; opacityStep = 0.13; }
-            else { overlapAmount = 55; scaleStep = 0.08; opacityStep = 0.12; }
-
-            slides.forEach((slide, index) => {
-                const diff = index - activeIndex;
-                if (diff < 0) {
-                    if (diff === -1) {
-                        const translateX = overlapAmount;
-                        slide.style.transform = `translateX(${translateX}px) scale(${1 - scaleStep})`;
-                        slide.style.zIndex = '40';
-                        slide.style.opacity = (1 - opacityStep).toString();
-                        slide.style.filter = 'brightness(0.95)';
-                    } else {
-                        slide.style.transform = `translateX(${overlapAmount}px) scale(0.8)`;
-                        slide.style.opacity = '0';
-                        slide.style.zIndex = '10';
-                    }
-                } else if (diff === 0) {
-                    slide.style.transform = `translateX(0) scale(1)`;
-                    slide.style.zIndex = '100'; slide.style.opacity = '1'; slide.style.filter = 'none';
-                } else {
-                    const translateX = diff * (isMob ? 12 : (isTablet ? 15 : 20));
-                    const scale = 1 - (diff * scaleStep);
-                    const opacity = 1 - (diff * opacityStep);
-                    slide.style.transform = `translateX(-${translateX}px) scale(${scale})`;
-                    slide.style.zIndex = (90 - diff).toString();
-                    slide.style.filter = `blur(${diff * 0.2}px)`;
-                    slide.style.opacity = opacity.toString();
-                }
-            });
-            updateNavigationButtons();
-        }
-
         initSwiper();
         window.addEventListener('resize', initSwiper);
+
+        // Отладочный вывод при отправке формы
+        const form = document.querySelector('.checkout-form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                console.log('=== ДАННЫЕ ПЕРЕДАВАЕМЫЕ В ФОРМЕ ===');
+                console.log('postcard:', document.querySelector('input[name="postcard"]:checked')?.value);
+                console.log('postcard_id_for_custom:', document.getElementById('postcard_id_for_custom')?.value);
+                console.log('selected_postcard_for_custom:', document.getElementById('selected_postcard_for_custom')?.value);
+                console.log('currentPostcardPrice:', currentPostcardPrice);
+            });
+        }
     });
 
-    // Обработчик доставки
+    // === ФУНКЦИИ ===
+
+    // Сравнение дат (без времени)
+    function isSameDate(date1, date2) {
+        return date1.getFullYear() === date2.getFullYear() &&
+               date1.getMonth() === date2.getMonth() &&
+               date1.getDate() === date2.getDate();
+    }
+
+    // Установить активную кнопку быстрого выбора
+    function setActiveQuickDateButton(type) {
+        resetQuickDateButtons();
+
+        if (type === 'today' && todayBtn) {
+            todayBtn.classList.add('active');
+        } else if (type === 'tomorrow' && tomorrowBtn) {
+            tomorrowBtn.classList.add('active');
+        }
+    }
+
+    // Сбросить все кнопки быстрого выбора
+    function resetQuickDateButtons() {
+        if (todayBtn) todayBtn.classList.remove('active');
+        if (tomorrowBtn) tomorrowBtn.classList.remove('active');
+    }
+
+    // Установить дату на сегодня
+    function setDateToday() {
+        const today = new Date();
+        const dateStr = today.toISOString().split('T')[0];
+
+        if (fpInstance) {
+            fpInstance.setDate(dateStr, true);
+            setActiveQuickDateButton('today');
+            loadSlots(dateStr);
+        }
+
+        // Активируем режим точного времени если не активен
+        const exactRadio = document.querySelector('input[name="time_mode"][value="exact"]');
+        if (exactRadio && !exactRadio.checked) {
+            exactRadio.checked = true;
+            toggleTimeMode();
+        }
+    }
+
+    // Установить дату на завтра
+    function setDateTomorrow() {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const dateStr = tomorrow.toISOString().split('T')[0];
+
+        if (fpInstance) {
+            fpInstance.setDate(dateStr, true);
+            setActiveQuickDateButton('tomorrow');
+            loadSlots(dateStr);
+        }
+
+        // Активируем режим точного времени если не активен
+        const exactRadio = document.querySelector('input[name="time_mode"][value="exact"]');
+        if (exactRadio && !exactRadio.checked) {
+            exactRadio.checked = true;
+            toggleTimeMode();
+        }
+    }
+
+    // Инициализация красивой кнопки загрузки файла
+    function initFileUpload() {
+        const fileInput = document.querySelector('input[name="custom_postcard_image"]');
+        if (fileInput) {
+            const wrapper = fileInput.parentNode;
+
+            // Создаем красивую кнопку
+            const uploadBtn = document.createElement('div');
+            uploadBtn.className = 'file-upload-btn';
+            uploadBtn.innerHTML = '<span class="file-upload-icon">📷</span> <span>Выбрать фото</span>';
+
+            // Создаем блок для отображения имени файла
+            const fileNameDisplay = document.createElement('div');
+            fileNameDisplay.className = 'file-name-display';
+            fileNameDisplay.textContent = 'Файл не выбран';
+
+            // Вставляем элементы
+            wrapper.appendChild(uploadBtn);
+            wrapper.appendChild(fileNameDisplay);
+
+            // Обработчик изменения файла
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files.length > 0) {
+                    const fileName = this.files[0].name;
+                    fileNameDisplay.textContent = fileName;
+                    fileNameDisplay.classList.add('has-file');
+                    uploadBtn.classList.add('has-file');
+                    uploadBtn.innerHTML = '<span class="file-upload-icon">✅</span> <span>Фото выбрано</span>';
+
+                    // Если выбрано "Своё фото" и есть сохраненная платная открытка
+                    const customPostcardInput = document.querySelector('input[name="postcard"][value="custom"]:checked');
+                    if (customPostcardInput && lastSelectedPostcardId && lastSelectedPostcardPrice > 0) {
+                        document.getElementById('postcard_id_for_custom').value = lastSelectedPostcardId;
+                        document.getElementById('selected_postcard_for_custom').value = lastSelectedPostcardId;
+                        console.log('DEBUG: При загрузке фото установлена открытка:', lastSelectedPostcardId);
+                    }
+                } else {
+                    fileNameDisplay.textContent = 'Файл не выбран';
+                    fileNameDisplay.classList.remove('has-file');
+                    uploadBtn.classList.remove('has-file');
+                    uploadBtn.innerHTML = '<span class="file-upload-icon">📷</span> <span>Выбрать фото</span>';
+                }
+            });
+        }
+    }
+
+    // Обработка выбора доставки
     document.querySelectorAll('input[name="delivery_option"]').forEach(radio => {
         radio.addEventListener('change', function() {
             if (this.value === 'pickup') {
@@ -902,9 +1000,7 @@ function handlePostcardChange(input) {
                 deliveryRow.style.display = 'flex';
                 currentDeliveryCost = deliveryCostBase;
             }
-            // Перепроверяем доступность ASAP (т.к. часы работы доставки и магазина разные)
             checkAsapAvailability();
-
             if(dateInput.value && exactPicker.style.display !== 'none') {
                 loadSlots(dateInput.value);
             }
@@ -912,17 +1008,21 @@ function handlePostcardChange(input) {
         });
     });
 
-    // === ЛОГИКА ВРЕМЕНИ (ASAP / Exact) ===
+    // Логика времени
     function toggleTimeMode() {
         const mode = document.querySelector('input[name="time_mode"]:checked').value;
         if (mode === 'exact') {
             exactPicker.style.display = 'block';
+
+            // Если есть выбранная дата, загружаем интервалы
+            if (dateInput && dateInput.value) {
+                loadSlots(dateInput.value);
+            }
         } else {
             exactPicker.style.display = 'none';
         }
     }
 
-    // AJAX: Проверка доступности магазина
     function checkAsapAvailability() {
         const typeInput = document.querySelector('input[name="delivery_option"]:checked');
         const type = typeInput ? typeInput.value : 'delivery';
@@ -941,7 +1041,6 @@ function handlePostcardChange(input) {
                     asapInput.disabled = true;
                     asapSubtitle.innerText = data.reason;
 
-                    // Если ASAP недоступен, автоматически переключаем на точное время
                     const exactRadio = document.querySelector('input[name="time_mode"][value="exact"]');
                     if (exactRadio) {
                         exactRadio.checked = true;
@@ -952,7 +1051,6 @@ function handlePostcardChange(input) {
             .catch(err => console.error("Error checking ASAP:", err));
     }
 
-    // AJAX: Загрузка слотов
     function loadSlots(dateStr) {
         const typeInput = document.querySelector('input[name="delivery_option"]:checked');
         const type = typeInput ? typeInput.value : 'delivery';
@@ -986,36 +1084,215 @@ function handlePostcardChange(input) {
             });
     }
 
-    // Прочее
+    // Получатель
     function toggleRecipient(radio) {
         recipientFields.style.display = (radio.value === 'other') ? 'block' : 'none';
     }
 
+    // Обработка выбора открытки (ОСНОВНАЯ ЛОГИКА)
     function handlePostcardChange(input) {
         const price = parseInt(input.getAttribute('data-price')) || 0;
-        currentPostcardPrice = price;
-        if (input.value === "") {
-            postcardExtras.style.display = 'none'; textInput.value = '';
+        const value = input.value;
+
+        console.log('DEBUG handlePostcardChange: value=', value, 'price=', price);
+
+        // Сохраняем выбранную открытку для кастомного варианта
+        if (value && value !== 'custom' && value !== '') {
+            lastSelectedPostcardId = value;
+            lastSelectedPostcardPrice = price;
+            console.log('DEBUG: Сохранена открытка ID:', lastSelectedPostcardId, 'цена:', lastSelectedPostcardPrice);
+        }
+
+        // Показываем/скрываем дополнительные поля
+        if (value === "") {
+            postcardExtras.style.display = 'none';
+            textInput.value = '';
+            document.getElementById('postcard_id_for_custom').value = '';
+            document.getElementById('selected_postcard_for_custom').value = '';
+            currentPostcardPrice = 0;
         } else {
             postcardExtras.style.display = 'block';
-            customUpload.style.display = (input.value === "custom") ? 'block' : 'none';
+
+            if (value === "custom") {
+                customUpload.style.display = 'block';
+
+                // ИСПРАВЛЕНО: Для "Свое фото" всегда берем цену из настроек сайта
+                let customPrice = {{ site_settings.custom_postcard_price|default:100|stringformat:".0f" }};
+                currentPostcardPrice = customPrice;
+
+                // Если выбрана платная основа, добавляем её цену
+                if (lastSelectedPostcardId && lastSelectedPostcardPrice > 0) {
+                    currentPostcardPrice += lastSelectedPostcardPrice;
+                    document.getElementById('postcard_id_for_custom').value = lastSelectedPostcardId;
+                    document.getElementById('selected_postcard_for_custom').value = lastSelectedPostcardId;
+                    console.log('DEBUG: Кастомная + основа:', currentPostcardPrice);
+                } else {
+                    document.getElementById('postcard_id_for_custom').value = '';
+                    document.getElementById('selected_postcard_for_custom').value = '';
+                    console.log('DEBUG: Кастомная без основы:', currentPostcardPrice);
+                }
+            } else {
+                customUpload.style.display = 'none';
+                currentPostcardPrice = price;
+                document.getElementById('postcard_id_for_custom').value = '';
+                document.getElementById('selected_postcard_for_custom').value = '';
+            }
         }
-        if (price > 0) {
-            postcardRow.style.display = 'flex'; postcardPriceDisplay.innerText = '+' + price + ' ₽';
-        } else {
-            postcardRow.style.display = 'none';
-        }
+
+        // Обновляем отображение цены
+        updatePostcardDisplay();
         recalcTotal();
     }
 
+    // Обновление отображения цены открытки
+    function updatePostcardDisplay() {
+        if (currentPostcardPrice > 0) {
+            postcardRow.style.display = 'flex';
+            postcardPriceDisplay.innerText = '+' + currentPostcardPrice + ' ₽';
+        } else {
+            postcardRow.style.display = 'none';
+        }
+    }
+
+    // Пересчет итога
     function recalcTotal() {
         const total = cartTotal + currentDeliveryCost + currentPostcardPrice;
         if(finalTotalDisplay) finalTotalDisplay.innerText = total + ' ₽';
         if(deliveryPriceDisplay) deliveryPriceDisplay.innerText = currentDeliveryCost + ' ₽';
     }
+
+    // Swiper инициализация
+    function initSwiper() {
+        const container = document.querySelector('.postcard-swiper');
+        if (!container) return;
+
+        const containerWidth = container.clientWidth;
+        const isMob = window.innerWidth <= 768;
+        const isTablet = window.innerWidth <= 1024 && window.innerWidth > 768;
+
+        let spaceBetween, slidesOffsetBefore, slidesOffsetAfter;
+        const slideWidth = isMob ? 85 : (isTablet ? 120 : 140);
+
+        if (isMob) {
+            spaceBetween = -25;
+            slidesOffsetBefore = 30;
+            slidesOffsetAfter = 200;
+        } else if (isTablet) {
+            spaceBetween = -40;
+            slidesOffsetBefore = 50;
+            slidesOffsetAfter = 400;
+        } else {
+            spaceBetween = -50;
+            slidesOffsetBefore = 50;
+            slidesOffsetAfter = containerWidth - slideWidth - slidesOffsetBefore;
+        }
+
+        if (swiper) swiper.destroy(true, true);
+
+        swiper = new Swiper('.postcard-swiper', {
+            slidesPerView: 'auto',
+            watchOverflow: false,
+            centeredSlides: false,
+            spaceBetween: spaceBetween,
+            speed: 600,
+            resistanceRatio: 0.7,
+            freeMode: false,
+            watchSlidesProgress: true,
+
+            slidesOffsetBefore: slidesOffsetBefore,
+            slidesOffsetAfter: slidesOffsetAfter,
+
+            navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+            on: {
+                init: function () {
+                    const allInputs = document.querySelectorAll('.postcard-slide-content input');
+                    const firstInput = allInputs[0];
+                    if (firstInput && !document.querySelector('input[name="postcard"]:checked')) {
+                        firstInput.checked = true;
+                        handlePostcardChange(firstInput);
+                        this.slideTo(0, 0);
+                    }
+                    updateCardStyles(this, true);
+                },
+                slideChangeTransitionStart: function () { isAnimating = true; updateCardStyles(this, false); },
+                slideChangeTransitionEnd: function () {
+                    isAnimating = false;
+                    updateCardStyles(this, true);
+                    const activeSlide = this.slides[this.activeIndex];
+                    const input = activeSlide.querySelector('input[type="radio"]');
+                    if(input && !input.checked) {
+                        input.checked = true;
+                        handlePostcardChange(input);
+                    }
+                },
+                transitionStart: function () { isAnimating = true; updateCardStyles(this, false); },
+                transitionEnd: function () { isAnimating = false; updateCardStyles(this, true); },
+                touchMove: function () { if (!isAnimating) updateCardStyles(this, false); },
+                progress: function () { if (!isAnimating) updateCardStyles(this, false); }
+            }
+        });
+
+        document.querySelectorAll('.swiper-slide').forEach((slide, index) => {
+            slide.addEventListener('click', function() {
+                swiper.slideTo(index, 600);
+                const input = slide.querySelector('input');
+                if (input) {
+                    input.checked = true;
+                    handlePostcardChange(input);
+                }
+            });
+        });
+        updateNavigationButtons();
+    }
+
+    function updateNavigationButtons() {
+        if (!swiper) return;
+        const prev = document.querySelector('.swiper-button-prev');
+        const next = document.querySelector('.swiper-button-next');
+        if (prev) { prev.style.opacity = swiper.isBeginning ? '0.3' : '1'; prev.style.pointerEvents = swiper.isBeginning ? 'none' : 'auto'; }
+        if (next) { next.style.opacity = swiper.isEnd ? '0.3' : '1'; next.style.pointerEvents = swiper.isEnd ? 'none' : 'auto'; }
+    }
+
+    function updateCardStyles(swiperInstance, isFinalState = false) {
+        const slides = swiperInstance.slides;
+        const activeIndex = swiperInstance.activeIndex;
+        const isMob = window.innerWidth <= 768;
+        const isTablet = window.innerWidth <= 1024 && window.innerWidth > 768;
+
+        let overlapAmount, scaleStep, opacityStep;
+        if (isMob) { overlapAmount = 35; scaleStep = 0.06; opacityStep = 0.15; }
+        else if (isTablet) { overlapAmount = 45; scaleStep = 0.07; opacityStep = 0.13; }
+        else { overlapAmount = 55; scaleStep = 0.08; opacityStep = 0.12; }
+
+        slides.forEach((slide, index) => {
+            const diff = index - activeIndex;
+            if (diff < 0) {
+                if (diff === -1) {
+                    const translateX = overlapAmount;
+                    slide.style.transform = `translateX(${translateX}px) scale(${1 - scaleStep})`;
+                    slide.style.zIndex = '40';
+                    slide.style.opacity = (1 - opacityStep).toString();
+                    slide.style.filter = 'brightness(0.95)';
+                } else {
+                    slide.style.transform = `translateX(${overlapAmount}px) scale(0.8)`;
+                    slide.style.opacity = '0';
+                    slide.style.zIndex = '10';
+                }
+            } else if (diff === 0) {
+                slide.style.transform = `translateX(0) scale(1)`;
+                slide.style.zIndex = '100'; slide.style.opacity = '1'; slide.style.filter = 'none';
+            } else {
+                const translateX = diff * (isMob ? 12 : (isTablet ? 15 : 20));
+                const scale = 1 - (diff * scaleStep);
+                const opacity = 1 - (diff * opacityStep);
+                slide.style.transform = `translateX(-${translateX}px) scale(${scale})`;
+                slide.style.zIndex = (90 - diff).toString();
+                slide.style.filter = `blur(${diff * 0.2}px)`;
+                slide.style.opacity = opacity.toString();
+            }
+        });
+        updateNavigationButtons();
+    }
 </script>
-
-
-
 
 {% endblock %}
