@@ -210,7 +210,7 @@ class SiteSettings(SingletonModel):
     slider_effect = models.CharField("Эффект перехода", max_length=20, choices=SLIDER_EFFECT_CHOICES, default='slide')
 
     slider_height_desktop = models.PositiveIntegerField(
-        "Высота на ПК (px)", default=550,
+        "Высота на ПК (px)", default=500,
         validators=[MinValueValidator(300), MaxValueValidator(1200)]
     )
     slider_desktop_fit_mode = models.CharField(
@@ -219,7 +219,7 @@ class SiteSettings(SingletonModel):
     )
 
     slider_height_mobile = models.PositiveIntegerField(
-        "Высота на Мобильном (px)", default=350,
+        "Высота на Мобильном (px)", default=300,
         validators=[MinValueValidator(100), MaxValueValidator(700)]
     )
     slider_mobile_fit_mode = models.CharField(

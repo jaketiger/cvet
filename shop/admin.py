@@ -248,7 +248,7 @@ class FooterPageAdmin(SortableAdminMixin, ShopAdminStyleMixin, admin.ModelAdmin)
     # === ИСПРАВЛЕНО ДЛЯ DJANGO 6.0 (mark_safe) ===
     def special_page_warning(self, obj):
         hint = mark_safe(
-            '<div style="background-color: #e3f2fd; border: 1px solid #b3d7ff; color: #004085; padding: 12px; border-radius: 5px; margin-bottom: 10px;">'
+            '<div style="background-color: #6f8090; border: 1px solid #b3d7ff; color: #004085; padding: 12px; border-radius: 5px; margin-bottom: 10px;">'
             '<strong>💡 Подсказка:</strong> Для подключения специальных шаблонов используйте следующие URL-адреса (slug):'
             '<ul style="margin: 5px 0 0 20px; padding: 0;">'
             '<li><code>contacts</code> — Страница "Контакты" (берет данные из настроек)</li>'
