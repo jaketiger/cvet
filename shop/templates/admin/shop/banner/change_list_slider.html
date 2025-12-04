@@ -25,7 +25,24 @@
                 </button>
             </div>
 
+            <!-- ... блок "Общие настройки" или "Ширина" ... -->
             <div style="padding: 25px;">
+
+                <div style="background: #6a97a0; padding: 15px; border-radius: 8px; border: 1px solid #dce775; margin-bottom: 20px;">
+                    <h3 style="margin-top: 0; font-size: 15px; color: #555; display: flex; align-items: center; gap: 8px;">
+                        <span>📐</span> Ширина слайдера
+                    </h3>
+                    <div>
+                        {{ slider_form.slider_width_mode }}
+                        <p style="font-size: 12px; color: #565727; margin: 5px 0 0;">
+                            * <b>Full:</b> Картинка растянется на весь монитор (нужны фото высокого качества 2K/4K)
+                            * <b>Sheet:</b> От края до края белого листа.
+                            * <b>Boxed:</b> С отступами внутри листа.
+                        </p>
+                    </div>
+                </div>
+<!-- ................................................................................................................... -->
+
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px;">
 
                     <!-- 1. ДЕСКТОП -->

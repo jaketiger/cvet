@@ -57,38 +57,70 @@
     <!-- СТИЛИ И АНИМАЦИИ -->
 
 <style>
-        /* 1. ДЕСКТОП */
+        /* 1. ДЕСКТОП (БАЗА) */
         .main-slider {
-            /* ГЛАВНОЕ ИСПРАВЛЕНИЕ: Принудительная ширина */
-            width: 100% !important;
-            max-width: 100% !important;
-            margin-left: 0 !important;
-            margin-right: 0 !important;
-            padding: 0 !important;
-            box-sizing: border-box !important;
-
-            /* Высота из настроек */
+            position: relative;
+            /* Высота */
             height: {% if site_settings.slider_desktop_fit_mode == 'auto' %}auto{% else %}{{ site_settings.slider_height_desktop|default:550 }}px{% endif %} !important;
         }
 
+        /* === ЛОГИКА ШИРИНЫ === */
+
+        /* РЕЖИМ 1: BOXED (С отступами) */
+        {% if site_settings.slider_width_mode == 'boxed' %}
+            .main-slider {
+                width: 100% !important;
+                margin: 0 !important;
+                border-radius: 8px; /* Скругляем углы, так как он внутри */
+            }
+        {% endif %}
+
+        /* РЕЖИМ 2: SHEET (По ширине листа) - Наш прошлый код */
+        {% if site_settings.slider_width_mode == 'sheet' %}
+            .main-slider {
+                width: calc(100% + 80px) !important;
+                margin-left: -40px !important;
+                margin-right: -40px !important;
+                border-radius: 0 !important;
+            }
+            @media (max-width: 992px) {
+                .main-slider { width: calc(100% + 6px) !important; margin-left: -3px !important; }
+            }
+            @media (max-width: 600px) {
+                .main-slider { width: calc(100% + 8px) !important; margin-left: -4px !important; }
+            }
+        {% endif %}
+
+        /* РЕЖИМ 3: FULL (Во весь экран) */
+        {% if site_settings.slider_width_mode == 'full' %}
+            .main-slider {
+                width: 100vw !important;
+                left: 50%;
+                right: 50%;
+                margin-left: -50vw !important;
+                margin-right: -50vw !important;
+                border-radius: 0 !important;
+            }
+            /* На мобильных Full тоже работает, но можно отключить, если нужно */
+        {% endif %}
+
+
+        /* ОБЩИЕ СТИЛИ КАРТИНКИ */
         .fit-mode-img {
             width: 100%;
             height: 100%;
-            /* Если Auto - обычное заполнение, иначе cover/contain */
             object-fit: {% if site_settings.slider_desktop_fit_mode == 'auto' %}fill{% else %}{{ site_settings.slider_desktop_fit_mode|default:'cover' }}{% endif %} !important;
             object-position: center;
-            transition: transform 6s ease; /* Плавность для Ken Burns */
-            display: block; /* Убирает отступы снизу у картинок */
+            transition: transform 6s ease;
+            display: block;
         }
 
         .swiper-slide {
             background-color: #f5f5f5;
             overflow: hidden;
-            width: 100% !important; /* Принудительная ширина слайда */
-            margin: 0 !important;
         }
 
-        /* 2. ВЫСОТА И РЕЖИМЫ (МОБИЛЬНЫЙ) */
+        /* МОБИЛЬНЫЕ НАСТРОЙКИ (Высота и fit-mode) */
         @media (max-width: 768px) {
             .main-slider {
                 height: {% if site_settings.slider_mobile_fit_mode == 'auto' %}auto{% else %}{{ site_settings.slider_height_mobile|default:350 }}px{% endif %} !important;
@@ -98,23 +130,11 @@
             }
         }
 
-        /* 3. ЭФФЕКТ KEN BURNS (Медленное приближение) */
-        .kenburns-anim {
-            transform: scale(1);
-        }
-        .swiper-slide-active .kenburns-anim {
-            animation: kenBurns 10s infinite alternate;
-        }
-        @keyframes kenBurns {
-            from { transform: scale(1); }
-            to { transform: scale(1.15); }
-        }
-
-        /* Фон для параллакса */
-        .parallax-bg {
-            position: absolute; left: 0; top: 0; width: 130%; height: 100%;
-            background-size: cover; background-position: center;
-        }
+        /* ЭФФЕКТЫ */
+        .kenburns-anim { transform: scale(1); }
+        .swiper-slide-active .kenburns-anim { animation: kenBurns 10s infinite alternate; }
+        @keyframes kenBurns { from { transform: scale(1); } to { transform: scale(1.15); } }
+        .parallax-bg { position: absolute; left: 0; top: 0; width: 130%; height: 100%; background-size: cover; background-position: center; }
 </style>
 
 

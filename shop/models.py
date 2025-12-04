@@ -162,6 +162,13 @@ class Category(models.Model):
         return reverse('shop:product_list_by_category', args=[self.slug])
 
 
+# === НОВЫЕ КОНСТАНТЫ ШИРИНЫ ===
+SLIDER_WIDTH_CHOICES = [
+    ('boxed', 'Внутри контейнера (с отступами)'),
+    ('sheet', 'По ширине листа (от края до края листа)'),
+    ('full', 'Во весь экран (100% ширины монитора)'),
+]
+
 class SiteSettings(SingletonModel):
     site_time_zone = models.CharField(
         "Часовой пояс магазина",
@@ -182,6 +189,13 @@ class SiteSettings(SingletonModel):
         help_text="Если 0, то бесплатно."
     )
 
+    slider_width_mode = models.CharField(
+        "Ширина слайдера",
+        max_length=10,
+        choices=SLIDER_WIDTH_CHOICES,
+        default='sheet',
+        help_text="Full: Картинка растянется на весь монитор (нужны фото высокого качества 2K/4K)."
+    )
 
 
 

@@ -297,6 +297,7 @@ class SliderSettingsForm(forms.ModelForm):
     class Meta:
         model = SiteSettings
         fields = [
+            'slider_width_mode',  # <--- ДОБАВИЛИ ПОЛЕ
             'slider_duration', 'slider_effect',
             'slider_height_desktop', 'slider_desktop_fit_mode',
             'slider_height_mobile', 'slider_mobile_fit_mode'
@@ -308,6 +309,7 @@ class SliderSettingsForm(forms.ModelForm):
             # Радио кнопки для режимов
             'slider_desktop_fit_mode': forms.RadioSelect(attrs={'class': 'radio-inline'}),
             'slider_mobile_fit_mode': forms.RadioSelect(attrs={'class': 'radio-inline'}),
+            'slider_width_mode': forms.RadioSelect(attrs={'class': 'radio-inline'}),
         }
 
 class PostcardSettingsForm(forms.ModelForm):
