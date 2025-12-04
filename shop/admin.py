@@ -242,7 +242,7 @@ class FooterPageAdmin(SortableAdminMixin, ShopAdminStyleMixin, admin.ModelAdmin)
     fieldsets = (
         (None, {'fields': ('title', 'slug', 'special_page_warning')}),
         ('Контент', {'fields': ('page_title', 'content')}),
-        ('Настройки', {'fields': ('order',)}),
+        #('Настройки', {'fields': ('order',)}),
     )
 
     # === ИСПРАВЛЕНО ДЛЯ DJANGO 6.0 (mark_safe) ===
