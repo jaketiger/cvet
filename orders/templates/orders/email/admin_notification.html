@@ -1,4 +1,5 @@
 <!-- orders/templates/orders/email/admin_notification.html -->
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -92,7 +93,9 @@
             <!-- === БЛОК ОТКРЫТКИ === -->
             {% if order.postcard or order.custom_postcard_image %}
                 <div style="margin-top: 25px; padding: 15px; border: 2px dashed #007bff; border-radius: 8px; background-color: #f0f8ff;">
-                    <h3 style="margin: 0 0 15px; font-size: 16px; color: #0056b3;">💌 Внимание: Открытка!</h3>
+                    <h3 style="margin: 0 0 15px; font-size: 16px; color: #0056b3;">
+                        {% if order.custom_postcard_image %}📸 Своя фото-открытка{% else %}💌 Открытка{% endif %}
+                    </h3>
 
                     <div style="display: flex; gap: 15px; align-items: flex-start;">
                         <!-- КАРТИНКА -->
@@ -101,7 +104,7 @@
                                 <a href="{{ base_url }}{{ order.custom_postcard_image.url }}" target="_blank">
                                     <img src="{{ base_url }}{{ order.custom_postcard_image.url }}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 1px solid #ccc; background-color: #fff;">
                                 </a>
-                            {% elif order.postcard.image %}
+                            {% elif order.postcard and order.postcard.image %}
                                 <a href="{{ base_url }}{{ order.postcard.image.url }}" target="_blank">
                                     <img src="{{ base_url }}{{ order.postcard.image.url }}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 1px solid #ccc; background-color: #fff;">
                                 </a>
@@ -111,14 +114,32 @@
                         <!-- ТЕКСТ И ССЫЛКИ -->
                         <div style="flex-grow: 1;">
                             <p style="margin: 0 0 5px; font-weight: bold;">
-                                {% if order.custom_postcard_image %}Своё фото{% else %}{{ order.postcard.title }}{% endif %}
+                                {% if order.custom_postcard_image %}
+                                    📸 Своё фото
+                                    {% if order.postcard %}
+                                        <br><small style="color: #666;">с основой "{{ order.postcard.title }}"</small>
+                                    {% endif %}
+                                {% elif order.postcard %}
+                                    {{ order.postcard.title }}
+                                {% endif %}
+                            </p>
+
+                            <!-- Цена открытки -->
+                            <p style="margin: 0 0 10px; color: {% if order.postcard_final_price > 0 %}#333{% else %}#28a745{% endif %}; font-weight: bold;">
+                                Цена: {% if order.postcard_final_price > 0 %}{{ order.postcard_final_price }} ₽{% else %}Бесплатно{% endif %}
                             </p>
 
                             <!-- Ссылка для скачивания -->
                             <p style="margin: 0 0 10px;">
-                                <a href="{{ base_url }}{% if order.custom_postcard_image %}{{ order.custom_postcard_image.url }}{% else %}{{ order.postcard.image.url }}{% endif %}" target="_blank" style="font-size: 13px; color: #007bff; text-decoration: underline;">
-                                    [Скачать оригинал]
-                                </a>
+                                {% if order.custom_postcard_image %}
+                                    <a href="{{ base_url }}{{ order.custom_postcard_image.url }}" target="_blank" style="font-size: 13px; color: #007bff; text-decoration: underline;">
+                                        [Скачать фото]
+                                    </a>
+                                {% elif order.postcard and order.postcard.image %}
+                                    <a href="{{ base_url }}{{ order.postcard.image.url }}" target="_blank" style="font-size: 13px; color: #007bff; text-decoration: underline;">
+                                        [Скачать открытку]
+                                    </a>
+                                {% endif %}
                             </p>
 
                             <div style="background: #fff; padding: 12px; font-style: italic; border: 1px solid #b8daff; border-radius: 4px; font-size: 15px; color: #333;">
@@ -161,16 +182,41 @@
                 <!-- СКИДКА -->
                 {% if order.discount > 0 %}
                 <tr>
-                    <td style="padding: 10px 0; color: #28a745;">Скидка ({{ order.promo_code.code }})</td>
+                    <td style="padding: 10px 0; color: #28a745;">Скидка ({{ order.promo_code.code|default:"PROMO" }})</td>
                     <td style="text-align: right; padding: 10px 0; color: #28a745;">-{{ order.get_discount_amount|floatformat:0 }} ₽</td>
                 </tr>
                 {% endif %}
 
                 <!-- ЦЕНА ОТКРЫТКИ -->
-                {% if order.postcard and order.postcard.price > 0 %}
+                {% if order.postcard_final_price > 0 %}
                 <tr>
-                    <td style="padding: 10px 0; color: #666;">Открытка "{{ order.postcard.title }}"</td>
-                    <td style="text-align: right; padding: 10px 0; color: #666;">{{ order.postcard.price }} ₽</td>
+                    <td style="padding: 10px 0; color: #666;">
+                        {% if order.custom_postcard_image %}
+                            📸 Своя фото-открытка
+                            {% if order.postcard %}
+                                <br><small style="color: #999;">с основой "{{ order.postcard.title }}"</small>
+                            {% endif %}
+                        {% elif order.postcard %}
+                            💌 Открытка "{{ order.postcard.title }}"
+                        {% else %}
+                            Открытка
+                        {% endif %}
+                    </td>
+                    <td style="text-align: right; padding: 10px 0; color: #666; font-weight: bold;">{{ order.postcard_final_price }} ₽</td>
+                </tr>
+                {% elif order.custom_postcard_image or order.postcard %}
+                <tr>
+                    <td style="padding: 10px 0; color: #28a745;">
+                        {% if order.custom_postcard_image %}
+                            📸 Своя фото-открытка
+                            {% if order.postcard %}
+                                <br><small style="color: #999;">с основой "{{ order.postcard.title }}"</small>
+                            {% endif %}
+                        {% elif order.postcard %}
+                            💌 Открытка "{{ order.postcard.title }}"
+                        {% endif %}
+                    </td>
+                    <td style="text-align: right; padding: 10px 0; color: #28a745; font-weight: bold;">Бесплатно</td>
                 </tr>
                 {% endif %}
 
@@ -181,6 +227,14 @@
                     <td style="text-align: right; padding: 10px 0; color: #777;">{{ order.delivery_cost }} ₽</td>
                 </tr>
                 {% endif %}
+
+                <!-- ИТОГО -->
+                <tr>
+                    <td style="padding: 15px 0; font-weight: bold; font-size: 16px; border-top: 2px solid #ddd;">Итого к оплате:</td>
+                    <td style="text-align: right; padding: 15px 0; font-weight: bold; font-size: 18px; color: #e53935; border-top: 2px solid #ddd;">
+                        {{ order.get_total_cost }} ₽
+                    </td>
+                </tr>
             </table>
 
             <!-- КНОПКА -->

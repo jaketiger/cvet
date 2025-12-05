@@ -6,12 +6,49 @@
 {% block content %}
 <div class="created-order-container">
 
-    <!-- Анимация галочки -->
-    <div class="success-icon-wrapper">
-        <div class="success-icon">✔</div>
+    <!-- ВОЛШЕБНАЯ АНИМАЦИЯ С ФЕЕЙ -->
+    <div class="magic-success-wrapper">
+        <!-- Фон с частичками -->
+        <div class="particles"></div>
+
+        <!-- Контейнер для анимации -->
+        <div class="magic-scene">
+            <!-- Галочка -->
+            <div class="check-icon">
+                <svg viewBox="0 0 100 100" class="check-svg">
+                    <path class="check-path" d="M20,50 L40,70 L80,30" fill="none" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+
+            <!-- Цветок (появится в конце) -->
+            <div class="flower-icon">
+                <svg viewBox="0 0 100 100" class="flower-svg">
+                    <path class="flower-petal" d="M50,20 C55,20 65,25 65,35 C65,45 55,50 50,55 C45,50 35,45 35,35 C35,25 45,20 50,20 Z" fill="#FF69B4"/>
+                    <path class="flower-petal" d="M50,20 C55,15 65,20 70,30 C75,40 70,50 65,55 C60,50 50,45 45,40 C40,35 40,25 45,20 Z" fill="#FF69B4" transform="rotate(60,50,50)"/>
+                    <path class="flower-petal" d="M50,20 C55,15 65,20 70,30 C75,40 70,50 65,55 C60,50 50,45 45,40 C40,35 40,25 45,20 Z" fill="#FF69B4" transform="rotate(120,50,50)"/>
+                    <path class="flower-petal" d="M50,20 C55,15 65,20 70,30 C75,40 70,50 65,55 C60,50 50,45 45,40 C40,35 40,25 45,20 Z" fill="#FF69B4" transform="rotate(180,50,50)"/>
+                    <path class="flower-petal" d="M50,20 C55,15 65,20 70,30 C75,40 70,50 65,55 C60,50 50,45 45,40 C40,35 40,25 45,20 Z" fill="#FF69B4" transform="rotate(240,50,50)"/>
+                    <path class="flower-petal" d="M50,20 C55,15 65,20 70,30 C75,40 70,50 65,55 C60,50 50,45 45,40 C40,35 40,25 45,20 Z" fill="#FF69B4" transform="rotate(300,50,50)"/>
+                    <circle cx="50" cy="50" r="10" fill="#FFD700"/>
+                </svg>
+            </div>
+
+            <!-- Фея -->
+            <div class="fairy">
+                <div class="fairy-body">🧚‍♀️</div>
+                <div class="fairy-wings"></div>
+                <div class="fairy-trail"></div>
+            </div>
+
+            <!-- Искры -->
+            <div class="sparks"></div>
+
+            <!-- Волшебные круги -->
+            <div class="magic-circles"></div>
+        </div>
     </div>
 
-    <h1>Спасибо за заказ!</h1>
+    <h1 class="animated-title">Спасибо за заказ!</h1>
 
     <div class="order-message">
         <p>Ваш заказ <strong>#{{ order.id }}</strong> успешно оформлен.</p>
@@ -20,7 +57,7 @@
         <p>
             <strong>Время получения:</strong>
             {% if order.delivery_time == 'asap' %}
-                <span style="color: #ff9800; font-weight: bold;">🚀 Как можно быстрее</span>
+                <span class="asap-text">🚀 Как можно быстрее</span>
             {% else %}
                 {{ order.delivery_date|date:"d.m.Y" }} / <strong>{{ order.delivery_time }}</strong>
             {% endif %}
@@ -190,78 +227,568 @@
 
 <style>
     .created-order-container {
-        max-width: 600px;
+        max-width: 800px;
         margin: 0 auto;
-        padding: 30px 15px;
+        padding: 40px 20px;
         text-align: center;
         font-family: var(--default-font-family, sans-serif);
+        position: relative;
+        overflow: visible;
     }
 
-    /* Галочка */
-    .success-icon-wrapper {
-        margin-bottom: 15px;
-    }
-    .success-icon {
-        font-size: 3em;
-        color: #28a745;
-        animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    @keyframes popIn {
-        0% { opacity: 0; transform: scale(0.5); }
-        100% { opacity: 1; transform: scale(1); }
+    /* ===== ВОЛШЕБНАЯ АНИМАЦИЯ ===== */
+    .magic-success-wrapper {
+        position: relative;
+        height: 300px;
+        margin-bottom: 50px;
+        overflow: visible;
     }
 
-    h1 {
-        margin-bottom: 15px;
+    .magic-scene {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+    }
+
+    /* Частички на фоне */
+    .particles {
+        position: absolute;
+        top: -100px;
+        left: -100px;
+        right: -100px;
+        bottom: -100px;
+        overflow: visible;
+        z-index: 1;
+    }
+
+    .particles::before,
+    .particles::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image:
+            radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+            radial-gradient(circle at 40% 70%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+            radial-gradient(circle at 60% 20%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+            radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 2px, transparent 2px);
+        background-size: 200px 200px;
+        animation: floatParticles 20s linear infinite;
+    }
+
+    .particles::after {
+        animation-delay: -10s;
+        background-size: 150px 150px;
+        opacity: 0.5;
+    }
+
+    @keyframes floatParticles {
+        0% { transform: translateY(0) rotate(0deg); }
+        100% { transform: translateY(-100px) rotate(360deg); }
+    }
+
+    /* Галочка (SVG для качественного отображения) */
+    .check-icon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 200px;
+        height: 200px;
+        z-index: 10;
+        animation: checkGlow 2s ease-in-out infinite;
+    }
+
+    .check-svg {
+        width: 100%;
+        height: 100%;
+        filter: drop-shadow(0 0 20px rgba(40, 167, 69, 0.6));
+    }
+
+    .check-path {
+        stroke: #28a745;
+        stroke-dasharray: 150;
+        stroke-dashoffset: 150;
+        animation: drawCheck 1.5s 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+    }
+
+    @keyframes drawCheck {
+        0% {
+            stroke-dashoffset: 150;
+            filter: drop-shadow(0 0 0px rgba(40, 167, 69, 0));
+        }
+        70% {
+            stroke-dashoffset: 0;
+            filter: drop-shadow(0 0 15px rgba(40, 167, 69, 0.8));
+        }
+        100% {
+            stroke-dashoffset: 0;
+            filter: drop-shadow(0 0 25px rgba(40, 167, 69, 0.6));
+        }
+    }
+
+    @keyframes checkGlow {
+        0%, 100% {
+            filter: drop-shadow(0 0 15px rgba(40, 167, 69, 0.4));
+        }
+        50% {
+            filter: drop-shadow(0 0 30px rgba(40, 167, 69, 0.8));
+        }
+    }
+
+    /* Цветок (SVG) */
+    .flower-icon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        width: 200px;
+        height: 200px;
+        opacity: 0;
+        z-index: 20;
+        animation: flowerBloom 1s 3.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    .flower-svg {
+        width: 100%;
+        height: 100%;
+        filter: drop-shadow(0 0 30px rgba(255, 105, 180, 0.7));
+    }
+
+    .flower-petal {
+        opacity: 0;
+        transform-origin: 50px 50px;
+        animation: petalBloom 0.8s 4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+    }
+
+    .flower-petal:nth-child(2) { animation-delay: 4.1s; }
+    .flower-petal:nth-child(3) { animation-delay: 4.2s; }
+    .flower-petal:nth-child(4) { animation-delay: 4.3s; }
+    .flower-petal:nth-child(5) { animation-delay: 4.4s; }
+    .flower-petal:nth-child(6) { animation-delay: 4.5s; }
+
+    @keyframes flowerBloom {
+        0% {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0) rotate(0deg);
+        }
+        20% {
+            opacity: 0.5;
+            transform: translate(-50%, -50%) scale(1.2) rotate(180deg);
+        }
+        40% {
+            opacity: 0.8;
+            transform: translate(-50%, -50%) scale(1.4) rotate(360deg);
+        }
+        60% {
+            opacity: 0.9;
+            transform: translate(-50%, -50%) scale(1.2) rotate(540deg);
+        }
+        100% {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1) rotate(720deg);
+        }
+    }
+
+    @keyframes petalBloom {
+        0% {
+            opacity: 0;
+            transform: scale(0) rotate(0deg);
+        }
+        50% {
+            opacity: 0.8;
+            transform: scale(1.3) rotate(180deg);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1) rotate(360deg);
+        }
+    }
+
+    /* Фея */
+    .fairy {
+        position: absolute;
+        top: 50px;
+        left: -120px;
+        width: 80px;
+        height: 80px;
+        z-index: 30;
+        animation:
+            fairyFly 4s 0.5s cubic-bezier(0.42, 0, 0.58, 1) forwards,
+            fairyHover 3s 4.5s ease-in-out infinite;
+    }
+
+    @keyframes fairyFly {
+        0% {
+            left: -120px;
+            top: 50px;
+            opacity: 0;
+            transform: scale(0.5) rotate(0deg);
+        }
+        15% {
+            opacity: 1;
+            transform: scale(1) rotate(10deg);
+        }
+        25% {
+            left: 20%;
+            top: 20px;
+            transform: scale(1.1) rotate(-10deg);
+        }
+        40% {
+            left: 60%;
+            top: 100px;
+            transform: scale(1) rotate(15deg);
+        }
+        55% {
+            left: 30%;
+            top: 180px;
+            transform: scale(1.1) rotate(-15deg);
+        }
+        70% {
+            left: 70%;
+            top: 80px;
+            transform: scale(1) rotate(10deg);
+        }
+        85% {
+            left: 45%;
+            top: 40px;
+            transform: scale(1.1) rotate(-10deg);
+        }
+        100% {
+            left: 50%;
+            top: 120px;
+            transform: translateX(-50%) scale(1) rotate(0deg);
+            opacity: 1;
+        }
+    }
+
+    @keyframes fairyHover {
+        0%, 100% {
+            transform: translateX(-50%) translateY(0) rotate(0deg);
+        }
+        25% {
+            transform: translateX(-50%) translateY(-15px) rotate(-5deg);
+        }
+        50% {
+            transform: translateX(-50%) translateY(-20px) rotate(0deg);
+        }
+        75% {
+            transform: translateX(-50%) translateY(-10px) rotate(5deg);
+        }
+    }
+
+    .fairy-body {
+        font-size: 60px;
+        position: relative;
+        z-index: 2;
+        filter:
+            drop-shadow(0 0 10px rgba(255, 255, 255, 0.9))
+            drop-shadow(0 0 20px rgba(173, 216, 230, 0.6));
+        animation: fairySparkle 2s ease-in-out infinite;
+    }
+
+    @keyframes fairySparkle {
+        0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 20px rgba(173, 216, 230, 0.6)); }
+        50% { filter: drop-shadow(0 0 15px rgba(255, 255, 255, 1)) drop-shadow(0 0 30px rgba(173, 216, 230, 0.8)); }
+    }
+
+    .fairy-wings {
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        right: 5px;
+        bottom: 5px;
+        background: linear-gradient(135deg,
+            rgba(255, 182, 193, 0.9) 0%,
+            rgba(255, 105, 180, 0.9) 25%,
+            rgba(186, 85, 211, 0.9) 50%,
+            rgba(138, 43, 226, 0.9) 75%,
+            rgba(75, 0, 130, 0.9) 100%);
+        border-radius: 50% 30% 50% 30%;
+        opacity: 0.8;
+        z-index: 1;
+        animation:
+            fairyWings 0.4s ease-in-out infinite alternate,
+            wingColors 4s ease-in-out infinite;
+        filter: blur(1px);
+    }
+
+    @keyframes fairyWings {
+        0% {
+            transform: scale(0.9) rotate(0deg);
+            border-radius: 50% 30% 50% 30%;
+        }
+        100% {
+            transform: scale(1.2) rotate(10deg);
+            border-radius: 30% 50% 30% 50%;
+        }
+    }
+
+    @keyframes wingColors {
+        0% { background: linear-gradient(135deg, rgba(255, 182, 193, 0.9), rgba(255, 105, 180, 0.9)); }
+        33% { background: linear-gradient(135deg, rgba(255, 255, 224, 0.9), rgba(255, 182, 193, 0.9)); }
+        66% { background: linear-gradient(135deg, rgba(173, 216, 230, 0.9), rgba(135, 206, 250, 0.9)); }
+        100% { background: linear-gradient(135deg, rgba(255, 182, 193, 0.9), rgba(255, 105, 180, 0.9)); }
+    }
+
+    .fairy-trail {
+        position: absolute;
+        top: 50%;
+        left: -100px;
+        width: 400px;
+        height: 3px;
+        background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.6) 30%,
+            rgba(173, 216, 230, 0.8) 50%,
+            rgba(255, 255, 255, 0.6) 70%,
+            transparent 100%);
+        transform: translateY(-50%);
+        z-index: 1;
+        filter: blur(1px);
+        animation: trailFade 4s 0.5s ease-out forwards;
+    }
+
+    @keyframes trailFade {
+        0% { opacity: 0; }
+        20% { opacity: 0.8; }
+        100% { opacity: 0.3; }
+    }
+
+    /* Искры волшебства */
+    .sparks {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 40;
+        pointer-events: none;
+    }
+
+    .sparks::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle,
+            rgba(255, 255, 255, 0) 30%,
+            rgba(255, 255, 255, 0.4) 50%,
+            rgba(255, 255, 255, 0) 70%);
+        transform: translate(-50%, -50%) scale(0);
+        animation: sparkExplosion 1.2s 3.8s cubic-bezier(0.175, 0.885, 0.32, 2) forwards;
+        border-radius: 50%;
+        filter: blur(10px);
+    }
+
+    @keyframes sparkExplosion {
+        0% {
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 1;
+            filter: blur(10px);
+        }
+        50% {
+            transform: translate(-50%, -50%) scale(1.5);
+            opacity: 0.8;
+            filter: blur(20px);
+        }
+        100% {
+            transform: translate(-50%, -50%) scale(3);
+            opacity: 0;
+            filter: blur(40px);
+        }
+    }
+
+    /* Создаем летающие искры */
+    .sparks::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image:
+            radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.8) 2px, transparent 2px),
+            radial-gradient(circle at 60% 70%, rgba(255, 255, 255, 0.8) 2px, transparent 2px),
+            radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.8) 2px, transparent 2px),
+            radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.8) 2px, transparent 2px),
+            radial-gradient(circle at 40% 60%, rgba(255, 255, 255, 0.8) 2px, transparent 2px),
+            radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.8) 2px, transparent 2px);
+        background-size: 100px 100px;
+        animation:
+            sparkFloat 20s linear infinite,
+            sparkFadeIn 0.5s 3.8s forwards;
+        opacity: 0;
+    }
+
+    @keyframes sparkFloat {
+        0% { transform: translateY(0) rotate(0deg); }
+        100% { transform: translateY(-100px) rotate(360deg); }
+    }
+
+    @keyframes sparkFadeIn {
+        0% { opacity: 0; }
+        100% { opacity: 0.6; }
+    }
+
+    /* Волшебные круги */
+    .magic-circles {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100px;
+        height: 100px;
+        z-index: 5;
+    }
+
+    .magic-circles::before,
+    .magic-circles::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        border: 2px solid rgba(40, 167, 69, 0.3);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        animation: circleExpand 2s 2s ease-out infinite;
+    }
+
+    .magic-circles::after {
+        animation-delay: 2.5s;
+        border-color: rgba(255, 105, 180, 0.3);
+    }
+
+    @keyframes circleExpand {
+        0% {
+            width: 0;
+            height: 0;
+            opacity: 1;
+        }
+        100% {
+            width: 400px;
+            height: 400px;
+            opacity: 0;
+        }
+    }
+
+    /* Стили текста */
+    .animated-title {
+        margin-bottom: 25px;
         color: #333;
-        font-size: 1.8em;
+        font-size: 2.2em;
+        font-weight: 800;
+        opacity: 0;
+        animation: titleAppear 1s 5s ease-out forwards;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
+    @keyframes titleAppear {
+        0% {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .asap-text {
+        color: #ff9800;
+        font-weight: bold;
+        padding: 3px 8px;
+        background: rgba(255, 152, 0, 0.1);
+        border-radius: 6px;
+    }
+
+    /* Остальные стили остаются как были */
     .order-message {
-        font-size: 1em;
-        line-height: 1.5;
+        font-size: 1.1em;
+        line-height: 1.6;
         color: #555;
-        margin-bottom: 30px;
+        margin-bottom: 35px;
+        opacity: 0;
+        animation: fadeInUp 1s 5.2s ease-out forwards;
+    }
+
+    @keyframes fadeInUp {
+        0% {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     /* Карточка с суммой */
     .order-summary-card {
-        background: #f9f9f9;
-        padding: 20px;
-        border-radius: 12px;
+        background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
+        padding: 25px;
+        border-radius: 16px;
         border: 1px solid #eee;
-        margin-bottom: 30px;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.03);
+        margin-bottom: 35px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+        opacity: 0;
+        animation: cardAppear 1s 5.4s ease-out forwards;
+        transform-origin: center;
+    }
+
+    @keyframes cardAppear {
+        0% {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
     }
 
     .order-summary-card h3 {
         margin-top: 0;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
         color: #333;
-        font-size: 1.2em;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 10px;
+        font-size: 1.3em;
+        border-bottom: 2px solid #f0f0f0;
+        padding-bottom: 15px;
     }
 
     .total-highlight {
         color: var(--accent-color, #e53935);
-        font-weight: 700;
-        font-size: 1.1em;
+        font-weight: 800;
+        font-size: 1.4em;
+        text-shadow: 0 2px 4px rgba(229, 57, 53, 0.1);
     }
 
     .summary-details {
         list-style: none;
         padding: 0;
         margin: 0;
-        font-size: 0.95em;
+        font-size: 1em;
     }
 
     .summary-details li {
         display: flex;
         justify-content: space-between;
-        padding: 8px 0;
-        border-bottom: 1px solid #eee;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
         color: #666;
+        transition: background 0.3s ease;
+    }
+
+    .summary-details li:hover {
+        background: rgba(0,0,0,0.02);
+        border-radius: 6px;
+        padding-left: 10px;
+        padding-right: 10px;
     }
 
     .summary-details li:last-child {
@@ -270,6 +797,7 @@
 
     .summary-details .label {
         font-weight: 500;
+        color: #555;
     }
 
     .summary-details .value {
@@ -279,23 +807,222 @@
 
     .postcard-row .value {
         color: #28a745;
+        font-weight: 700;
     }
 
     /* --- Стили кнопки --- */
     .custom-btn-size {
         display: inline-block;
-        padding: 12px 30px;
-        font-size: 1rem;
+        padding: 15px 40px;
+        font-size: 1.1rem;
         text-decoration: none;
-        font-weight: 600;
+        font-weight: 700;
         cursor: pointer;
-        margin-top: 20px;
+        margin-top: 25px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--accent-color, #e53935) 0%, #ff6b6b 100%);
+        color: white;
+        border: none;
+        box-shadow: 0 6px 20px rgba(229, 57, 53, 0.3);
+        transition: all 0.3s ease;
+        opacity: 0;
+        animation: btnAppear 1s 5.6s ease-out forwards;
+    }
+
+    @keyframes btnAppear {
+        0% {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .custom-btn-size:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(229, 57, 53, 0.4);
+        background: linear-gradient(135deg, #d32f2f 0%, #ff5252 100%);
+    }
+
+    .custom-btn-size:active {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(229, 57, 53, 0.3);
     }
 
     /* Центровка */
     .action-area {
         display: flex;
         justify-content: center;
+        margin-top: 10px;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .created-order-container {
+            padding: 20px 15px;
+        }
+
+        .magic-success-wrapper {
+            height: 250px;
+            margin-bottom: 30px;
+        }
+
+        .check-icon {
+            width: 150px;
+            height: 150px;
+        }
+
+        .flower-icon {
+            width: 150px;
+            height: 150px;
+        }
+
+        .fairy {
+            width: 60px;
+            height: 60px;
+        }
+
+        .fairy-body {
+            font-size: 45px;
+        }
+
+        .animated-title {
+            font-size: 1.8em;
+        }
+
+        .order-message {
+            font-size: 1em;
+        }
+
+        .order-summary-card {
+            padding: 20px;
+        }
+
+        .custom-btn-size {
+            padding: 12px 30px;
+            font-size: 1rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .magic-success-wrapper {
+            height: 200px;
+        }
+
+        .check-icon {
+            width: 120px;
+            height: 120px;
+        }
+
+        .flower-icon {
+            width: 120px;
+            height: 120px;
+        }
+
+        .fairy {
+            width: 50px;
+            height: 50px;
+        }
+
+        .fairy-body {
+            font-size: 35px;
+        }
+
+        .animated-title {
+            font-size: 1.5em;
+        }
+
+        .order-summary-card h3 {
+            font-size: 1.1em;
+        }
+
+        .summary-details {
+            font-size: 0.9em;
+        }
     }
 </style>
+
+<!-- Дополнительные эффекты -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Добавляем звуковые эффекты (опционально)
+        function createMagicSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                // Звук феи (высокий, мелодичный)
+                oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(1320, audioContext.currentTime + 1);
+
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1.5);
+
+                oscillator.type = 'sine';
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 1.5);
+
+                return audioContext;
+            } catch (e) {
+                console.log('Web Audio API не поддерживается');
+                return null;
+            }
+        }
+
+        // Создаем дополнительные искры при клике
+        document.querySelector('.magic-success-wrapper').addEventListener('click', function(e) {
+            const sparks = document.querySelector('.sparks');
+            if (sparks) {
+                const spark = document.createElement('div');
+                spark.style.cssText = `
+                    position: absolute;
+                    top: ${e.clientY - this.getBoundingClientRect().top}px;
+                    left: ${e.clientX - this.getBoundingClientRect().left}px;
+                    width: 20px;
+                    height: 20px;
+                    background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 70%);
+                    border-radius: 50%;
+                    pointer-events: none;
+                    animation: clickSpark 1s ease-out forwards;
+                    z-index: 100;
+                `;
+
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes clickSpark {
+                        0% { transform: scale(0); opacity: 1; }
+                        50% { transform: scale(1.5); opacity: 0.7; }
+                        100% { transform: scale(2); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+
+                sparks.appendChild(spark);
+                setTimeout(() => spark.remove(), 1000);
+            }
+        });
+
+        // Запускаем звук феи через 0.5 секунды после загрузки
+        setTimeout(() => {
+            createMagicSound();
+        }, 500);
+
+        // Добавляем анимацию мерцания всем важным элементам
+        const importantElements = document.querySelectorAll('.total-highlight, .postcard-row .value');
+        importantElements.forEach(el => {
+            setInterval(() => {
+                el.style.textShadow = '0 0 8px rgba(40, 167, 69, 0.7)';
+                setTimeout(() => {
+                    el.style.textShadow = 'none';
+                }, 300);
+            }, 3000);
+        });
+    });
+</script>
 {% endblock %}

@@ -1,4 +1,5 @@
 <!-- orders/templates/orders/email/customer_confirmation.html -->
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -40,7 +41,7 @@
 
                         <p style="margin: 0; font-size: 14px; color: #555;">
                             {% if order.delivery_time == 'asap' %}
-                                (Примерно 60-90 мин)
+                                (Примерно {{ site_settings.processing_time|default:60 }}-{{ site_settings.processing_time|default:60|add:30 }} мин)
                             {% else %}
                                 Интервал: <strong>{{ order.delivery_time }}</strong>
                             {% endif %}
@@ -120,12 +121,19 @@
                         <span style="font-size: 1.4em; vertical-align: middle; margin-right: 5px;">💌</span>
                         <strong style="color: #004085;">Открытка:</strong>
                         <span style="color: #333;">
-                            {% if order.custom_postcard_image %}Ваше фото{% else %}{{ order.postcard.title }}{% endif %}
+                            {% if order.custom_postcard_image %}
+                                📸 Своё фото
+                                {% if order.postcard %}
+                                    + основа "{{ order.postcard.title }}"
+                                {% endif %}
+                            {% else %}
+                                {{ order.postcard.title }}
+                            {% endif %}
                         </span>
                     </div>
                     <div>
-                        {% if order.postcard and order.postcard.price > 0 %}
-                            <strong>{{ order.postcard.price }} ₽</strong>
+                        {% if order.postcard_final_price > 0 %}
+                            <strong>{{ order.postcard_final_price }} ₽</strong>
                         {% else %}
                             <span style="color: #28a745; font-weight: bold; font-size: 13px; text-transform: uppercase;">Бесплатно</span>
                         {% endif %}
@@ -148,13 +156,31 @@
 
                 {% if order.discount > 0 %}
                     <p style="margin: 5px 0; color: #28a745; font-size: 14px;">
-                        Скидка ({{ order.promo_code.code }}): -{{ order.get_discount_amount|floatformat:0 }} ₽
+                        Скидка ({{ order.promo_code.code|default:"PROMO" }}): -{{ order.get_discount_amount|floatformat:0 }} ₽
                     </p>
                 {% endif %}
 
-    <!-- ЦЕНА ОТКРЫТКИ -->
-                {% if order.postcard and order.postcard.price > 0 %}
-                    <p style="margin: 5px 0; color: #666; font-size: 14px;">Открытка "{{ order.postcard.title }}": {{ order.postcard.price }} ₽</p>
+                <!-- ЦЕНА ОТКРЫТКИ -->
+                {% if order.postcard_final_price > 0 %}
+                    <p style="margin: 5px 0; color: #666; font-size: 14px;">
+                        Открытка: {{ order.postcard_final_price }} ₽
+                        {% if order.custom_postcard_image and order.postcard %}
+                            <br><small style="color: #999;">(своё фото + основа "{{ order.postcard.title }}")</small>
+                        {% elif order.custom_postcard_image %}
+                            <br><small style="color: #999;">(своё фото)</small>
+                        {% elif order.postcard %}
+                            <br><small style="color: #999;">({{ order.postcard.title }})</small>
+                        {% endif %}
+                    </p>
+                {% elif order.custom_postcard_image or order.postcard %}
+                    <p style="margin: 5px 0; color: #28a745; font-size: 14px;">
+                        Открытка: Бесплатно
+                        {% if order.custom_postcard_image and order.postcard %}
+                            <br><small style="color: #999;">(своё фото + основа "{{ order.postcard.title }}")</small>
+                        {% elif order.custom_postcard_image %}
+                            <br><small style="color: #999;">(своё фото)</small>
+                        {% endif %}
+                    </p>
                 {% endif %}
 
                 {% if order.delivery_cost > 0 %}
